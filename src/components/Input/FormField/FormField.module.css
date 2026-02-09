@@ -1,0 +1,30 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-field-gap, 8px);
+  width: 100%;
+}
+
+.fieldRow {
+  flex-direction: row;
+  align-items: var(--ui-field-align, flex-start);
+}
+
+.label {
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.4;
+  min-width: var(--ui-label-width, 120px);
+  text-align: var(--ui-label-align, left);
+  padding-top: 6px;
+}
+
+.control {
+  flex: 1;
+  min-width: 0;
+}
+
+.error {
+  font-size: 12px;
+  color: var(--badge-danger-color, #ff6b6b);
+}

@@ -1,0 +1,38 @@
+:global(.rsb-input-group) {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+:global(.rsb-input-group--stretch) > :global(.rsb-group-item) {
+  flex: 1;
+  min-width: 0;
+}
+
+:global(.rsb-input-group) > :global(.rsb-group-item) {
+  border-radius: 0 !important;
+}
+
+:global(.rsb-input-group) > :global(.rsb-group-item):first-child {
+  border-top-left-radius: var(--radius-sm) !important;
+  border-bottom-left-radius: var(--radius-sm) !important;
+}
+
+:global(.rsb-input-group) > :global(.rsb-group-item):last-child {
+  border-top-right-radius: var(--radius-sm) !important;
+  border-bottom-right-radius: var(--radius-sm) !important;
+}
+
+:global(.rsb-input-group) > :global(.rsb-group-item) + :global(.rsb-group-item) {
+  margin-left: -1px;
+}
+
+:global(.rsb-input-addon) {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid rgba(30, 99, 233, 0.25);
+  background: var(--surface-input);
+  color: var(--color-muted);
+  white-space: nowrap;
+}

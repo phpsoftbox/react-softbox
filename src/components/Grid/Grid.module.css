@@ -1,0 +1,32 @@
+.grid {
+  display: grid;
+  gap: var(--ui-grid-gap, 24px);
+  grid-template-columns: repeat(var(--ui-grid-columns, 12), minmax(var(--ui-grid-min, 0), 1fr));
+}
+
+@media (max-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(
+      var(--ui-grid-columns-lg, var(--ui-grid-columns, 12)),
+      minmax(var(--ui-grid-min, 0), 1fr)
+    );
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(
+      var(--ui-grid-columns-md, var(--ui-grid-columns, 12)),
+      minmax(var(--ui-grid-min, 0), 1fr)
+    );
+  }
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: repeat(
+      var(--ui-grid-columns-sm, var(--ui-grid-columns-md, var(--ui-grid-columns, 12))),
+      minmax(var(--ui-grid-min, 0), 1fr)
+    );
+  }
+}

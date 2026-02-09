@@ -1,0 +1,41 @@
+.wrapper {
+  position: relative;
+  display: block;
+}
+
+.label {
+  position: absolute;
+  left: 16px;
+  top: 12px;
+  color: var(--color-muted-2);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: transform 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.wrapper input:focus + .label,
+.wrapper input:not(:placeholder-shown) + .label {
+  transform: translateY(-8px);
+  color: var(--color-teal);
+  opacity: 0.9;
+}
+
+.wrapper textarea:focus + .label,
+.wrapper textarea:not(:placeholder-shown) + .label {
+  transform: translateY(-8px);
+  color: var(--color-teal);
+  opacity: 0.9;
+}
+
+.wrapper [data-float-label="true"][data-float-active="true"] + .label {
+  transform: translateY(-8px);
+  color: var(--color-teal);
+  opacity: 0.9;
+}
+
+.wrapper > input,
+.wrapper > textarea {
+  padding-top: 22px;
+  padding-bottom: 12px;
+}

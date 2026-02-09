@@ -1,0 +1,104 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 45;
+  animation: overlay-fade-in 0.2s ease;
+}
+
+.panel {
+  height: 100%;
+  background: var(--surface-panel);
+  border-left: 1px solid var(--color-line);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-6);
+  gap: var(--spacing-4);
+  animation: drawer-slide-in-right 0.24s ease;
+}
+
+.inline {
+  animation: none;
+  box-shadow: none;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: visible;
+}
+
+.left {
+  margin-right: auto;
+  border-left: none;
+  border-right: 1px solid var(--color-line);
+  animation-name: drawer-slide-in-left;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close {
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.body {
+  flex: 1;
+  color: var(--color-muted);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+}
+
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drawer-slide-in-right {
+  from {
+    transform: translateX(12%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-slide-in-left {
+  from {
+    transform: translateX(-12%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .panel {
+    animation: none;
+  }
+}

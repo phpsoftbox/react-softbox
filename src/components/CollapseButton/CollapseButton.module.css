@@ -1,0 +1,57 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(30, 99, 233, 0.3);
+  background: var(--surface-control);
+  color: var(--color-text);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.icon {
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  display: inline-block;
+  position: relative;
+}
+
+.burger .icon::before,
+.burger .icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+}
+
+.burger .icon::before {
+  top: -6px;
+}
+
+.burger .icon::after {
+  top: 6px;
+}
+
+.chevron .icon {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.chevron[aria-expanded="true"] .icon {
+  transform: rotate(225deg);
+}

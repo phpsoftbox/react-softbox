@@ -1,0 +1,110 @@
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.track {
+  width: 100%;
+  background: var(--surface-control);
+  border: 1px solid rgba(30, 99, 233, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, rgba(79, 230, 163, 0.9), rgba(20, 201, 214, 0.9));
+  transition: width 0.2s ease;
+}
+
+.value {
+  font-size: 12px;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+.sm .track {
+  height: 6px;
+}
+
+.md .track {
+  height: 10px;
+}
+
+.lg .track {
+  height: 14px;
+}
+
+.default .bar {
+  background: linear-gradient(90deg, rgba(79, 230, 163, 0.9), rgba(20, 201, 214, 0.9));
+}
+
+.primary .bar {
+  background: linear-gradient(90deg, rgba(30, 99, 233, 0.9), rgba(20, 201, 214, 0.9));
+}
+
+.info .bar {
+  background: linear-gradient(90deg, rgba(20, 201, 214, 0.9), rgba(79, 230, 163, 0.9));
+}
+
+.success .bar {
+  background: linear-gradient(90deg, rgba(79, 230, 163, 0.9), rgba(20, 201, 214, 0.9));
+}
+
+.warning .bar {
+  background: linear-gradient(90deg, rgba(255, 214, 90, 0.9), rgba(255, 176, 59, 0.9));
+}
+
+.danger .bar {
+  background: linear-gradient(90deg, rgba(255, 94, 126, 0.9), rgba(255, 120, 106, 0.9));
+}
+
+.indeterminate .bar {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  animation: progress-sweep 1.6s linear infinite;
+  clip-path: inset(0 100% 0 0);
+  will-change: clip-path;
+}
+
+@keyframes progress-sweep {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  25% {
+    clip-path: inset(0 50% 0 0);
+  }
+
+  50% {
+    clip-path: inset(0 0 0 0);
+  }
+
+  75% {
+    clip-path: inset(0 0 0 50%);
+  }
+
+  100% {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    transition: none;
+  }
+
+  .indeterminate .bar {
+    animation: none;
+    clip-path: inset(0 0 0 0);
+  }
+}

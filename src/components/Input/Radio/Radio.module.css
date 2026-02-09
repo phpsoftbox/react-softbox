@@ -1,0 +1,83 @@
+.radio {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.control {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(30, 99, 233, 0.45);
+  background: var(--surface-input);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.control::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-teal);
+  transform: scale(0);
+  transition: transform 0.2s ease;
+}
+
+.input:checked + .control {
+  border-color: rgba(20, 201, 214, 0.8);
+  box-shadow: 0 0 0 3px rgba(20, 201, 214, 0.2);
+}
+
+.input:checked + .control::after {
+  transform: scale(1);
+}
+
+.input:focus-visible + .control {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 201, 214, 0.2);
+  border-color: rgba(20, 201, 214, 0.8);
+}
+
+.input:disabled + .control {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input:disabled ~ .texts {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.texts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.description {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control,
+  .control::after {
+    transition: none;
+  }
+}

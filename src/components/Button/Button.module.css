@@ -1,0 +1,130 @@
+.button {
+  border: 1px solid var(--btn-border, rgba(30, 51, 85, 0.6));
+  cursor: pointer;
+  font-weight: 600;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--btn-bg, rgba(15, 30, 51, 0.9));
+  color: var(--btn-color, var(--color-text));
+  box-shadow: var(--btn-shadow, none);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 201, 214, 0.3);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--btn-bg-hover, var(--btn-bg));
+  box-shadow: var(--btn-shadow-hover, var(--btn-shadow, none));
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.solid {
+  transform: translateY(0);
+}
+
+.solid:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.outline,
+.ghost {
+  background: transparent;
+  color: var(--btn-accent, var(--color-teal));
+  border-color: var(--btn-accent, var(--color-teal));
+  box-shadow: none;
+  --btn-bg-hover: var(--btn-accent-soft, rgba(20, 201, 214, 0.12));
+  --btn-shadow-hover: none;
+}
+
+.ghost {
+  border-color: transparent;
+}
+
+.outline:hover:not(:disabled),
+.ghost:hover:not(:disabled) {
+  background: var(--btn-accent-soft, rgba(20, 201, 214, 0.12));
+}
+
+.variantDefault {
+  --btn-accent: var(--btn-default-accent, rgba(158, 178, 204, 0.9));
+  --btn-accent-soft: var(--btn-default-soft, rgba(30, 51, 85, 0.35));
+  --btn-bg: linear-gradient(135deg, var(--btn-default-start, #2a3750), var(--btn-default-end, #1b263c));
+  --btn-bg-hover: linear-gradient(135deg, var(--btn-default-start-hover, #31415c), var(--btn-default-end-hover, #212d44));
+  --btn-border: var(--btn-default-border, rgba(30, 51, 85, 0.6));
+  --btn-color: var(--color-on-solid, var(--color-text));
+  --btn-shadow: 0 10px 24px rgba(10, 20, 35, 0.2);
+  --btn-shadow-hover: 0 14px 30px rgba(10, 20, 35, 0.28);
+}
+
+.variantPrimary {
+  --btn-accent: var(--btn-primary-accent, rgba(20, 201, 214, 0.9));
+  --btn-accent-soft: var(--btn-primary-soft, rgba(20, 201, 214, 0.18));
+  --btn-bg: linear-gradient(135deg, var(--btn-primary-start, #14c9d6), var(--btn-primary-end, #1e63e9));
+  --btn-bg-hover: linear-gradient(135deg, var(--btn-primary-start-hover, #18d1de), var(--btn-primary-end-hover, #2a74ff));
+  --btn-border: var(--btn-primary-accent, rgba(20, 201, 214, 0.5));
+  --btn-color: var(--color-on-solid, #06201c);
+  --btn-shadow: 0 12px 30px rgba(20, 201, 214, 0.3);
+  --btn-shadow-hover: 0 16px 36px rgba(20, 201, 214, 0.4);
+}
+
+.variantInfo {
+  --btn-accent: var(--btn-info-accent, rgba(30, 99, 233, 0.9));
+  --btn-accent-soft: var(--btn-info-soft, rgba(30, 99, 233, 0.18));
+  --btn-bg: linear-gradient(135deg, var(--btn-info-start, #4f7bff), var(--btn-info-end, #2e5be6));
+  --btn-bg-hover: linear-gradient(135deg, var(--btn-info-start-hover, #5b86ff), var(--btn-info-end-hover, #3263f0));
+  --btn-border: var(--btn-info-accent, rgba(30, 99, 233, 0.5));
+  --btn-color: var(--color-on-solid, #f0f6ff);
+  --btn-shadow: 0 12px 30px rgba(30, 99, 233, 0.3);
+  --btn-shadow-hover: 0 16px 36px rgba(30, 99, 233, 0.4);
+}
+
+.variantSuccess {
+  --btn-accent: var(--btn-success-accent, rgba(79, 230, 163, 0.9));
+  --btn-accent-soft: var(--btn-success-soft, rgba(79, 230, 163, 0.16));
+  --btn-bg: linear-gradient(135deg, var(--btn-success-start, #35d092), var(--btn-success-end, #1faf75));
+  --btn-bg-hover: linear-gradient(135deg, var(--btn-success-start-hover, #3bd99b), var(--btn-success-end-hover, #21b87d));
+  --btn-border: var(--btn-success-accent, rgba(79, 230, 163, 0.5));
+  --btn-color: var(--color-on-solid, #06201c);
+  --btn-shadow: 0 12px 30px rgba(79, 230, 163, 0.28);
+  --btn-shadow-hover: 0 16px 36px rgba(79, 230, 163, 0.36);
+}
+
+.variantWarning {
+  --btn-accent: var(--btn-warning-accent, rgba(246, 200, 106, 0.95));
+  --btn-accent-soft: var(--btn-warning-soft, rgba(246, 200, 106, 0.2));
+  --btn-bg: linear-gradient(135deg, var(--btn-warning-start, #ffd166), var(--btn-warning-end, #f4a62a));
+  --btn-bg-hover: linear-gradient(135deg, var(--btn-warning-start-hover, #ffd87d), var(--btn-warning-end-hover, #f7b13f));
+  --btn-border: var(--btn-warning-accent, rgba(246, 200, 106, 0.6));
+  --btn-color: var(--color-on-solid, #2b1b00);
+  --btn-shadow: 0 12px 30px rgba(246, 200, 106, 0.28);
+  --btn-shadow-hover: 0 16px 36px rgba(246, 200, 106, 0.36);
+}
+
+.variantDanger {
+  --btn-accent: var(--btn-danger-accent, rgba(255, 107, 107, 0.95));
+  --btn-accent-soft: var(--btn-danger-soft, rgba(255, 107, 107, 0.2));
+  --btn-bg: linear-gradient(135deg, var(--btn-danger-start, #ff8f8f), var(--btn-danger-end, #ff5b5b));
+  --btn-bg-hover: linear-gradient(135deg, var(--btn-danger-start-hover, #ff9a9a), var(--btn-danger-end-hover, #ff6868));
+  --btn-border: var(--btn-danger-accent, rgba(255, 107, 107, 0.6));
+  --btn-color: var(--color-on-solid, #2b0b0b);
+  --btn-shadow: 0 12px 30px rgba(255, 107, 107, 0.28);
+  --btn-shadow-hover: 0 16px 36px rgba(255, 107, 107, 0.36);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}
