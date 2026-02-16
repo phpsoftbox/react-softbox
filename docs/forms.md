@@ -124,6 +124,15 @@ const options = [
 </Input>
 ```
 
+Дополнительно можно задать `min`, `max`, `allowNegative`, `decimalScale`:
+
+```tsx
+<Input>
+  <Input.Label>Скидка</Input.Label>
+  <Input.Number min={0} max={100} decimalScale={0} />
+</Input>
+```
+
 ## Date / Time
 
 ```tsx

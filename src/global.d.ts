@@ -8,6 +8,11 @@ declare module '*.css' {
   export default css;
 }
 
+declare module '*.png' {
+  const src: string;
+  export default src;
+}
+
 declare const process: {
   env: {
     NODE_ENV?: string;

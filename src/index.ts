@@ -22,6 +22,7 @@ export { default as Pagination } from './components/Pagination/Pagination';
 export { default as Tabs } from './components/Tabs/Tabs';
 export { default as Progress } from './components/Progress/Progress';
 export { default as Breadcrumbs } from './components/Breadcrumbs/Breadcrumbs';
+export { default as Image } from './components/Image/Image';
 export { default as Text } from './components/Typography/Text';
 export { default as Heading } from './components/Typography/Heading';
 export { default as useMediaQuery } from './hooks/useMediaQuery';

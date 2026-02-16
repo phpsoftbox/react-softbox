@@ -5,7 +5,8 @@ import useDropdownPosition from '../../hooks/useDropdownPosition';
 
 type Props = {
   trigger: React.ReactNode;
-  items: MenuItem[];
+  items?: MenuItem[];
+  children?: React.ReactNode;
   orientation?: 'vertical' | 'horizontal';
   align?: 'left' | 'right';
   placement?: 'auto' | 'down' | 'up';
@@ -13,9 +14,121 @@ type Props = {
   className?: string;
 };
 
-export default function Dropdown({
+type DropdownItemProps = {
+  children: React.ReactNode;
+  href?: string;
+  onClick?: () => void;
+  icon?: React.ReactNode;
+  meta?: React.ReactNode;
+  disabled?: boolean;
+  static?: boolean;
+  className?: string;
+};
+
+type DropdownHeaderProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
+type DropdownSeparatorProps = {
+  className?: string;
+};
+
+type DropdownNavProps = {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+};
+
+const DropdownItem: React.FC<DropdownItemProps> = () => null;
+const DropdownHeader: React.FC<DropdownHeaderProps> = () => null;
+const DropdownSeparator: React.FC<DropdownSeparatorProps> = () => null;
+const DropdownNav: React.FC<DropdownNavProps> = () => null;
+
+const isDropdownHeader = (node: React.ReactNode): node is React.ReactElement<DropdownHeaderProps> =>
+  React.isValidElement<DropdownHeaderProps>(node) && node.type === DropdownHeader;
+
+const isDropdownItem = (node: React.ReactNode): node is React.ReactElement<DropdownItemProps> =>
+  React.isValidElement<DropdownItemProps>(node) && node.type === DropdownItem;
+
+const isDropdownSeparator = (node: React.ReactNode): node is React.ReactElement<DropdownSeparatorProps> =>
+  React.isValidElement<DropdownSeparatorProps>(node) && node.type === DropdownSeparator;
+
+const isDropdownNav = (node: React.ReactNode): node is React.ReactElement<DropdownNavProps> =>
+  React.isValidElement<DropdownNavProps>(node) && node.type === DropdownNav;
+
+const combine = (...values: Array<string | undefined | null>) => values.filter(Boolean).join(' ');
+
+type DropdownNavMeta = {
+  className?: string;
+  style?: React.CSSProperties;
+};
+
+const buildItemsFromChildren = (
+  children: React.ReactNode,
+): { items: MenuItem[]; nav?: DropdownNavMeta } => {
+  const items: MenuItem[] = [];
+  let nav: DropdownNavMeta | undefined;
+
+  const walk = (node: React.ReactNode) => {
+    React.Children.forEach(node, (child) => {
+      if (!React.isValidElement(child)) {
+        return;
+      }
+
+      if (child.type === React.Fragment) {
+        const fragment = child as React.ReactElement<{ children?: React.ReactNode }>;
+        walk(fragment.props.children);
+        return;
+      }
+
+      if (isDropdownNav(child)) {
+        nav = {
+          className: child.props.className,
+          style: child.props.style,
+        };
+        walk(child.props.children);
+        return;
+      }
+
+      if (isDropdownSeparator(child)) {
+        items.push({ divider: true, className: child.props.className });
+        return;
+      }
+
+      if (isDropdownHeader(child)) {
+        items.push({
+          static: true,
+          label: child.props.children,
+          className: combine(styles.dropdownHeader, child.props.className),
+        });
+        return;
+      }
+
+      if (isDropdownItem(child)) {
+        items.push({
+          label: child.props.children,
+          href: child.props.href,
+          onClick: child.props.onClick,
+          icon: child.props.icon,
+          meta: child.props.meta,
+          disabled: child.props.disabled,
+          static: child.props.static,
+          className: child.props.className,
+        });
+      }
+    });
+  };
+
+  walk(children);
+
+  return { items, nav };
+};
+
+function Dropdown({
   trigger,
   items,
+  children,
   orientation = 'vertical',
   align = 'right',
   placement = 'auto',
@@ -25,13 +138,17 @@ export default function Dropdown({
   const [open, setOpen] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const triggerRef = React.useRef<HTMLElement | null>(null);
-  const { ref: menuRef, style: menuStyle } = useDropdownPosition(open, {
+  const { ref: menuRef, style: menuPositionStyle } = useDropdownPosition(open, {
     gap: 8,
     align,
     placement,
     anchorRef: triggerRef,
   });
   const isElementTrigger = React.isValidElement(trigger);
+
+  const resolved = children ? buildItemsFromChildren(children) : { items: items ?? [] };
+  const resolvedItems = resolved.items;
+  const navProps = resolved.nav;
 
   React.useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -112,12 +229,26 @@ export default function Dropdown({
       {open ? (
         <div
           ref={menuRef}
-          className={[styles.dropdownMenu, styles[`align-${align}`]].filter(Boolean).join(' ')}
-          style={menuStyle}
+          className={[styles.dropdownMenu, styles[`align-${align}`], navProps?.className].filter(Boolean).join(' ')}
+          style={{ ...menuPositionStyle, ...navProps?.style }}
         >
-          <Menu items={items} orientation={orientation} onItemSelect={() => setOpen(false)} />
+          <Menu items={resolvedItems} orientation={orientation} onItemSelect={() => setOpen(false)} />
         </div>
       ) : null}
     </div>
   );
 }
+
+const DropdownComponent = Dropdown as typeof Dropdown & {
+  Item: typeof DropdownItem;
+  Header: typeof DropdownHeader;
+  Separator: typeof DropdownSeparator;
+  Nav: typeof DropdownNav;
+};
+
+DropdownComponent.Item = DropdownItem;
+DropdownComponent.Header = DropdownHeader;
+DropdownComponent.Separator = DropdownSeparator;
+DropdownComponent.Nav = DropdownNav;
+
+export default DropdownComponent;

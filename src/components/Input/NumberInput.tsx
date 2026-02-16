@@ -5,60 +5,165 @@ type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChan
   value?: string | number;
   onChange?: (value: string) => void;
   allowNegative?: boolean;
+  min?: number;
+  max?: number;
   decimalSeparator?: '.' | ',';
   decimalScale?: number;
 };
 
 const normalize = (raw: string, allowNegative: boolean) => {
   let next = raw.replace(/[^0-9,.-]/g, '');
+  let sign = '';
 
-  if (!allowNegative) {
-    next = next.replace(/-/g, '');
-  } else {
-    const hasMinus = next.startsWith('-');
-    next = next.replace(/-/g, '');
-    if (hasMinus) {
-      next = `-${next}`;
-    }
+  if (allowNegative && next.startsWith('-')) {
+    sign = '-';
   }
+
+  next = next.replace(/-/g, '');
 
   const parts = next.split(/[.,]/);
   const integer = parts[0] ?? '';
   const decimal = parts.slice(1).join('');
-  return { integer, decimal, negative: integer.startsWith('-') };
+  const hasSeparator = next.includes('.') || next.includes(',');
+
+  return { sign, integer, decimal, hasSeparator };
 };
+
+const formatValue = (
+  value: string | number | undefined,
+  allowNegative: boolean,
+  decimalSeparator: '.' | ',',
+  decimalScale: number,
+) => {
+  if (value === undefined || value === null || value === '') {
+    return '';
+  }
+
+  const raw = String(value);
+  const { sign, integer, decimal, hasSeparator } = normalize(raw, allowNegative);
+  const slicedDecimal = decimalScale >= 0 ? decimal.slice(0, decimalScale) : decimal;
+  const showSeparator = hasSeparator || slicedDecimal.length > 0 || /[.,]$/.test(raw);
+  const separator = decimalSeparator;
+  const integerPart = `${sign}${integer}`;
+
+  if (!showSeparator) {
+    return integerPart;
+  }
+
+  return `${integerPart}${separator}${slicedDecimal}`;
+};
+
+const buildNormalizedValue = (sign: string, integer: string, decimal: string) => {
+  const hasInteger = integer !== '';
+  const hasDecimal = decimal !== '';
+
+  if (!hasInteger && !hasDecimal) {
+    return null;
+  }
+
+  if (!hasInteger && hasDecimal) {
+    return `${sign}0.${decimal}`;
+  }
+
+  if (hasInteger && !hasDecimal) {
+    return `${sign}${integer}`;
+  }
+
+  return `${sign}${integer}.${decimal}`;
+};
+
+const trimZeros = (value: string) => value.replace(/\.?0+$/, '');
 
 export default function NumberInput({
   value,
   onChange,
   allowNegative = false,
+  min,
+  max,
   decimalSeparator = '.',
   decimalScale = 2,
+  onBlur,
   ...props
 }: Props) {
-  const isControlled = value !== undefined;
-  const [internal, setInternal] = React.useState('');
+  const [internal, setInternal] = React.useState(() =>
+    formatValue(value, allowNegative, decimalSeparator, decimalScale),
+  );
 
-  const displayValue = React.useMemo(() => {
-    const source = isControlled ? String(value ?? '') : internal;
-    const { integer, decimal } = normalize(source, allowNegative);
-    const cleanInteger = integer.replace(/(?!^)-/g, '');
-    const slicedDecimal = decimalScale >= 0 ? decimal.slice(0, decimalScale) : decimal;
-    const base = `${cleanInteger}${slicedDecimal ? `${decimalSeparator}${slicedDecimal}` : ''}`;
-    return base;
-  }, [value, internal, allowNegative, decimalSeparator, decimalScale, isControlled]);
+  React.useEffect(() => {
+    if (value === undefined) {
+      return;
+    }
+    setInternal(formatValue(value, allowNegative, decimalSeparator, decimalScale));
+  }, [value, allowNegative, decimalSeparator, decimalScale]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value;
-    const { integer, decimal } = normalize(raw, allowNegative);
-    const nextDecimal = decimalScale >= 0 ? decimal.slice(0, decimalScale) : decimal;
-    const normalized = `${integer.replace(/(?!^)-/g, '')}${nextDecimal ? `.${nextDecimal}` : ''}`;
+    const pattern = allowNegative ? /^-?[0-9]*[.,]?[0-9]*$/ : /^[0-9]*[.,]?[0-9]*$/;
 
-    if (!isControlled) {
-      setInternal(normalized);
+    if (!pattern.test(raw)) {
+      return;
     }
 
-    onChange?.(normalized);
+    const { sign, integer, decimal, hasSeparator } = normalize(raw, allowNegative);
+    const slicedDecimal = decimalScale >= 0 ? decimal.slice(0, decimalScale) : decimal;
+    const showSeparator = hasSeparator || /[.,]$/.test(raw);
+    const nextDisplay = `${sign}${integer}${showSeparator ? `${decimalSeparator}${slicedDecimal}` : ''}`;
+    setInternal(nextDisplay);
+
+    if (raw === '') {
+      onChange?.('');
+      return;
+    }
+
+    const normalized = buildNormalizedValue(sign, integer, slicedDecimal);
+    if (normalized !== null) {
+      onChange?.(normalized);
+    }
+  };
+
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const { sign, integer, decimal } = normalize(event.target.value, allowNegative);
+    const slicedDecimal = decimalScale >= 0 ? decimal.slice(0, decimalScale) : decimal;
+    const normalized = buildNormalizedValue(sign, integer, slicedDecimal);
+
+    if (!normalized || normalized === '-' || normalized === '.') {
+      if (typeof min === 'number') {
+        const formatted = trimZeros(
+          decimalScale >= 0 ? min.toFixed(decimalScale) : min.toString(),
+        );
+        onChange?.(formatted);
+        setInternal(formatValue(formatted, allowNegative, decimalSeparator, decimalScale));
+      } else {
+        onChange?.('');
+        setInternal('');
+      }
+      onBlur?.(event);
+      return;
+    }
+
+    let numValue = Number.parseFloat(normalized);
+
+    if (Number.isNaN(numValue)) {
+      onChange?.('');
+      setInternal('');
+      onBlur?.(event);
+      return;
+    }
+
+    if (typeof min === 'number' && numValue < min) {
+      numValue = min;
+    }
+
+    if (typeof max === 'number' && numValue > max) {
+      numValue = max;
+    }
+
+    let formatted = decimalScale >= 0 ? numValue.toFixed(decimalScale) : numValue.toString();
+    formatted = trimZeros(formatted);
+
+    onChange?.(formatted);
+    setInternal(formatValue(formatted, allowNegative, decimalSeparator, decimalScale));
+    onBlur?.(event);
   };
 
   return (
@@ -66,8 +171,9 @@ export default function NumberInput({
       {...props}
       type="text"
       inputMode="decimal"
-      value={displayValue}
+      value={internal}
       onChange={handleChange}
+      onBlur={handleBlur}
     />
   );
 }

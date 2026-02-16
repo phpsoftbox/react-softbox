@@ -24,3 +24,14 @@
 ```
 
 Поддерживаемые варианты: `default`, `primary`, `info`, `success`, `warning`, `danger`.
+
+## Утилитарные классы размера
+
+Можно задавать размер шрифта через классы `f-1`…`f-9`.
+
+```tsx
+<Dropdown.Header className="f-6">Уведомления</Dropdown.Header>
+<Text className="f-3">Подпись</Text>
+```
+
+Шкала (px): `11, 12, 13, 14, 16, 18, 20, 24, 28`.

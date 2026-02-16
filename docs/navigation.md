@@ -64,7 +64,35 @@ const topMenu = [
 Отдельный dropdown‑компонент, если нужен произвольный триггер.
 
 ```tsx
-<Dropdown trigger={<span>Открыть</span>} items={items} orientation="vertical" align="left" />
+<Dropdown trigger={<span>Открыть</span>} orientation="vertical" align="left">
+  <Dropdown.Header>Профиль</Dropdown.Header>
+  <Dropdown.Item>Настройки</Dropdown.Item>
+  <Dropdown.Separator />
+  <Dropdown.Item href="/logout">Выход</Dropdown.Item>
+</Dropdown>
+```
+
+Для ширины dropdown используйте `Dropdown.Nav`:
+
+```tsx
+<Dropdown
+  trigger={<Button appearance="outline">Профиль</Button>}
+  align="right"
+>
+  <Dropdown.Nav className="dropdownWide">
+    <Dropdown.Header className="f-6">Профиль</Dropdown.Header>
+    <Dropdown.Item static>Строка без кнопки</Dropdown.Item>
+  </Dropdown.Nav>
+</Dropdown>
+```
+
+Если нужен не кликабельный текст внутри списка, используйте `Dropdown.Item` с `static`.
+
+```tsx
+<Dropdown trigger={<span>Открыть</span>}>
+  <Dropdown.Header>Уведомления</Dropdown.Header>
+  <Dropdown.Item static>Пока пусто</Dropdown.Item>
+</Dropdown>
 ```
 
 ## CollapseButton

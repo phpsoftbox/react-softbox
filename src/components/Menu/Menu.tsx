@@ -11,13 +11,16 @@ type LinkComponent = React.ElementType<{
 
 export type MenuItem = {
   id?: string;
-  label?: string;
+  label?: React.ReactNode;
   href?: string;
   onClick?: () => void;
   icon?: React.ReactNode;
+  meta?: React.ReactNode;
   active?: boolean;
   disabled?: boolean;
   divider?: boolean;
+  static?: boolean;
+  className?: string;
   children?: MenuItem[];
   open?: boolean;
   align?: 'left' | 'right';
@@ -94,7 +97,8 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
   const navRef = React.useRef<HTMLElement>(null);
   const isHorizontal = orientation === 'horizontal';
 
-  const getKey = (item: MenuItem, index: number) => item.id ?? item.label ?? `item-${index}`;
+  const getKey = (item: MenuItem, index: number) =>
+    item.id ?? (typeof item.label === 'string' ? item.label : null) ?? `item-${index}`;
 
   const initGroups = React.useCallback(() => {
     const map: Record<string, boolean> = {};
@@ -225,13 +229,21 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
         const key = getKey(item, index);
 
         if (item.divider) {
-          return <div key={key} className={styles.divider} role="separator" />;
+          return <div key={key} className={[styles.divider, item.className].filter(Boolean).join(' ')} role="separator" />;
         }
+
+        const labelContent =
+          typeof item.label === 'string' || typeof item.label === 'number' ? (
+            <span className={styles.label}>{item.label}</span>
+          ) : (
+            item.label
+          );
 
         const content = (
           <>
             {item.icon ? <span className={styles.icon}>{item.icon}</span> : null}
-            <span>{item.label}</span>
+            {labelContent}
+            {item.meta ? <span className={styles.meta}>{item.meta}</span> : null}
           </>
         );
 
@@ -239,22 +251,34 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
           styles.item,
           item.active ? styles.active : null,
           item.disabled ? styles.disabled : null,
+          item.static ? styles.staticItem : null,
+          item.className,
         ]
           .filter(Boolean)
           .join(' ');
 
-          const handleClick = (event: React.MouseEvent) => {
-            if (item.disabled) {
-              event.preventDefault();
-              return;
-            }
-            item.onClick?.();
-            handleSelect(item);
-          };
+        const staticClasses = [styles.staticItem, item.className].filter(Boolean).join(' ');
 
-          if (item.children && item.children.length > 0 && orientation === 'vertical') {
-            const isOpen = openGroups[key] ?? false;
-            const submenuId = `${key}-submenu`;
+        const handleClick = (event: React.MouseEvent) => {
+          if (item.disabled) {
+            event.preventDefault();
+            return;
+          }
+          item.onClick?.();
+          handleSelect(item);
+        };
+
+        if (item.static) {
+          return (
+            <div key={key} className={staticClasses} role="presentation">
+              {content}
+            </div>
+          );
+        }
+
+        if (item.children && item.children.length > 0 && orientation === 'vertical') {
+          const isOpen = openGroups[key] ?? false;
+          const submenuId = `${key}-submenu`;
 
           return (
             <div key={key} className={styles.group}>

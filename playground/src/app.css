@@ -18,6 +18,29 @@ body {
   grid-column: span 6;
 }
 
+.dropdownWide {
+  min-width: 320px;
+}
+
+.userDropdownHeader {
+  align-items: center;
+}
+
+.userDropdownMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.userDropdownName {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.userDropdownEmail {
+  color: var(--color-muted);
+}
+
 @media (max-width: 1024px) {
   .gridCard {
     grid-column: span 12;

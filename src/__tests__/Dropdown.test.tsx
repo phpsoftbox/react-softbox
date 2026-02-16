@@ -10,15 +10,21 @@ describe('Dropdown', () => {
     render(
       <Dropdown
         trigger={<span>Открыть</span>}
-        items={[{ label: 'Пункт' }]}
         orientation="vertical"
         align="left"
-      />,
+      >
+        <Dropdown.Header>Уведомления</Dropdown.Header>
+        <Dropdown.Item static>Пока пусто</Dropdown.Item>
+        <Dropdown.Separator />
+        <Dropdown.Item>Пункт</Dropdown.Item>
+      </Dropdown>,
     );
 
-    const trigger = screen.getByRole('button', { name: 'Открыть' });
+    const trigger = screen.getByText('Открыть');
     await user.click(trigger);
     expect(screen.getByText('Пункт')).toBeInTheDocument();
+    expect(screen.getByText('Пока пусто')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Пока пусто' })).not.toBeInTheDocument();
 
     await user.click(document.body);
     await waitFor(() => {

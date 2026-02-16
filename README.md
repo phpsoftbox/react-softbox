@@ -1,6 +1,6 @@
 # ReactSoftBox
 
-Минимальный набор UI‑компонентов для админки PhpSoftBox.
+Набор UI‑компонентов для React.
 
 ## Подключение
 
@@ -9,7 +9,7 @@ import '@phpsoftbox/react-softbox/foundations/index.css';
 ```
 
 ```ts
-import { Alert, Badge, Breadcrumbs, Button, Card, CollapseButton, Drawer, Dropdown, FloatLabel, FormField, Grid, Heading, Input, Menu, Modal, Notifier, Pagination, Progress, Radio, Row, Select, Stack, Switch, Tabs, Text, Textarea } from '@phpsoftbox/react-softbox';
+import { Alert, Badge, Breadcrumbs, Button, Card, CollapseButton, Drawer, Dropdown, FloatLabel, FormField, Grid, Heading, Image, Input, Menu, Modal, Notifier, Pagination, Progress, Radio, Row, Select, Stack, Switch, Tabs, Text, Textarea } from '@phpsoftbox/react-softbox';
 ```
 
 ## Тема
@@ -132,7 +132,12 @@ const items = [
 <Menu items={items} />
 <Menu items={items} orientation="horizontal" />
 
-<Dropdown trigger={<span>Открыть</span>} items={items} orientation="vertical" />
+<Dropdown trigger={<span>Открыть</span>} orientation="vertical">
+  <Dropdown.Header>Профиль</Dropdown.Header>
+  <Dropdown.Item>Настройки</Dropdown.Item>
+  <Dropdown.Separator />
+  <Dropdown.Item href="/logout">Выход</Dropdown.Item>
+</Dropdown>
 
 // Dropdown внутри горизонтального меню
 const topMenu = [

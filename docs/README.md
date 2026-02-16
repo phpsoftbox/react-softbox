@@ -33,6 +33,7 @@ import { Button, Card, Menu } from '@phpsoftbox/react-softbox';
 - `feedback.md` — Badge, Alert, Notifier
 - `card.md` — Card и его секции
 - `typography.md` — Тексты и заголовки
+- `media.md` — Image и медиа‑элементы
 - `theme.md` — Темы и режимы
 - `pagination.md` — Pagination и управление ссылками
 - `tabs.md` — Tabs (горизонтальные и вертикальные)

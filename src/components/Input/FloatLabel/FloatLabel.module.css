@@ -21,8 +21,22 @@
   opacity: 0.9;
 }
 
+.wrapper input:-webkit-autofill + .label,
+.wrapper input:autofill + .label {
+  transform: translateY(-8px);
+  color: var(--color-teal);
+  opacity: 0.9;
+}
+
 .wrapper textarea:focus + .label,
 .wrapper textarea:not(:placeholder-shown) + .label {
+  transform: translateY(-8px);
+  color: var(--color-teal);
+  opacity: 0.9;
+}
+
+.wrapper textarea:-webkit-autofill + .label,
+.wrapper textarea:autofill + .label {
   transform: translateY(-8px);
   color: var(--color-teal);
   opacity: 0.9;

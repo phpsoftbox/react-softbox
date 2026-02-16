@@ -8,6 +8,7 @@ import {
   Dropdown,
   Grid,
   Heading,
+  Image,
   Input,
   Menu,
   Modal,
@@ -23,6 +24,7 @@ import {
   setThemeMode,
 } from '@phpsoftbox/react-softbox';
 import type { ThemeMode } from '@phpsoftbox/react-softbox';
+import avatarImage from '../avatar.png';
 
 const paletteRow: Array<Parameters<typeof Button>[0]> = [
   { variant: 'default' },
@@ -226,14 +228,49 @@ export default function App() {
                 />
 
                 <Dropdown
-                    trigger={<Button appearance="outline">Открыть меню (справа)</Button>}
-                    items={dropdownItems}
-                    align="right"
-                    fullWidth
+                  trigger={<Button appearance="outline">Открыть меню (справа)</Button>}
+                  items={dropdownItems}
+                  align="right"
+                  fullWidth
                 />
+
+                <Dropdown trigger={<Button appearance="outline">Уведомления</Button>} align="right">
+                  <Dropdown.Header className="f-6">Уведомления</Dropdown.Header>
+                  <Dropdown.Item static>Пока пусто</Dropdown.Item>
+                  <Dropdown.Separator />
+                  <Dropdown.Item href="#">Прочитать все</Dropdown.Item>
+                </Dropdown>
+
+                <Dropdown trigger={<Button appearance="outline">Профиль</Button>} align="right">
+                  <Dropdown.Nav className="dropdownWide">
+                    <Dropdown.Header className="f-6">Профиль</Dropdown.Header>
+                    <Dropdown.Item static className="userDropdownHeader py-2 gap-3">
+                      <Image src={avatarImage} alt="Avatar" width={48} height={48} shape="circle" />
+                      <div className="userDropdownMeta">
+                        <div className="userDropdownName f-5">Иван Петров</div>
+                        <div className="userDropdownEmail f-3">ivan@petrov.ltd</div>
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Separator />
+                    <Dropdown.Item>Профиль</Dropdown.Item>
+                    <Dropdown.Item>Настройки системы</Dropdown.Item>
+                    <Dropdown.Separator />
+                    <Dropdown.Item>Выход</Dropdown.Item>
+                  </Dropdown.Nav>
+                </Dropdown>
 
                 <Tabs items={tabs} />
               </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard">
+            <Card.Header title="Media" />
+            <Card.Body>
+              <Row gap="14px" wrap="wrap">
+                <Image src={avatarImage} alt="Rounded" width={64} height={64} />
+                <Image src={avatarImage} alt="Circle" width={64} height={64} shape="circle" />
+              </Row>
             </Card.Body>
           </Card>
 

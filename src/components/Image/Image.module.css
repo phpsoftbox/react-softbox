@@ -1,0 +1,17 @@
+.image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.rounded {
+  border-radius: var(--radius-sm);
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.square {
+  border-radius: 0;
+}
