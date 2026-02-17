@@ -13,7 +13,14 @@ const InputField = React.forwardRef<HTMLInputElement, Props>(({ hasError, classN
   const generatedId = React.useId();
   const resolvedId = props.id ?? context?.fieldId ?? (props.name ? buildIdFromName(props.name) : generatedId);
   const autoComplete = props.autoComplete ?? 'off';
-  const classes = [styles.input, hasError ? styles.error : null, className].filter(Boolean).join(' ');
+  const classes = [
+    styles.input,
+    hasError ? styles.error : null,
+    context?.hasErrorTooltip ? styles.withErrorTooltip : null,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   if (process.env.NODE_ENV !== 'production') {
     if (!props.id && !props.name) {

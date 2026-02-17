@@ -12,6 +12,7 @@ import DateRangePicker from './DateRangePicker';
 import Radio from './Radio/Radio';
 import Switch from './Switch/Switch';
 import Checkbox from './Checkbox/Checkbox';
+import ErrorTooltip from './ErrorTooltip/ErrorTooltip';
 
 const Input = Object.assign(FormField, {
   Label: FormField.Label,
@@ -31,6 +32,7 @@ const Input = Object.assign(FormField, {
   Radio,
   Switch,
   Checkbox,
+  ErrorTooltip,
   FormField,
 });
 

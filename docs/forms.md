@@ -20,6 +20,24 @@
 </Input>
 ```
 
+### Ошибка через Tooltip
+
+```tsx
+<Input>
+  <Input.Label>Почта</Input.Label>
+  <Input.Control>
+    <Input.Field hasError placeholder="name@example.com" />
+    <Input.ErrorTooltip content="Некорректный email" />
+  </Input.Control>
+</Input>
+
+<Input>
+  <Input.Label>Телефон</Input.Label>
+  <Input.Field hasError placeholder="+7 (___) ___-__-__" />
+  <Input.ErrorTooltip target="input" content="Введите номер" placement="right" />
+</Input>
+```
+
 ## Textarea
 
 ```tsx
@@ -94,6 +112,21 @@ const options = [
 <Input>
   <Input.Label>Сервисы</Input.Label>
   <Input.Select options={options} multiple searchable />
+</Input>
+```
+
+### Пустое значение и сброс
+
+```tsx
+<Input>
+  <Input.Label>Статус</Input.Label>
+  <Input.Select
+    options={options}
+    allowEmptyValue
+    emptyOptionLabel="Не выбрано"
+    searchable
+    clearable
+  />
 </Input>
 ```
 

@@ -1,4 +1,7 @@
 import React from 'react';
+import Button from '../Button/Button';
+import Dropdown from '../Menu/Dropdown';
+import Checkbox from '../Input/Checkbox/Checkbox';
 import styles from './Table.module.css';
 
 export type TableSortDirection = 'asc' | 'desc';
@@ -17,6 +20,31 @@ export type TableSortOptions = {
   defaultDirection?: TableSortDirection;
   buildUrl?: (next: TableSortState) => string;
   onChange?: (next: TableSortState, url: string) => void;
+};
+
+export type TableBulkAction = {
+  id: string;
+  label: React.ReactNode;
+  onClick: (selectedIds: React.Key[]) => void;
+  disabled?: boolean;
+};
+
+export type TableBulkActions = {
+  selectedIds: React.Key[];
+  actions: TableBulkAction[];
+  onClear?: () => void;
+  align?: 'left' | 'right';
+  placement?: 'top' | 'bottom' | 'both';
+};
+
+export type TableRenderBulkAction<T> = (selectedIds: React.Key[], selectedRows: T[]) => React.ReactNode;
+
+export type TableSelection<T> = {
+  selectedIds: React.Key[];
+  onToggle: (id: React.Key, row: T, index: number) => void;
+  onToggleAll?: (currentIds: React.Key[]) => void;
+  allSelected?: boolean;
+  someSelected?: boolean;
 };
 
 export type TableColumn<T> = {
@@ -51,6 +79,10 @@ export type TableProps<T> = React.HTMLAttributes<HTMLDivElement> & {
   stickyHeader?: boolean;
   showFooter?: boolean;
   sort?: TableSortOptions;
+  selection?: TableSelection<T>;
+  bulkActions?: TableBulkActions;
+  renderBulkAction?: TableRenderBulkAction<T>;
+  bulkActionPlacement?: 'top' | 'bottom' | 'both';
   tableClassName?: string;
   headClassName?: string;
   bodyClassName?: string;
@@ -150,6 +182,10 @@ function TableBase<T>({
   stickyHeader = false,
   showFooter,
   sort,
+  selection,
+  bulkActions,
+  renderBulkAction,
+  bulkActionPlacement,
   className,
   tableClassName,
   headClassName,
@@ -160,7 +196,8 @@ function TableBase<T>({
 }: TableProps<T>) {
   const visibleColumns = columns.filter((column) => !column.hidden);
   const shouldShowFooter = showFooter ?? visibleColumns.some((column) => column.footer !== undefined && column.footer !== null);
-  const colSpan = Math.max(visibleColumns.length, 1);
+  const showSelection = Boolean(selection);
+  const colSpan = Math.max(visibleColumns.length + (showSelection ? 1 : 0), 1);
   const currentSortKey = sort?.key ?? null;
   const currentSortDirection = sort?.direction ?? null;
   const defaultDirection = sort?.defaultDirection ?? 'asc';
@@ -194,12 +231,104 @@ function TableBase<T>({
     return String(keyValue);
   };
 
+  const rowKeys = data.map((row, index) => getRowKey(row, index));
+  const selectedSet = selection ? new Set(selection.selectedIds) : null;
+  const allSelected = selection
+    ? selection.allSelected ?? (rowKeys.length > 0 && rowKeys.every((key) => selectedSet?.has(key)))
+    : false;
+  const someSelected = selection
+    ? selection.someSelected ?? rowKeys.some((key) => selectedSet?.has(key))
+    : false;
+
+  const placement = renderBulkAction ? bulkActionPlacement ?? 'top' : bulkActions?.placement ?? 'top';
+  const hasBulkRenderer = Boolean(renderBulkAction || bulkActions);
+  const shouldRenderBulkTop = Boolean(hasBulkRenderer && (placement === 'top' || placement === 'both'));
+  const shouldRenderBulkBottom = Boolean(hasBulkRenderer && (placement === 'bottom' || placement === 'both'));
+  const selectedIds = selection?.selectedIds ?? [];
+  const selectedRows = selection
+    ? data.filter((row, index) => selectedIds.includes(getRowKey(row, index)))
+    : [];
+
+  const renderBulkActions = (position: 'top' | 'bottom') => {
+    if (renderBulkAction) {
+      return (
+        <div className={styles.bulkActions} data-position={position}>
+          <div className={styles.bulkActionsRow}>{renderBulkAction(selectedIds, selectedRows)}</div>
+        </div>
+      );
+    }
+
+    if (!bulkActions) {
+      return null;
+    }
+
+    const selectedCount = bulkActions.selectedIds.length;
+    const hasSelected = selectedCount > 0;
+    const label = selectedCount > 0 ? `Действия (${selectedCount})` : 'Действия';
+    const alignClass = bulkActions.align === 'right' ? styles.bulkActionsRight : styles.bulkActionsLeft;
+
+    return (
+      <div className={styles.bulkActions} data-position={position}>
+        <div className={[styles.bulkActionsRow, alignClass].filter(Boolean).join(' ')}>
+          <Dropdown
+            align={bulkActions.align === 'right' ? 'right' : 'left'}
+            trigger={
+              <Button size="sm" appearance="outline" disabled={!hasSelected}>
+                {label}
+              </Button>
+            }
+          >
+            <Dropdown.Nav className={styles.bulkActionsMenu}>
+              {bulkActions.actions.map((action) => (
+                <Dropdown.Item
+                  key={action.id}
+                  disabled={!hasSelected || action.disabled}
+                  onClick={hasSelected ? () => action.onClick(bulkActions.selectedIds) : undefined}
+                >
+                  {action.label}
+                </Dropdown.Item>
+              ))}
+              {bulkActions.onClear ? (
+                <>
+                  <Dropdown.Separator />
+                  <Dropdown.Item disabled={!hasSelected} onClick={hasSelected ? bulkActions.onClear : undefined}>
+                    Сбросить выбор
+                  </Dropdown.Item>
+                </>
+              ) : null}
+            </Dropdown.Nav>
+          </Dropdown>
+        </div>
+      </div>
+    );
+  };
+
+  const handleToggleAll = () => {
+    if (!selection) {
+      return;
+    }
+    if (selection.onToggleAll) {
+      selection.onToggleAll(rowKeys);
+    }
+  };
+
   return (
     <div className={wrapperClasses} {...props}>
+      {shouldRenderBulkTop ? renderBulkActions('top') : null}
       <table className={[styles.table, tableClassName].filter(Boolean).join(' ')}>
         {caption ? <caption className={styles.caption}>{caption}</caption> : null}
         <thead className={[styles.head, headClassName].filter(Boolean).join(' ')}>
           <tr>
+            {showSelection ? (
+              <th className={[styles.headCell, styles.selectionCell].filter(Boolean).join(' ')}>
+                <Checkbox
+                  checked={allSelected}
+                  indeterminate={!allSelected && someSelected}
+                  onChange={handleToggleAll}
+                  aria-label="Выбрать все строки"
+                />
+              </th>
+            ) : null}
             {visibleColumns.map((column, columnIndex) => {
               const header = resolveHeaderContent(column);
               const sortKey = resolveSortKey(column);
@@ -277,6 +406,15 @@ function TableBase<T>({
               const resolvedKey = getRowKey(row, rowIndex);
               return (
                 <tr key={resolvedKey} className={[styles.row, resolvedRowClassName].filter(Boolean).join(' ')}>
+                  {showSelection ? (
+                    <td className={[styles.cell, styles.selectionCell].filter(Boolean).join(' ')}>
+                      <Checkbox
+                        checked={Boolean(selectedSet?.has(resolvedKey))}
+                        onChange={() => selection?.onToggle(resolvedKey, row, rowIndex)}
+                        aria-label={`Выбрать строку ${rowIndex + 1}`}
+                      />
+                    </td>
+                  ) : null}
                   {visibleColumns.map((column, columnIndex) => {
                     const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
                     const hideClass = getHideClass(column.hideOn);
@@ -313,6 +451,7 @@ function TableBase<T>({
         {shouldShowFooter ? (
           <tfoot className={[styles.footer, footerClassName].filter(Boolean).join(' ')}>
             <tr className={styles.footerRow}>
+              {showSelection ? <td className={[styles.footerCell, styles.selectionCell].filter(Boolean).join(' ')} /> : null}
               {visibleColumns.map((column, columnIndex) => {
                 const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
                 const hideClass = getHideClass(column.hideOn);
@@ -345,6 +484,7 @@ function TableBase<T>({
           </tfoot>
         ) : null}
       </table>
+      {shouldRenderBulkBottom ? renderBulkActions('bottom') : null}
     </div>
   );
 }

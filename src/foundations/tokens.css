@@ -135,6 +135,12 @@
   --spacing-8: 40px;
   --spacing-9: 48px;
   --spacing-10: 64px;
+
+  --ui-control-height: 48px;
+  --ui-control-padding-x: 16px;
+  --ui-control-padding-y: 12px;
+  --ui-control-font-size: var(--font-size-3);
+  --ui-control-line-height: 1.2;
 }
 
 :root[data-theme="light"] {

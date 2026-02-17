@@ -3,12 +3,12 @@
 ## Modal
 
 ```tsx
-<Modal open={open} title="Заголовок" onClose={() => setOpen(false)}>
+<Modal open={open} title="Заголовок" lockScroll onClose={() => setOpen(false)}>
   Контент модалки
 </Modal>
 ```
 
-Поддерживает `footer` для действий.
+Поддерживает `footer` для действий и `lockScroll` для блокировки скролла страницы (по умолчанию `true`).
 
 ## Drawer
 

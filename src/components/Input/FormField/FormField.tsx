@@ -31,6 +31,8 @@ type FormFieldContextValue = {
   fieldId?: string;
   fieldName?: string;
   registerField: (id: string, name?: string) => void;
+  registerErrorTooltip?: () => () => void;
+  hasErrorTooltip?: boolean;
 };
 
 const FormFieldContext = React.createContext<FormFieldContextValue | null>(null);
@@ -61,12 +63,18 @@ function FormFieldRoot({
 }: FormFieldProps) {
   const [fieldId, setFieldId] = React.useState<string | undefined>(undefined);
   const [fieldName, setFieldName] = React.useState<string | undefined>(undefined);
+  const [errorTooltipCount, setErrorTooltipCount] = React.useState(0);
 
   const registerField = React.useCallback((id: string, name?: string) => {
     setFieldId(id);
     if (name) {
       setFieldName(name);
     }
+  }, []);
+
+  const registerErrorTooltip = React.useCallback(() => {
+    setErrorTooltipCount((prev) => prev + 1);
+    return () => setErrorTooltipCount((prev) => Math.max(prev - 1, 0));
   }, []);
 
   const classes = [styles.field, layout === 'row' ? styles.fieldRow : null, className]
@@ -88,7 +96,15 @@ function FormFieldRoot({
   };
 
   return (
-    <FormFieldContext.Provider value={{ fieldId, fieldName, registerField }}>
+    <FormFieldContext.Provider
+      value={{
+        fieldId,
+        fieldName,
+        registerField,
+        registerErrorTooltip,
+        hasErrorTooltip: errorTooltipCount > 0,
+      }}
+    >
       <div className={classes} style={inlineStyle} {...props} />
     </FormFieldContext.Provider>
   );

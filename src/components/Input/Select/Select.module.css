@@ -8,9 +8,10 @@
 
 .label {
   position: absolute;
-  top: 16px;
+  top: 8px;
   left: 16px;
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1.2;
   color: var(--color-muted-2);
   pointer-events: none;
   transition: transform 0.2s ease, color 0.2s ease;
@@ -18,15 +19,8 @@
   padding: 0 4px;
 }
 
-/*.wrapper[data-open="true"] .label,*/
-/*.wrapper[data-has-value="true"] .label,*/
-/*.wrapper[data-has-query="true"] .label {*/
-/*  transform: translateY(-12px);*/
-/*  color: var(--color-teal);*/
-/*}*/
-
 .wrapper .label {
-  transform: translateY(-8px);
+  transform: translateY(0);
   color: var(--color-teal);
 }
 
@@ -35,7 +29,7 @@
 }
 
 .control {
-  min-height: 48px;
+  min-height: var(--ui-control-height, 48px);
   width: 100%;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-line);
@@ -43,20 +37,29 @@
   color: var(--color-text);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
-  padding: 24px 12px 12px 12px;
+  padding: var(--ui-control-padding-y, 12px) calc(var(--ui-control-padding-x, 16px) + 26px)
+    var(--ui-control-padding-y, 12px) var(--ui-control-padding-x, 16px);
+  font-size: var(--ui-control-font-size, var(--font-size-4));
+  line-height: var(--ui-control-line-height, 1.2);
   cursor: pointer;
+  position: relative;
+}
+
+.wrapper[data-has-label="true"] .control,
+.wrapper[data-float-label="true"] .control {
+  padding-top: calc(var(--ui-control-padding-y, 12px) + 8px);
+  padding-bottom: calc(var(--ui-control-padding-y, 12px) - 4px);
+}
+
+.wrapper[data-has-clear="true"] .control {
+  padding-right: calc(var(--ui-control-padding-x, 16px) + 50px);
 }
 
 .wrapper[data-has-label="false"] .control {
-  padding: 12px 12px;
-  min-height: 44px;
-}
-
-.wrapper[data-float-label="true"] .control {
-  padding: 22px 12px 12px 12px;
-  min-height: 48px;
+  /*padding: var(--ui-control-padding-y, 12px) var(--ui-control-padding-x, 16px);*/
+  min-height: var(--ui-control-height, 48px);
 }
 
 .wrapper:global(.rsb-group-item) .control {
@@ -81,12 +84,12 @@
   flex: 1;
   min-width: 0;
   flex-wrap: wrap;
-  padding: 4px 4px;
+  padding: 0;
 }
 
 .placeholder {
   color: var(--color-muted-2);
-  font-size: 14px;
+  font-size: var(--ui-control-font-size, var(--font-size-4));
 }
 
 .tag {
@@ -97,7 +100,10 @@
   border-radius: 10px;
   background: var(--surface-pill);
   border: 1px solid var(--color-line);
-  font-size: 12px;
+  font-size: var(--font-size-2);
+}
+.wrapper[data-float-label="true"] .tag {
+  margin: 15px 0 10px;
 }
 
 .remove {
@@ -105,6 +111,39 @@
   background: transparent;
   color: var(--color-muted);
   cursor: pointer;
+}
+
+.controls {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.clearButton {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(30, 51, 85, 0.4);
+  background: rgba(15, 30, 51, 0.35);
+  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.clearButton:hover {
+  border-color: rgba(20, 201, 214, 0.6);
+  background: rgba(20, 201, 214, 0.18);
+  color: var(--color-teal);
 }
 
 .chevron {
@@ -140,7 +179,10 @@
   border: 1px solid var(--color-line);
   background: var(--surface-input-muted);
   color: var(--color-text);
-  padding: 16px 16px;
+  min-height: var(--ui-control-height, 48px);
+  padding: var(--ui-control-padding-y, 12px) var(--ui-control-padding-x, 16px);
+  font-size: var(--ui-control-font-size, var(--font-size-4));
+  line-height: var(--ui-control-line-height, 1.2);
   margin-bottom: 8px;
 }
 

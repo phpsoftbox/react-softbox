@@ -9,6 +9,7 @@ type Props = {
   footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg';
   closeOnBackdrop?: boolean;
+  lockScroll?: boolean;
   onClose: () => void;
 };
 
@@ -19,8 +20,30 @@ export default function Modal({
   footer,
   size = 'md',
   closeOnBackdrop = true,
+  lockScroll = true,
   onClose,
 }: Props) {
+  React.useEffect(() => {
+    if (!open || !lockScroll || typeof document === 'undefined') {
+      return;
+    }
+
+    const body = document.body;
+    const previousOverflow = body.style.overflow;
+    const previousPaddingRight = body.style.paddingRight;
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    body.style.overflow = 'hidden';
+    if (scrollBarWidth > 0) {
+      body.style.paddingRight = `${scrollBarWidth}px`;
+    }
+
+    return () => {
+      body.style.overflow = previousOverflow;
+      body.style.paddingRight = previousPaddingRight;
+    };
+  }, [open, lockScroll]);
+
   React.useEffect(() => {
     if (!open) {
       return;

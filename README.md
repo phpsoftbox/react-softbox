@@ -9,7 +9,39 @@ import '@phpsoftbox/react-softbox/foundations/index.css';
 ```
 
 ```ts
-import { Alert, Badge, Breadcrumbs, Button, Card, CollapseButton, Drawer, Dropdown, FloatLabel, FormField, Grid, Heading, Image, Input, Menu, Modal, Notifier, Pagination, Progress, Radio, Row, Select, Stack, Switch, Tabs, Text, Textarea } from '@phpsoftbox/react-softbox';
+import {
+  Alert,
+  Badge,
+  Breadcrumbs,
+  Button,
+  Card,
+  Checkbox,
+  CollapseButton,
+  Drawer,
+  Dropdown,
+  FileUploader,
+  FloatLabel,
+  FormField,
+  Grid,
+  Heading,
+  Image,
+  Input,
+  Menu,
+  Modal,
+  Notifier,
+  Pagination,
+  Progress,
+  Radio,
+  Row,
+  Select,
+  Stack,
+  Switch,
+  Table,
+  Tabs,
+  Text,
+  Textarea,
+  Tooltip,
+} from '@phpsoftbox/react-softbox';
 ```
 
 ## Тема
@@ -27,6 +59,8 @@ setThemeMode('dark');
 - `docs/layout.md`
 - `docs/navigation.md`
 - `docs/forms.md`
+- `docs/table.md`
+- `docs/tooltip.md`
 - `docs/overlays.md`
 - `docs/feedback.md`
 - `docs/card.md`
@@ -62,6 +96,7 @@ yarn build
 <Button variant="primary">Primary</Button>
 <Button variant="info" appearance="outline">Info</Button>
 <Button variant="danger" appearance="ghost">Danger</Button>
+<Button variant="primary" size="sm">Small</Button>
 ```
 
 ### Input / FloatLabel
@@ -84,6 +119,7 @@ yarn build
 ```tsx
 <Textarea placeholder="Комментарий" />
 <Radio name="mode" label="Основной" />
+<Checkbox label="Согласен с условиями" />
 ```
 
 ### Switch
@@ -97,6 +133,50 @@ yarn build
 ```tsx
 <Select label="Окружение" options={[{ value: 'dev', label: 'Development' }]} />
 <Select label="Сервисы" options={options} multiple searchable />
+```
+
+### Table
+
+```tsx
+const columns = [
+  { id: 'name', header: 'Название', accessor: 'name' },
+  { id: 'amount', header: 'Сумма', accessor: 'amount', align: 'right', sortable: true },
+];
+
+<Table columns={columns} data={rows} />;
+```
+
+```tsx
+<Table
+  columns={columns}
+  data={rows}
+  selection={{
+    selectedIds,
+    onToggle: (id) => setSelected((prev) => prev.includes(id) ? prev.filter((key) => key !== id) : [...prev, id]),
+    onToggleAll: (ids) => setSelected((prev) => ids.length > 0 && ids.every((id) => prev.includes(id)) ? [] : ids),
+  }}
+  renderBulkAction={(ids) => <span>Выбрано: {ids.length}</span>}
+/>;
+```
+
+### FileUploader
+
+```tsx
+<FileUploader
+  allowedTypes={['.jpg', '.png', '.pdf']}
+  maxFileSizeKb={2048}
+  multiple
+  showPreview
+  onUpload={(files) => api.upload(files)}
+/>;
+```
+
+### Tooltip
+
+```tsx
+<Tooltip content="Подсказка">
+  <Button>Наведи</Button>
+</Tooltip>
 ```
 
 ### Grid / Flex

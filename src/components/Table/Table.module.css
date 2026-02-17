@@ -6,6 +6,35 @@
   background: var(--surface-panel);
 }
 
+.bulkActions {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-divider);
+  background: var(--surface-panel-soft);
+}
+
+.bulkActions[data-position='bottom'] {
+  border-top: 1px solid var(--color-divider);
+  border-bottom: none;
+}
+
+.bulkActionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.bulkActionsLeft {
+  justify-content: flex-start;
+}
+
+.bulkActionsRight {
+  justify-content: flex-end;
+}
+
+.bulkActionsMenu {
+  min-width: 180px;
+}
+
 .ghost {
   border: none;
   background: transparent;
@@ -45,6 +74,10 @@
   padding: var(--spacing-3) var(--spacing-4);
   border-bottom: 1px solid var(--color-divider);
   vertical-align: top;
+}
+
+.selectionCell {
+  width: 44px;
 }
 
 .headCell {

@@ -5,7 +5,7 @@ import useDropdownPosition from '../../../hooks/useDropdownPosition';
 import { useFormFieldContext } from '../FormField/FormField';
 
 export type SelectOption = {
-  value: string;
+  value: string | null;
   label: string;
   disabled?: boolean;
 };
@@ -23,11 +23,16 @@ type Props = {
   id?: string;
   name?: string;
   options?: SelectOption[];
-  value?: string | string[];
-  defaultValue?: string | string[];
+  value?: string | string[] | null;
+  defaultValue?: string | string[] | null;
   placeholder?: string;
   multiple?: boolean;
   searchable?: boolean;
+  clearable?: boolean;
+  clearLabel?: string;
+  allowEmptyValue?: boolean;
+  emptyOptionLabel?: string;
+  emptyOptionValue?: string | null;
   loadingText?: string;
   emptyText?: string;
   loadOptions?: (query: string) => Promise<SelectOption[]>;
@@ -37,7 +42,7 @@ type Props = {
   disabled?: boolean;
   floatLabel?: boolean;
   className?: string;
-  onChange?: (value: string | string[], options: SelectOption[]) => void;
+  onChange?: (value: string | string[] | null, options: SelectOption[]) => void;
 };
 
 const defaultMapOptions = (data: unknown): SelectOption[] => {
@@ -57,6 +62,11 @@ export default function Select({
   placeholder = 'Выберите...',
   multiple = false,
   searchable = false,
+  clearable = false,
+  clearLabel = 'Очистить',
+  allowEmptyValue = false,
+  emptyOptionLabel = 'Не выбрано',
+  emptyOptionValue,
   loadingText = 'Загрузка...',
   emptyText = 'Нет данных',
   loadOptions,
@@ -90,8 +100,14 @@ export default function Select({
   const hasLabel = Boolean(label);
 
   const isControlled = value !== undefined;
-  const [internalValue, setInternalValue] = React.useState<string | string[]>(
+  const [internalValue, setInternalValue] = React.useState<string | string[] | null>(
     defaultValue ?? (multiple ? [] : ''),
+  );
+  const allowEmpty = allowEmptyValue && !multiple;
+  const resolvedEmptyValue = emptyOptionValue ?? null;
+  const emptyOption = React.useMemo(
+    () => (allowEmpty ? { value: resolvedEmptyValue, label: emptyOptionLabel } : null),
+    [allowEmpty, emptyOptionLabel, resolvedEmptyValue],
   );
 
   const selectedValues = React.useMemo(() => {
@@ -99,7 +115,10 @@ export default function Select({
     if (multiple) {
       return Array.isArray(raw) ? raw : raw ? [raw] : [];
     }
-    return Array.isArray(raw) ? raw[0] ?? '' : raw ?? '';
+    if (Array.isArray(raw)) {
+      return raw[0] ?? '';
+    }
+    return raw === undefined ? '' : raw;
   }, [value, internalValue, isControlled, multiple]);
 
   React.useEffect(() => {
@@ -186,32 +205,46 @@ export default function Select({
     }
   }, [open, searchable]);
 
+  const allOptions = React.useMemo(() => (emptyOption ? [emptyOption, ...items] : items), [emptyOption, items]);
   const optionMap = React.useMemo(() => {
-    return new Map(items.map((item) => [item.value, item]));
-  }, [items]);
+    return new Map(allOptions.map((item) => [item.value, item]));
+  }, [allOptions]);
 
   const selectedList = React.useMemo(() => {
-    const values = multiple ? (selectedValues as string[]) : selectedValues ? [selectedValues as string] : [];
-    return values.map((val) => optionMap.get(val) ?? { value: val, label: val });
-  }, [selectedValues, optionMap, multiple]);
+    if (multiple) {
+      const values = selectedValues as string[];
+      return values.map((val) => optionMap.get(val) ?? { value: val, label: val });
+    }
+    const single = selectedValues as string | null;
+    if (single === '' || (single === null && !allowEmpty)) {
+      return [];
+    }
+    const fallbackLabel = single === null ? emptyOptionLabel : String(single);
+    return [optionMap.get(single) ?? { value: single, label: fallbackLabel }];
+  }, [selectedValues, optionMap, multiple, allowEmpty, emptyOptionLabel]);
 
-  const hasValue = multiple ? (selectedValues as string[]).length > 0 : Boolean(selectedValues);
+  const hasValue = multiple
+    ? (selectedValues as string[]).length > 0
+    : selectedValues !== '' && selectedValues !== undefined && (selectedValues !== null || allowEmpty);
+  const isEmptySelection = !multiple && allowEmpty && selectedValues === resolvedEmptyValue;
   const floatActive = floatLabel && (open || hasValue);
 
   const displayedOptions = React.useMemo(() => {
     if (isRemote) {
-      return items;
+      const filtered = items;
+      return emptyOption ? [emptyOption, ...filtered] : filtered;
     }
 
     if (!query) {
-      return items;
+      return emptyOption ? [emptyOption, ...items] : items;
     }
 
     const lowered = query.toLowerCase();
-    return items.filter((item) => item.label.toLowerCase().includes(lowered));
-  }, [items, query, isRemote]);
+    const filtered = items.filter((item) => item.label.toLowerCase().includes(lowered));
+    return emptyOption ? [emptyOption, ...filtered] : filtered;
+  }, [items, query, isRemote, emptyOption]);
 
-  const updateValue = (next: string | string[], nextOptions: SelectOption[]) => {
+  const updateValue = (next: string | string[] | null, nextOptions: SelectOption[]) => {
     if (!isControlled) {
       setInternalValue(next);
     }
@@ -224,6 +257,9 @@ export default function Select({
     }
 
     if (multiple) {
+      if (option.value === null) {
+        return;
+      }
       const list = selectedValues as string[];
       const exists = list.includes(option.value);
       const nextValues = exists ? list.filter((val) => val !== option.value) : [...list, option.value];
@@ -254,6 +290,16 @@ export default function Select({
     }
   };
 
+  const showClear = clearable && searchable && !disabled && hasValue && !isEmptySelection;
+
+  const handleClear = (event: React.MouseEvent | React.KeyboardEvent) => {
+    event.stopPropagation();
+    const nextValue = multiple ? [] : allowEmpty ? resolvedEmptyValue : '';
+    const nextOptions = multiple ? [] : allowEmpty && emptyOption ? [emptyOption] : [];
+    updateValue(nextValue, nextOptions);
+    setQuery('');
+  };
+
   return (
     <div
       className={[styles.wrapper, className].filter(Boolean).join(' ')}
@@ -263,6 +309,7 @@ export default function Select({
       data-has-label={hasLabel}
       data-float-label={floatLabel ? 'true' : undefined}
       data-float-active={floatActive ? 'true' : undefined}
+      data-has-clear={showClear ? 'true' : undefined}
       ref={containerRef}
       onKeyDown={handleKeyDown}
     >
@@ -317,7 +364,27 @@ export default function Select({
             <span className={styles.placeholder}>{placeholder}</span>
           )}
         </div>
-        <span className={styles.chevron} aria-hidden="true" />
+        <span className={styles.controls}>
+          {showClear ? (
+            <span
+              role="button"
+              tabIndex={0}
+              className={styles.clearButton}
+              aria-label={clearLabel}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={handleClear}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  handleClear(event);
+                }
+              }}
+            >
+              ×
+            </span>
+          ) : null}
+          <span className={styles.chevron} aria-hidden="true" />
+        </span>
       </button>
 
       {open ? (
@@ -333,18 +400,18 @@ export default function Select({
           ) : null}
           <div className={styles.list} role="listbox" id={listId}>
             {loading ? <div className={styles.status}>{loadingText}</div> : null}
-            {!loading && displayedOptions.length === 0 ? (
+            {!loading && (allowEmpty ? displayedOptions.length <= 1 : displayedOptions.length === 0) ? (
               <div className={styles.status}>{emptyText}</div>
             ) : null}
             {!loading
               ? displayedOptions.map((option) => {
                   const selected = multiple
-                    ? (selectedValues as string[]).includes(option.value)
+                    ? option.value !== null && (selectedValues as string[]).includes(option.value)
                     : selectedValues === option.value;
 
                   return (
                     <button
-                      key={option.value}
+                      key={option.value ?? '__empty'}
                       type="button"
                       className={[
                         styles.option,
@@ -355,7 +422,15 @@ export default function Select({
                         .join(' ')}
                       role="option"
                       aria-selected={selected}
-                      onClick={() => handleSelect(option)}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        handleSelect(option);
+                      }}
+                      onClick={(event) => {
+                        if (event.detail === 0) {
+                          handleSelect(option);
+                        }
+                      }}
                       disabled={option.disabled}
                     >
                       <span>{option.label}</span>

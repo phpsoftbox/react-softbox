@@ -25,8 +25,19 @@ export { default as Progress } from './components/Progress/Progress';
 export { default as Breadcrumbs } from './components/Breadcrumbs/Breadcrumbs';
 export { default as Image } from './components/Image/Image';
 export { default as FileUploader } from './components/FileUploader/FileUploader';
+export { default as Tooltip } from './components/Tooltip/Tooltip';
 export { default as Table } from './components/Table/Table';
-export type { TableColumn, TableSortDirection, TableSortOptions, TableSortState } from './components/Table/Table';
+export type {
+  TableBulkAction,
+  TableBulkActions,
+  TableColumn,
+  TableRenderBulkAction,
+  TableSelection,
+  TableSortDirection,
+  TableSortOptions,
+  TableSortState,
+} from './components/Table/Table';
+export type { TooltipPlacement, TooltipVariant } from './components/Tooltip/Tooltip';
 export { default as Text } from './components/Typography/Text';
 export { default as Heading } from './components/Typography/Heading';
 export { default as useMediaQuery } from './hooks/useMediaQuery';

@@ -29,6 +29,8 @@ import { Button, Card, Menu } from '@phpsoftbox/react-softbox';
 - `layout.md` — Grid, Flex, утилиты
 - `navigation.md` — Menu, Dropdown, CollapseButton
 - `forms.md` — Input (Field/Select/FloatLabel), Switch, Radio, Checkbox, FileUploader
+- `table.md` — Table, сортировка, футер
+- `tooltip.md` — Tooltip и варианты
 - `overlays.md` — Modal, Drawer
 - `feedback.md` — Badge, Alert, Notifier
 - `card.md` — Card и его секции

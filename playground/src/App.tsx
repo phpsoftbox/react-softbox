@@ -20,6 +20,7 @@ import {
   Tabs,
   Text,
   Table,
+  Tooltip,
   FileUploader,
   Drawer,
   getStoredThemeMode,
@@ -101,6 +102,7 @@ export default function App() {
     key: 'client',
     direction: 'asc',
   });
+  const [selectedIds, setSelectedIds] = React.useState<React.Key[]>([]);
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
 
   const pushToast = (variant: 'info' | 'success' | 'warning' | 'danger') => {
@@ -196,13 +198,13 @@ export default function App() {
         header: 'Проект',
         accessor: 'project',
         sortable: true,
-        hideOn: 'sm',
+        hideOn: 'sm' as const,
       },
       {
         id: 'manager',
         header: 'Менеджер',
         accessor: 'manager',
-        hideOn: 'md',
+        hideOn: 'md' as const,
       },
       {
         id: 'status',
@@ -215,7 +217,7 @@ export default function App() {
         id: 'due',
         header: 'Срок',
         accessor: 'due',
-        hideOn: 'sm',
+        hideOn: 'sm' as const,
       },
       {
         id: 'amount',
@@ -264,6 +266,14 @@ export default function App() {
       setUploadedFiles(files);
       window.setTimeout(() => resolve(), 800);
     });
+
+  const handleToggleAll = (ids: React.Key[]) => {
+    setSelectedIds((prev) => (ids.length > 0 && ids.every((id) => prev.includes(id)) ? [] : ids));
+  };
+
+  const handleToggleRow = (id: React.Key) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  };
 
   return (
     <div style={{ padding: '32px 40px' }}>
@@ -403,6 +413,57 @@ export default function App() {
           </Card>
 
           <Card className="gridCard">
+            <Card.Header title="Tooltip" />
+            <Card.Body>
+              <Stack gap="12px">
+                <Row gap="10px" wrap="wrap">
+                  <Tooltip content="Базовая подсказка">
+                    <Button size="sm">Default</Button>
+                  </Tooltip>
+                  <Tooltip content="Информационная" variant="info">
+                    <Button size="sm" variant="info">Info</Button>
+                  </Tooltip>
+                  <Tooltip content="Успех" variant="success">
+                    <Button size="sm" variant="success">Success</Button>
+                  </Tooltip>
+                  <Tooltip content="Предупреждение" variant="warning">
+                    <Button size="sm" variant="warning">Warning</Button>
+                  </Tooltip>
+                  <Tooltip content="Ошибка" variant="danger">
+                    <Button size="sm" variant="danger">Danger</Button>
+                  </Tooltip>
+                </Row>
+                <Row gap="10px" wrap="wrap">
+                  <Tooltip content="Сверху" placement="top">
+                    <Button size="sm" appearance="outline">Top</Button>
+                  </Tooltip>
+                  <Tooltip content="Справа" placement="right">
+                    <Button size="sm" appearance="outline">Right</Button>
+                  </Tooltip>
+                  <Tooltip content="Снизу" placement="bottom">
+                    <Button size="sm" appearance="outline">Bottom</Button>
+                  </Tooltip>
+                  <Tooltip content="Слева" placement="left">
+                    <Button size="sm" appearance="outline">Left</Button>
+                  </Tooltip>
+                </Row>
+                <Tooltip
+                  interactive
+                  content={
+                    <>
+                      <Tooltip.Header>Заголовок</Tooltip.Header>
+                      <Tooltip.Body>Подробности и описание в теле подсказки.</Tooltip.Body>
+                      <Tooltip.Footer>Доп. информация</Tooltip.Footer>
+                    </>
+                  }
+                >
+                  <Button size="sm" appearance="outline">Кастомный контент</Button>
+                </Tooltip>
+              </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard">
             <Card.Header title="Forms" />
             <Card.Body>
               <Stack gap="12px">
@@ -414,6 +475,18 @@ export default function App() {
                   <Input.Label>Ошибка</Input.Label>
                   <Input.Field name="error-field" placeholder="С заполнением" hasError />
                   <Input.ErrorBag>Введите корректное значение.</Input.ErrorBag>
+                </Input>
+                <Input>
+                  <Input.Label>Ошибка (tooltip)</Input.Label>
+                  <Input.Control>
+                    <Input.Field name="error-tooltip-icon" placeholder="С заполнением" hasError />
+                    <Input.ErrorTooltip content="Некорректное значение" placement={"auto"} />
+                  </Input.Control>
+                </Input>
+                <Input>
+                  <Input.Label>Ошибка (tooltip на поле)</Input.Label>
+                  <Input.Field name="error-tooltip-input" placeholder="С заполнением" hasError />
+                  <Input.ErrorTooltip target="input" content="Введите корректное значение" placement="bottom" />
                 </Input>
                 <Input layout="row" labelWidth={140} align="center" labelAlign="right">
                   <Input.Label>Телефон</Input.Label>
@@ -444,7 +517,9 @@ export default function App() {
                       { value: 'stage', label: 'Staging' },
                       { value: 'prod', label: 'Production' },
                     ]}
-                    value="dev"
+                    allowEmptyValue
+                    emptyOptionLabel="Не выбрано"
+                    defaultValue="dev"
                   />
                 </Input>
                 <Input>
@@ -463,6 +538,22 @@ export default function App() {
                   />
                 </Input>
                 <Input>
+                  <Input.FloatLabel label="Float label select with tags">
+                    <Input.Select
+                        name="services"
+                        options={[
+                          { value: 'cache', label: 'Cache' },
+                          { value: 'queue', label: 'Queue' },
+                          { value: 'db', label: 'Database' },
+                          { value: 'search', label: 'Search' },
+                        ]}
+                        multiple
+                        value={multiValue}
+                        onChange={(next) => setMultiValue(next as string[])}
+                    />
+                  </Input.FloatLabel>
+                </Input>
+                <Input>
                   <Input.FloatLabel label="Async select">
                     <Input.Select
                         name="async"
@@ -472,6 +563,7 @@ export default function App() {
                         loadingText="Загрузка..."
                         emptyText="Ничего не найдено"
                         searchable
+                        clearable
                     />
                   </Input.FloatLabel>
                 </Input>
@@ -560,6 +652,24 @@ export default function App() {
                     columns={tableColumns}
                     data={sortedRows}
                     showFooter
+                    selection={{
+                      selectedIds,
+                      onToggle: (id) => handleToggleRow(id),
+                      onToggleAll: (ids) => handleToggleAll(ids),
+                    }}
+                    renderBulkAction={(ids) => (
+                      <Row align="center" justify="space-between" wrap="wrap" gap="12px">
+                        <Text size="sm" muted>Выбрано: {ids.length}</Text>
+                        <Row gap="8px" wrap="wrap">
+                          <Button size="sm" appearance="outline" disabled={ids.length === 0} onClick={() => setSelectedIds([])}>
+                            Сбросить
+                          </Button>
+                          <Button size="sm" variant="danger" disabled={ids.length === 0}>
+                            Удалить
+                          </Button>
+                        </Row>
+                      </Row>
+                    )}
                     sort={{
                       key: tableSort.key,
                       direction: tableSort.direction,
