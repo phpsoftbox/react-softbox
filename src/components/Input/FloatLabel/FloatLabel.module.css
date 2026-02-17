@@ -6,7 +6,7 @@
 .label {
   position: absolute;
   left: 16px;
-  top: 12px;
+  top: 16px;
   color: var(--color-muted-2);
   font-size: 13px;
   letter-spacing: 0.02em;
@@ -16,34 +16,34 @@
 
 .wrapper input:focus + .label,
 .wrapper input:not(:placeholder-shown) + .label {
-  transform: translateY(-8px);
+  transform: translateY(-10px);
   color: var(--color-teal);
   opacity: 0.9;
 }
 
 .wrapper input:-webkit-autofill + .label,
 .wrapper input:autofill + .label {
-  transform: translateY(-8px);
+  transform: translateY(-10px);
   color: var(--color-teal);
   opacity: 0.9;
 }
 
 .wrapper textarea:focus + .label,
 .wrapper textarea:not(:placeholder-shown) + .label {
-  transform: translateY(-8px);
+  transform: translateY(-10px);
   color: var(--color-teal);
   opacity: 0.9;
 }
 
 .wrapper textarea:-webkit-autofill + .label,
 .wrapper textarea:autofill + .label {
-  transform: translateY(-8px);
+  transform: translateY(-10px);
   color: var(--color-teal);
   opacity: 0.9;
 }
 
 .wrapper [data-float-label="true"][data-float-active="true"] + .label {
-  transform: translateY(-8px);
+  transform: translateY(-10px);
   color: var(--color-teal);
   opacity: 0.9;
 }

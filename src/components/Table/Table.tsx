@@ -1,0 +1,356 @@
+import React from 'react';
+import styles from './Table.module.css';
+
+export type TableSortDirection = 'asc' | 'desc';
+
+export type TableSortState = {
+  key: string;
+  direction: TableSortDirection;
+};
+
+export type TableSortOptions = {
+  key?: string | null;
+  direction?: TableSortDirection | null;
+  param?: string;
+  orderParam?: string;
+  baseUrl?: string;
+  defaultDirection?: TableSortDirection;
+  buildUrl?: (next: TableSortState) => string;
+  onChange?: (next: TableSortState, url: string) => void;
+};
+
+export type TableColumn<T> = {
+  id?: string;
+  header?: React.ReactNode;
+  label?: React.ReactNode;
+  title?: React.ReactNode;
+  field?: keyof T | string;
+  accessor?: keyof T | string | ((row: T) => React.ReactNode);
+  cell?: (row: T, column: TableColumn<T>, rowIndex: number) => React.ReactNode;
+  align?: 'left' | 'center' | 'right';
+  width?: number | string;
+  minWidth?: number | string;
+  className?: string;
+  headerClassName?: string;
+  cellClassName?: string;
+  sortable?: boolean;
+  sortKey?: string;
+  footer?: React.ReactNode | ((rows: T[], column: TableColumn<T>) => React.ReactNode);
+  hidden?: boolean;
+  hideOn?: 'sm' | 'md' | 'lg';
+};
+
+export type TableProps<T> = React.HTMLAttributes<HTMLDivElement> & {
+  columns: TableColumn<T>[];
+  data: T[];
+  rowKey?: keyof T | string | ((row: T, index: number) => React.Key);
+  emptyState?: React.ReactNode;
+  caption?: React.ReactNode;
+  variant?: 'default' | 'striped' | 'bordered' | 'ghost';
+  size?: 'sm' | 'md';
+  stickyHeader?: boolean;
+  showFooter?: boolean;
+  sort?: TableSortOptions;
+  tableClassName?: string;
+  headClassName?: string;
+  bodyClassName?: string;
+  footerClassName?: string;
+  rowClassName?: string | ((row: T, index: number) => string);
+};
+
+const toCssValue = (value?: number | string) => {
+  if (typeof value === 'number') {
+    return `${value}px`;
+  }
+  return value;
+};
+
+const normalizeNode = (value: unknown): React.ReactNode => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value === 'symbol' || typeof value === 'bigint') {
+    return value.toString();
+  }
+  return value as React.ReactNode;
+};
+
+const resolveHeaderContent = <T,>(column: TableColumn<T>) =>
+  normalizeNode(column.header ?? column.label ?? column.title ?? column.field ?? column.id ?? '');
+
+const resolveSortKey = <T,>(column: TableColumn<T>) =>
+  column.sortKey ?? (typeof column.field === 'string' ? column.field : null) ?? (typeof column.accessor === 'string' ? column.accessor : null) ?? column.id ?? null;
+
+const resolveCellValue = <T,>(row: T, column: TableColumn<T>, rowIndex: number) => {
+  if (column.cell) {
+    return column.cell(row, column, rowIndex);
+  }
+  if (column.accessor) {
+    if (typeof column.accessor === 'function') {
+      return column.accessor(row);
+    }
+    const accessorKey = column.accessor as keyof T;
+    return (row as Record<keyof T, React.ReactNode>)[accessorKey];
+  }
+  if (column.field) {
+    const fieldKey = column.field as keyof T;
+    return (row as Record<keyof T, React.ReactNode>)[fieldKey];
+  }
+  if (column.id) {
+    return (row as Record<string, React.ReactNode>)[column.id];
+  }
+  return null;
+};
+
+const getSortUrl = (options: TableSortOptions | undefined, next: TableSortState) => {
+  if (options?.buildUrl) {
+    return options.buildUrl(next);
+  }
+  const param = options?.param ?? 'sort';
+  const orderParam = options?.orderParam ?? 'order';
+  const base = options?.baseUrl ?? (typeof window !== 'undefined' ? window.location.href : '');
+
+  if (!base) {
+    return '';
+  }
+
+  try {
+    const isAbsolute = /^https?:\/\//i.test(base);
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+    const url = new URL(base, isAbsolute ? undefined : origin);
+    url.searchParams.set(param, next.key);
+    url.searchParams.set(orderParam, next.direction);
+    return isAbsolute ? url.toString() : `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return '';
+  }
+};
+
+const getHideClass = (value?: 'sm' | 'md' | 'lg') => {
+  if (value === 'sm') {
+    return styles.hideSm;
+  }
+  if (value === 'md') {
+    return styles.hideMd;
+  }
+  if (value === 'lg') {
+    return styles.hideLg;
+  }
+  return null;
+};
+
+function TableBase<T>({
+  columns,
+  data,
+  rowKey,
+  emptyState = 'Нет данных',
+  caption,
+  variant = 'default',
+  size = 'md',
+  stickyHeader = false,
+  showFooter,
+  sort,
+  className,
+  tableClassName,
+  headClassName,
+  bodyClassName,
+  footerClassName,
+  rowClassName,
+  ...props
+}: TableProps<T>) {
+  const visibleColumns = columns.filter((column) => !column.hidden);
+  const shouldShowFooter = showFooter ?? visibleColumns.some((column) => column.footer !== undefined && column.footer !== null);
+  const colSpan = Math.max(visibleColumns.length, 1);
+  const currentSortKey = sort?.key ?? null;
+  const currentSortDirection = sort?.direction ?? null;
+  const defaultDirection = sort?.defaultDirection ?? 'asc';
+
+  const wrapperClasses = [
+    styles.wrapper,
+    variant === 'striped' ? styles.striped : null,
+    variant === 'bordered' ? styles.bordered : null,
+    variant === 'ghost' ? styles.ghost : null,
+    size === 'sm' ? styles.sizeSm : null,
+    stickyHeader ? styles.stickyHead : null,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const getRowKey = (row: T, index: number): React.Key => {
+    if (!rowKey) {
+      return index;
+    }
+    if (typeof rowKey === 'function') {
+      return rowKey(row, index);
+    }
+    const keyValue = (row as Record<string, unknown>)[rowKey as string];
+    if (keyValue === null || keyValue === undefined) {
+      return index;
+    }
+    if (typeof keyValue === 'string' || typeof keyValue === 'number') {
+      return keyValue;
+    }
+    return String(keyValue);
+  };
+
+  return (
+    <div className={wrapperClasses} {...props}>
+      <table className={[styles.table, tableClassName].filter(Boolean).join(' ')}>
+        {caption ? <caption className={styles.caption}>{caption}</caption> : null}
+        <thead className={[styles.head, headClassName].filter(Boolean).join(' ')}>
+          <tr>
+            {visibleColumns.map((column, columnIndex) => {
+              const header = resolveHeaderContent(column);
+              const sortKey = resolveSortKey(column);
+              const isSortable = Boolean(column.sortable && sortKey);
+              const isSorted = Boolean(isSortable && currentSortKey && sortKey === currentSortKey);
+              const direction = isSorted ? currentSortDirection ?? defaultDirection : null;
+              const nextDirection = isSorted ? (direction === 'asc' ? 'desc' : 'asc') : defaultDirection;
+              const nextState = sortKey ? { key: sortKey, direction: nextDirection } : null;
+              const sortUrl = nextState ? getSortUrl(sort, nextState) : '';
+              const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
+              const hideClass = getHideClass(column.hideOn);
+              const headerClasses = [
+                styles.headCell,
+                alignClass,
+                hideClass,
+                isSortable ? styles.sortable : null,
+                isSorted && direction === 'asc' ? styles.sortedAsc : null,
+                isSorted && direction === 'desc' ? styles.sortedDesc : null,
+                column.headerClassName,
+                column.className,
+              ]
+                .filter(Boolean)
+                .join(' ');
+              const inlineStyle: React.CSSProperties = {
+                width: toCssValue(column.width),
+                minWidth: toCssValue(column.minWidth),
+              };
+
+              const handleSortClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+                if (!nextState) {
+                  event.preventDefault();
+                  return;
+                }
+                if (sort?.onChange) {
+                  event.preventDefault();
+                  sort.onChange(nextState, sortUrl);
+                  return;
+                }
+                if (!sortUrl) {
+                  event.preventDefault();
+                }
+              };
+
+              return (
+                <th
+                  key={column.id ?? `${columnIndex}`}
+                  className={headerClasses}
+                  style={inlineStyle}
+                  aria-sort={isSortable ? (direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none') : undefined}
+                  scope="col"
+                >
+                  {isSortable ? (
+                    <a href={sortUrl || '#'} className={styles.sortButton} onClick={handleSortClick}>
+                      <span>{header}</span>
+                      <span className={styles.sortIndicator} aria-hidden="true" />
+                    </a>
+                  ) : (
+                    header
+                  )}
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody className={[styles.body, bodyClassName].filter(Boolean).join(' ')}>
+          {data.length === 0 ? (
+            <tr className={styles.row}>
+              <td className={[styles.cell, styles.emptyCell, styles.noLabel].filter(Boolean).join(' ')} colSpan={colSpan} data-label="">
+                {emptyState}
+              </td>
+            </tr>
+          ) : (
+            data.map((row, rowIndex) => {
+              const resolvedRowClassName = typeof rowClassName === 'function' ? rowClassName(row, rowIndex) : rowClassName;
+              const resolvedKey = getRowKey(row, rowIndex);
+              return (
+                <tr key={resolvedKey} className={[styles.row, resolvedRowClassName].filter(Boolean).join(' ')}>
+                  {visibleColumns.map((column, columnIndex) => {
+                    const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
+                    const hideClass = getHideClass(column.hideOn);
+                    const cellClasses = [
+                      styles.cell,
+                      alignClass,
+                      hideClass,
+                      column.cellClassName,
+                      column.className,
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
+                    const inlineStyle: React.CSSProperties = {
+                      width: toCssValue(column.width),
+                      minWidth: toCssValue(column.minWidth),
+                    };
+                    const value = resolveCellValue(row, column, rowIndex);
+
+                    return (
+                      <td
+                        key={`${resolvedKey}-${column.id ?? columnIndex}`}
+                        className={cellClasses}
+                        style={inlineStyle}
+                      >
+                        <div className={styles.cellContent}>{value}</div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+        {shouldShowFooter ? (
+          <tfoot className={[styles.footer, footerClassName].filter(Boolean).join(' ')}>
+            <tr className={styles.footerRow}>
+              {visibleColumns.map((column, columnIndex) => {
+                const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
+                const hideClass = getHideClass(column.hideOn);
+                const footerClasses = [
+                  styles.footerCell,
+                  alignClass,
+                  hideClass,
+                  column.className,
+                ]
+                  .filter(Boolean)
+                  .join(' ');
+                const inlineStyle: React.CSSProperties = {
+                  width: toCssValue(column.width),
+                  minWidth: toCssValue(column.minWidth),
+                };
+                let footerValue: React.ReactNode = null;
+                if (typeof column.footer === 'function') {
+                  footerValue = column.footer(data, column);
+                } else if (column.footer !== undefined) {
+                  footerValue = column.footer;
+                }
+
+                return (
+                  <td key={`footer-${column.id ?? columnIndex}`} className={footerClasses} style={inlineStyle}>
+                    <div className={styles.cellContent}>{footerValue}</div>
+                  </td>
+                );
+              })}
+            </tr>
+          </tfoot>
+        ) : null}
+      </table>
+    </div>
+  );
+}
+
+type TableComponent = <T>(props: TableProps<T>) => React.ReactElement;
+
+const Table = TableBase as TableComponent;
+
+export default Table;

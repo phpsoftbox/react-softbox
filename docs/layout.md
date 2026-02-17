@@ -52,3 +52,19 @@
 - `p-`, `px-`, `py-`, `pt-`, `pr-`, `pb-`, `pl-`
 - `m-`, `mx-`, `my-`, `mt-`, `mr-`, `mb-`, `ml-`
 - `gap-`
+
+## Классы кнопок
+
+Глобальные классы для кнопок, которые можно применять к `a`/`button`.
+
+```tsx
+<a className="btn btn-primary btn-solid" href="/create">Создать</a>
+<a className="btn btn-info btn-outline" href="/details">Подробнее</a>
+<button className="btn btn-danger btn-ghost">Удалить</button>
+```
+
+Доступны:
+- базовый класс: `btn`
+- варианты: `btn-default`, `btn-primary`, `btn-info`, `btn-success`, `btn-warning`, `btn-danger`
+- внешность: `btn-solid`, `btn-outline`, `btn-ghost`
+- размеры: `btn-sm`, `btn-md`, `btn-lg`

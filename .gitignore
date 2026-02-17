@@ -4,6 +4,8 @@ dist/
 .DS_Store
 .env
 .env.*
+.idea
+.tmp
 playground/node_modules/
 playground/dist/
 playground/.vite/

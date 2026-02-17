@@ -1,45 +1,73 @@
-.button {
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
   border: 1px solid var(--btn-border, rgba(30, 51, 85, 0.6));
   cursor: pointer;
   font-weight: 600;
+  font-family: inherit;
+  line-height: 1;
   padding: 12px 18px;
   border-radius: var(--radius-sm);
+  font-size: var(--font-size-3);
   background: var(--btn-bg, rgba(15, 30, 51, 0.9));
   color: var(--btn-color, var(--color-text));
   box-shadow: var(--btn-shadow, none);
   transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease,
     color 0.2s ease;
+  text-decoration: none;
 }
 
-.button:focus-visible {
+.btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(20, 201, 214, 0.3);
 }
 
-.button:hover:not(:disabled) {
+.btn:hover:not(.btn-disabled):not(:disabled) {
   background: var(--btn-bg-hover, var(--btn-bg));
   box-shadow: var(--btn-shadow-hover, var(--btn-shadow, none));
 }
 
-.button:active:not(:disabled) {
+.btn:active:not(.btn-disabled):not(:disabled) {
   transform: translateY(1px);
 }
 
-.button:disabled {
+.btn:disabled,
+.btn.btn-disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
-.solid {
+.btn-solid {
   transform: translateY(0);
 }
 
-.solid:hover:not(:disabled) {
+.btn-solid:hover:not(.btn-disabled):not(:disabled) {
   transform: translateY(-1px);
 }
 
-.outline,
-.ghost {
+.btn-sm {
+  padding: 8px 14px;
+  font-size: var(--font-size-2);
+  border-radius: var(--radius-xs);
+}
+
+.btn-md {
+  padding: 12px 18px;
+  font-size: var(--font-size-3);
+  border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+  padding: 14px 22px;
+  font-size: var(--font-size-4);
+  border-radius: var(--radius-md);
+}
+
+.btn-outline,
+.btn-ghost {
   background: transparent;
   color: var(--btn-accent, var(--color-teal));
   border-color: var(--btn-accent, var(--color-teal));
@@ -48,16 +76,16 @@
   --btn-shadow-hover: none;
 }
 
-.ghost {
+.btn-ghost {
   border-color: transparent;
 }
 
-.outline:hover:not(:disabled),
-.ghost:hover:not(:disabled) {
+.btn-outline:hover:not(.btn-disabled):not(:disabled),
+.btn-ghost:hover:not(.btn-disabled):not(:disabled) {
   background: var(--btn-accent-soft, rgba(20, 201, 214, 0.12));
 }
 
-.variantDefault {
+.btn-default {
   --btn-accent: var(--btn-default-accent, rgba(158, 178, 204, 0.9));
   --btn-accent-soft: var(--btn-default-soft, rgba(30, 51, 85, 0.35));
   --btn-bg: linear-gradient(135deg, var(--btn-default-start, #2a3750), var(--btn-default-end, #1b263c));
@@ -68,7 +96,7 @@
   --btn-shadow-hover: 0 14px 30px rgba(10, 20, 35, 0.28);
 }
 
-.variantPrimary {
+.btn-primary {
   --btn-accent: var(--btn-primary-accent, rgba(20, 201, 214, 0.9));
   --btn-accent-soft: var(--btn-primary-soft, rgba(20, 201, 214, 0.18));
   --btn-bg: linear-gradient(135deg, var(--btn-primary-start, #14c9d6), var(--btn-primary-end, #1e63e9));
@@ -79,7 +107,7 @@
   --btn-shadow-hover: 0 16px 36px rgba(20, 201, 214, 0.4);
 }
 
-.variantInfo {
+.btn-info {
   --btn-accent: var(--btn-info-accent, rgba(30, 99, 233, 0.9));
   --btn-accent-soft: var(--btn-info-soft, rgba(30, 99, 233, 0.18));
   --btn-bg: linear-gradient(135deg, var(--btn-info-start, #4f7bff), var(--btn-info-end, #2e5be6));
@@ -90,7 +118,7 @@
   --btn-shadow-hover: 0 16px 36px rgba(30, 99, 233, 0.4);
 }
 
-.variantSuccess {
+.btn-success {
   --btn-accent: var(--btn-success-accent, rgba(79, 230, 163, 0.9));
   --btn-accent-soft: var(--btn-success-soft, rgba(79, 230, 163, 0.16));
   --btn-bg: linear-gradient(135deg, var(--btn-success-start, #35d092), var(--btn-success-end, #1faf75));
@@ -101,7 +129,7 @@
   --btn-shadow-hover: 0 16px 36px rgba(79, 230, 163, 0.36);
 }
 
-.variantWarning {
+.btn-warning {
   --btn-accent: var(--btn-warning-accent, rgba(246, 200, 106, 0.95));
   --btn-accent-soft: var(--btn-warning-soft, rgba(246, 200, 106, 0.2));
   --btn-bg: linear-gradient(135deg, var(--btn-warning-start, #ffd166), var(--btn-warning-end, #f4a62a));
@@ -112,7 +140,7 @@
   --btn-shadow-hover: 0 16px 36px rgba(246, 200, 106, 0.36);
 }
 
-.variantDanger {
+.btn-danger {
   --btn-accent: var(--btn-danger-accent, rgba(255, 107, 107, 0.95));
   --btn-accent-soft: var(--btn-danger-soft, rgba(255, 107, 107, 0.2));
   --btn-bg: linear-gradient(135deg, var(--btn-danger-start, #ff8f8f), var(--btn-danger-end, #ff5b5b));
@@ -124,7 +152,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .button {
+  .btn {
     transition: none;
   }
 }

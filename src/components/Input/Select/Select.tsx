@@ -56,7 +56,7 @@ export default function Select({
   defaultValue,
   placeholder = 'Выберите...',
   multiple = false,
-  searchable = true,
+  searchable = false,
   loadingText = 'Загрузка...',
   emptyText = 'Нет данных',
   loadOptions,

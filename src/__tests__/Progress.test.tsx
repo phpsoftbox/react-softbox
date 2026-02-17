@@ -1,5 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { render } from '@testing-library/react';
+import { screen } from '@testing-library/dom';
 import Progress from '../components/Progress/Progress';
 
 describe('Progress', () => {

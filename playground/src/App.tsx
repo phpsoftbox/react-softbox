@@ -19,11 +19,13 @@ import {
   Stack,
   Tabs,
   Text,
+  Table,
+  FileUploader,
   Drawer,
   getStoredThemeMode,
   setThemeMode,
 } from '@phpsoftbox/react-softbox';
-import type { ThemeMode } from '@phpsoftbox/react-softbox';
+import type { ThemeMode, TableColumn } from '@phpsoftbox/react-softbox';
 import avatarImage from '../avatar.png';
 
 const paletteRow: Array<Parameters<typeof Button>[0]> = [
@@ -42,6 +44,34 @@ const asyncMockData = [
   { value: 'delta', label: 'Delta' },
   { value: 'epsilon', label: 'Epsilon' },
 ];
+
+const tableRows = [
+  { id: 'INV-1024', client: 'ООО Север', project: 'B2B портал', status: 'В работе', manager: 'Андрей', amount: 248000, due: '12.03.2026' },
+  { id: 'INV-1031', client: 'TechNova', project: 'Мобильное приложение', status: 'Готово', manager: 'Ирина', amount: 92000, due: '27.02.2026' },
+  { id: 'INV-1038', client: 'Ритейл+ ', project: 'Редизайн витрины', status: 'В ожидании', manager: 'Максим', amount: 156000, due: '19.03.2026' },
+  { id: 'INV-1042', client: 'FinLab', project: 'Дашборд аналитики', status: 'В работе', manager: 'Наталья', amount: 310000, due: '03.04.2026' },
+  { id: 'INV-1047', client: 'SkyLog', project: 'Интеграции', status: 'В ожидании', manager: 'Сергей', amount: 68000, due: '25.02.2026' },
+];
+
+const formatCurrency = (value: number) => new Intl.NumberFormat('ru-RU').format(value);
+
+const getStatusVariant = (status: string) => {
+  if (status === 'Готово') {
+    return 'success';
+  }
+  if (status === 'В ожидании') {
+    return 'warning';
+  }
+  return 'info';
+};
+
+const getSortValue = (row: (typeof tableRows)[number], key: string) => {
+  const value = row[key as keyof typeof row];
+  if (typeof value === 'number') {
+    return value;
+  }
+  return value === null || value === undefined ? '' : String(value);
+};
 
 export default function App() {
   const [themeMode, setThemeModeState] = React.useState<ThemeMode>(() => {
@@ -67,6 +97,11 @@ export default function App() {
   const [multiValue, setMultiValue] = React.useState<string[]>(['cache']);
   const [asyncValue, setAsyncValue] = React.useState<string>('alpha');
   const [pageNumber, setPageNumber] = React.useState(2);
+  const [tableSort, setTableSort] = React.useState<{ key: string; direction: 'asc' | 'desc' }>({
+    key: 'client',
+    direction: 'asc',
+  });
+  const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
 
   const pushToast = (variant: 'info' | 'success' | 'warning' | 'danger') => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -147,6 +182,89 @@ export default function App() {
       }, 500);
     });
 
+  const tableColumns = React.useMemo<TableColumn<(typeof tableRows)[number]>[]>(
+    () => [
+      {
+        id: 'client',
+        header: 'Клиент',
+        accessor: 'client',
+        sortable: true,
+        footer: 'Итого',
+      },
+      {
+        id: 'project',
+        header: 'Проект',
+        accessor: 'project',
+        sortable: true,
+        hideOn: 'sm',
+      },
+      {
+        id: 'manager',
+        header: 'Менеджер',
+        accessor: 'manager',
+        hideOn: 'md',
+      },
+      {
+        id: 'status',
+        header: 'Статус',
+        sortable: true,
+        sortKey: 'status',
+        cell: (row: (typeof tableRows)[number]) => <Badge variant={getStatusVariant(row.status)}>{row.status}</Badge>,
+      },
+      {
+        id: 'due',
+        header: 'Срок',
+        accessor: 'due',
+        hideOn: 'sm',
+      },
+      {
+        id: 'amount',
+        header: 'Сумма',
+        align: 'right',
+        sortable: true,
+        sortKey: 'amount',
+        accessor: (row: (typeof tableRows)[number]) => `${formatCurrency(row.amount)} ₽`,
+        footer: (rows: (typeof tableRows)) => `${formatCurrency(rows.reduce((sum, row) => sum + row.amount, 0))} ₽`,
+      },
+    ],
+    []
+  );
+
+  const sortedRows = React.useMemo(() => {
+    const next = [...tableRows];
+    const direction = tableSort.direction === 'asc' ? 1 : -1;
+    next.sort((a, b) => {
+      const aValue = getSortValue(a, tableSort.key);
+      const bValue = getSortValue(b, tableSort.key);
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return (aValue - bValue) * direction;
+      }
+      return String(aValue).localeCompare(String(bValue), 'ru', { sensitivity: 'base' }) * direction;
+    });
+    return next;
+  }, [tableSort]);
+
+  const handleTableSort = (next: { key: string; direction: 'asc' | 'desc' }, url: string) => {
+    setTableSort(next);
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (url) {
+      window.history.replaceState(null, '', url);
+      return;
+    }
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set('sort', next.key);
+    nextUrl.searchParams.set('order', next.direction);
+    window.history.replaceState(null, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+  };
+
+  const handleUpload = async (files: File[]) =>
+    new Promise<void>((resolve) => {
+      setUploadedFiles(files);
+      window.setTimeout(() => resolve(), 800);
+    });
+
   return (
     <div style={{ padding: '32px 40px' }}>
       <Stack gap="24px">
@@ -195,6 +313,16 @@ export default function App() {
                     </Button>
                   ))}
                   <Button appearance="ghost">ghost</Button>
+                </Row>
+                <Row gap="12px" wrap="wrap">
+                  <a className="btn btn-primary btn-solid" href="#buttons">Link primary</a>
+                  <a className="btn btn-info btn-outline" href="#buttons">Link outline</a>
+                  <a className="btn btn-danger btn-ghost" href="#buttons">Link ghost</a>
+                </Row>
+                <Row gap="12px" wrap="wrap">
+                  <a className="btn btn-primary btn-solid btn-sm" href="#buttons">Link sm</a>
+                  <a className="btn btn-primary btn-solid btn-md" href="#buttons">Link md</a>
+                  <a className="btn btn-primary btn-solid btn-lg" href="#buttons">Link lg</a>
                 </Row>
               </Stack>
             </Card.Body>
@@ -343,6 +471,7 @@ export default function App() {
                         onChange={(next) => setAsyncValue(next as string)}
                         loadingText="Загрузка..."
                         emptyText="Ничего не найдено"
+                        searchable
                     />
                   </Input.FloatLabel>
                 </Input>
@@ -365,6 +494,7 @@ export default function App() {
                 <Row gap="14px" wrap="wrap">
                   <Input.Radio name="mode" label="Основной" defaultChecked />
                   <Input.Radio name="mode" label="Резерв" />
+                  <Input.Checkbox label="Согласен с условиями" defaultChecked />
                   <Input.Switch label="Автообновление" defaultChecked />
                 </Row>
               </Stack>
@@ -416,6 +546,69 @@ export default function App() {
                   meta={paginationMeta}
                   onNavigate={(page) => setPageNumber(page)}
                 />
+              </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard gridCardWide">
+            <Card.Header title="Tables" />
+            <Card.Body>
+              <Stack gap="20px">
+                <Stack gap="8px">
+                  <Text weight="semibold">Сортировка + футер</Text>
+                  <Table
+                    columns={tableColumns}
+                    data={sortedRows}
+                    showFooter
+                    sort={{
+                      key: tableSort.key,
+                      direction: tableSort.direction,
+                      param: 'sort',
+                      orderParam: 'order',
+                      onChange: handleTableSort,
+                    }}
+                  />
+                </Stack>
+                <Stack gap="8px">
+                  <Text weight="semibold">Striped + compact</Text>
+                  <Table
+                    columns={tableColumns}
+                    data={tableRows}
+                    variant="striped"
+                    size="sm"
+                    showFooter={false}
+                  />
+                </Stack>
+                <Stack gap="8px">
+                  <Text weight="semibold">Bordered</Text>
+                  <Table
+                    columns={tableColumns}
+                    data={sortedRows}
+                    variant="bordered"
+                    showFooter
+                  />
+                </Stack>
+              </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard gridCardWide">
+            <Card.Header title="FileUploader" />
+            <Card.Body>
+              <Stack gap="12px">
+                <FileUploader
+                  allowedTypes={['.jpg', '.png', '.pdf']}
+                  maxFileSizeKb={2048}
+                  multiple
+                  showPreview
+                  onChange={(files) => setUploadedFiles(files)}
+                  onUpload={handleUpload}
+                />
+                {uploadedFiles.length ? (
+                  <Text size="sm" muted>
+                    Загружено: {uploadedFiles.length}
+                  </Text>
+                ) : null}
               </Stack>
             </Card.Body>
           </Card>

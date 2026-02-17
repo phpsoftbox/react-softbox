@@ -41,6 +41,13 @@
 <Input.Radio name="mode" label="Резервный" />
 ```
 
+## Checkbox
+
+```tsx
+<Input.Checkbox label="Согласен с условиями" />
+<Input.Checkbox label="Премиум" description="Расширенные права" />
+```
+
 ## Switch
 
 ```tsx
@@ -173,3 +180,23 @@ const options = [
   </Input.Group>
 </Input>
 ```
+
+## FileUploader
+
+```tsx
+<FileUploader
+  allowedTypes={['.jpg', '.png', '.pdf']}
+  maxFileSizeKb={2048}
+  multiple
+  showPreview
+  onChange={(files) => console.log(files)}
+  onUpload={(files) => api.upload(files)}
+/>;
+```
+
+Параметры:
+- `allowedTypes` — допустимые типы (расширения `.png` или MIME `image/*`)
+- `maxFileSizeKb` — ограничение размера
+- `multiple` — разрешить множественный выбор
+- `showPreview` — превью для изображений
+- `onUpload` — колбэк загрузки (опционально)

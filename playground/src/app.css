@@ -18,6 +18,10 @@ body {
   grid-column: span 6;
 }
 
+.gridCardWide {
+  grid-column: span 12;
+}
+
 .dropdownWide {
   min-width: 320px;
 }

@@ -1,28 +1,35 @@
 import React from 'react';
-import styles from './Button.module.css';
 import type { UiVariant } from '../../types';
 
 type ButtonVariant = UiVariant;
 type ButtonAppearance = 'solid' | 'outline' | 'ghost';
+type ButtonSize = 'sm' | 'md' | 'lg';
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant | 'ghost' | 'outline';
   appearance?: ButtonAppearance;
+  size?: ButtonSize;
 };
 
 const variantClass: Record<ButtonVariant, string> = {
-  default: styles.variantDefault,
-  primary: styles.variantPrimary,
-  info: styles.variantInfo,
-  success: styles.variantSuccess,
-  warning: styles.variantWarning,
-  danger: styles.variantDanger,
+  default: 'btn-default',
+  primary: 'btn-primary',
+  info: 'btn-info',
+  success: 'btn-success',
+  warning: 'btn-warning',
+  danger: 'btn-danger',
 };
 
 const appearanceClass: Record<ButtonAppearance, string> = {
-  solid: styles.solid,
-  outline: styles.outline,
-  ghost: styles.ghost,
+  solid: 'btn-solid',
+  outline: 'btn-outline',
+  ghost: 'btn-ghost',
+};
+
+const sizeClass: Record<ButtonSize, string> = {
+  sm: 'btn-sm',
+  md: 'btn-md',
+  lg: 'btn-lg',
 };
 
 const normalizeVariant = (variant?: ButtonVariant | 'ghost' | 'outline', appearance?: ButtonAppearance) => {
@@ -36,14 +43,9 @@ const normalizeVariant = (variant?: ButtonVariant | 'ghost' | 'outline', appeara
   };
 };
 
-export default function Button({ variant, appearance, className, ...props }: Props) {
+export default function Button({ variant, appearance, size = 'md', className, ...props }: Props) {
   const resolved = normalizeVariant(variant, appearance);
-  const classes = [
-    styles.button,
-    variantClass[resolved.variant],
-    appearanceClass[resolved.appearance],
-    className,
-  ]
+  const classes = ['btn', variantClass[resolved.variant], appearanceClass[resolved.appearance], sizeClass[size], className]
     .filter(Boolean)
     .join(' ');
 
