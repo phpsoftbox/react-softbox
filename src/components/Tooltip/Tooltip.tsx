@@ -7,7 +7,7 @@ export type TooltipVariant = 'default' | 'info' | 'success' | 'warning' | 'dange
 
 type Props = {
   content: React.ReactNode;
-  children?: React.ReactElement;
+  children?: React.ReactElement<any>;
   placement?: TooltipPlacement;
   variant?: TooltipVariant;
   open?: boolean;
@@ -326,46 +326,46 @@ function TooltipBase({
     return tooltip ? createPortal(tooltip, document.body) : null;
   }
 
-  const childProps = children.props ?? {};
+  const childProps = (children.props ?? {}) as React.HTMLAttributes<HTMLElement>;
   const handleMouseEnter = openOnHover
     ? (event: React.MouseEvent) => {
-        childProps.onMouseEnter?.(event);
+        (childProps.onMouseEnter as ((event: React.MouseEvent) => void) | undefined)?.(event);
         scheduleOpen();
       }
     : childProps.onMouseEnter ?? noop;
   const handleMouseLeave = openOnHover
     ? (event: React.MouseEvent) => {
-        childProps.onMouseLeave?.(event);
+        (childProps.onMouseLeave as ((event: React.MouseEvent) => void) | undefined)?.(event);
         scheduleClose();
       }
     : childProps.onMouseLeave ?? noop;
   const handleFocus = openOnFocus
     ? (event: React.FocusEvent) => {
-        childProps.onFocus?.(event);
+        (childProps.onFocus as ((event: React.FocusEvent) => void) | undefined)?.(event);
         scheduleOpen();
       }
     : childProps.onFocus ?? noop;
   const handleBlur = openOnFocus
     ? (event: React.FocusEvent) => {
-        childProps.onBlur?.(event);
+        (childProps.onBlur as ((event: React.FocusEvent) => void) | undefined)?.(event);
         scheduleClose();
       }
     : childProps.onBlur ?? noop;
   const handleClick = openOnClick
     ? (event: React.MouseEvent) => {
-        childProps.onClick?.(event);
+        (childProps.onClick as ((event: React.MouseEvent) => void) | undefined)?.(event);
         setOpen(!isOpen);
       }
     : childProps.onClick ?? noop;
 
-  const child = React.cloneElement(children, {
+  const child = React.cloneElement(children as React.ReactElement<any>, {
     ref: mergeRefs((children as any).ref, triggerRef),
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave,
     onFocus: handleFocus,
     onBlur: handleBlur,
     onClick: handleClick,
-  });
+  } as React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> });
 
   return (
     <>

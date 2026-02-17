@@ -105,8 +105,8 @@ export default function Select({
   );
   const allowEmpty = allowEmptyValue && !multiple;
   const resolvedEmptyValue = emptyOptionValue ?? null;
-  const emptyOption = React.useMemo(
-    () => (allowEmpty ? { value: resolvedEmptyValue, label: emptyOptionLabel } : null),
+  const emptyOption = React.useMemo<SelectOption | null>(
+    () => (allowEmpty ? { value: resolvedEmptyValue, label: emptyOptionLabel, disabled: false } : null),
     [allowEmpty, emptyOptionLabel, resolvedEmptyValue],
   );
 
@@ -273,8 +273,11 @@ export default function Select({
     }
   };
 
-  const handleRemove = (valueToRemove: string) => {
+  const handleRemove = (valueToRemove: string | null) => {
     if (!multiple) {
+      return;
+    }
+    if (valueToRemove === null) {
       return;
     }
 
