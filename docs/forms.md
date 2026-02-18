@@ -115,11 +115,11 @@ import type { SelectOption } from '@phpsoftbox/react-softbox';
 
 type StatusValue = 10 | 20 | 30;
 
-const statusOptions: SelectOption<StatusValue>[] = [
+const statusOptions = [
   { value: 10, label: 'Active' },
   { value: 20, label: 'Blocked' },
   { value: 30, label: 'Deleted' },
-];
+] satisfies SelectOption<StatusValue>[];
 
 <Input.Select<StatusValue>
   options={statusOptions}

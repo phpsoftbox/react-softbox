@@ -328,44 +328,61 @@ function TooltipBase({
 
   const childProps = (children.props ?? {}) as React.HTMLAttributes<HTMLElement>;
   const handleMouseEnter = openOnHover
-    ? (event: React.MouseEvent) => {
-        (childProps.onMouseEnter as ((event: React.MouseEvent) => void) | undefined)?.(event);
+    ? (event: React.MouseEvent<HTMLElement>) => {
+        (childProps.onMouseEnter as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(event);
         scheduleOpen();
       }
     : childProps.onMouseEnter ?? noop;
   const handleMouseLeave = openOnHover
-    ? (event: React.MouseEvent) => {
-        (childProps.onMouseLeave as ((event: React.MouseEvent) => void) | undefined)?.(event);
+    ? (event: React.MouseEvent<HTMLElement>) => {
+        (childProps.onMouseLeave as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(event);
         scheduleClose();
       }
     : childProps.onMouseLeave ?? noop;
   const handleFocus = openOnFocus
-    ? (event: React.FocusEvent) => {
-        (childProps.onFocus as ((event: React.FocusEvent) => void) | undefined)?.(event);
+    ? (event: React.FocusEvent<HTMLElement>) => {
+        (childProps.onFocus as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(event);
         scheduleOpen();
       }
     : childProps.onFocus ?? noop;
   const handleBlur = openOnFocus
-    ? (event: React.FocusEvent) => {
-        (childProps.onBlur as ((event: React.FocusEvent) => void) | undefined)?.(event);
+    ? (event: React.FocusEvent<HTMLElement>) => {
+        (childProps.onBlur as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(event);
         scheduleClose();
       }
     : childProps.onBlur ?? noop;
   const handleClick = openOnClick
-    ? (event: React.MouseEvent) => {
-        (childProps.onClick as ((event: React.MouseEvent) => void) | undefined)?.(event);
+    ? (event: React.MouseEvent<HTMLElement>) => {
+        (childProps.onClick as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(event);
         setOpen(!isOpen);
       }
     : childProps.onClick ?? noop;
 
-  const child = React.cloneElement(children as React.ReactElement<any>, {
-    ref: mergeRefs((children as any).ref, triggerRef),
-    onMouseEnter: handleMouseEnter,
-    onMouseLeave: handleMouseLeave,
-    onFocus: handleFocus,
-    onBlur: handleBlur,
-    onClick: handleClick,
-  } as React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> });
+  const isForwardRef = (children as any)?.type?.$$typeof === Symbol.for('react.forward_ref');
+  const canAttachRef = typeof (children as any)?.type === 'string' || isForwardRef;
+
+  const child = canAttachRef ? (
+    React.cloneElement(children as React.ReactElement<any>, {
+      ref: mergeRefs((children as any).ref, triggerRef),
+      onMouseEnter: handleMouseEnter,
+      onMouseLeave: handleMouseLeave,
+      onFocus: handleFocus,
+      onBlur: handleBlur,
+      onClick: handleClick,
+    } as React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> })
+  ) : (
+    <span
+      ref={mergeRefs(triggerRef)}
+      className={styles.trigger}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onClick={handleClick}
+    >
+      {children}
+    </span>
+  );
 
   return (
     <>

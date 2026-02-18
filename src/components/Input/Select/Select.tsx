@@ -12,6 +12,14 @@ export type SelectOption<T extends string | number = string | number> = {
   disabled?: boolean;
 };
 
+type SelectEmptyOption<T extends string | number> = {
+  value: T | null;
+  label: string;
+  disabled?: boolean;
+};
+
+type SelectItem<T extends string | number> = SelectOption<T> | SelectEmptyOption<T>;
+
 type RequestConfig<T extends string | number = string | number> = {
   url: string;
   method?: 'get' | 'post';
@@ -71,7 +79,7 @@ type SingleAllowEmptyProps<T extends string | number> = SharedProps<T> & {
   emptyOptionValue?: T | null;
   onChange?: (
     value: T | null | undefined,
-    options: Array<SelectOption<T> | { value: T | null; label: string; disabled?: boolean }>
+    options: SelectItem<T>[]
   ) => void;
 };
 
@@ -121,12 +129,16 @@ export default function Select<T extends string | number = string | number>({
   className,
   onChange,
 }: Props<T>) {
+  const resolvedOptions = options as SelectOption<T>[];
+  const resolvedLoadOptions = loadOptions as ((query: string) => Promise<SelectOption<T>[]>) | undefined;
+  const resolvedRequest = request as RequestConfig<T> | undefined;
+  const resolvedOnAfterRequest = onAfterRequest as ((options: SelectOption<T>[], query: string) => void) | undefined;
   const context = useFormFieldContext();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const isRemote = Boolean(loadOptions || request);
-  const [items, setItems] = React.useState<SelectOption<T>[]>(options);
+  const isRemote = Boolean(resolvedLoadOptions || resolvedRequest);
+  const [items, setItems] = React.useState<SelectOption<T>[]>(resolvedOptions);
   const controlRef = React.useRef<HTMLButtonElement>(null);
   const { ref: dropdownRef, style: dropdownStyle } = useDropdownPosition(open, {
     gap: 6,
@@ -148,16 +160,16 @@ export default function Select<T extends string | number = string | number>({
   const [internalValue, setInternalValue] = React.useState<T | T[] | null | undefined>(
     defaultValue ?? (multiple ? [] : allowEmpty ? resolvedEmptyValue ?? undefined : undefined),
   );
-  const emptyOption = React.useMemo<{ value: T | null; label: string; disabled?: boolean } | null>(
+  const emptyOption = React.useMemo<SelectEmptyOption<T> | null>(
     () => (allowEmpty ? { value: resolvedEmptyValue, label: emptyOptionLabel, disabled: false } : null),
     [allowEmpty, emptyOptionLabel, resolvedEmptyValue],
   );
 
   React.useEffect(() => {
     if (!isRemote) {
-      setItems(options);
+      setItems(resolvedOptions);
     }
-  }, [options, isRemote]);
+  }, [resolvedOptions, isRemote]);
 
   React.useEffect(() => {
     if (!open || !isRemote) {
@@ -170,27 +182,27 @@ export default function Select<T extends string | number = string | number>({
     const timer = window.setTimeout(async () => {
       try {
         let next: SelectOption<T>[] = [];
-        if (loadOptions) {
-          next = await loadOptions(query);
-        } else if (request) {
+        if (resolvedLoadOptions) {
+          next = await resolvedLoadOptions(query);
+        } else if (resolvedRequest) {
           const response = await axios({
-            url: request.url,
-            method: request.method ?? 'get',
-            params: { ...request.params, q: query },
-            data: request.data,
+            url: resolvedRequest.url,
+            method: resolvedRequest.method ?? 'get',
+            params: { ...resolvedRequest.params, q: query },
+            data: resolvedRequest.data,
           });
-          const mapper = request.mapOptions ?? defaultMapOptions<T>;
+          const mapper = resolvedRequest.mapOptions ?? defaultMapOptions<T>;
           next = mapper(response.data);
         }
 
         if (active) {
           setItems(next);
-          onAfterRequest?.(next, query);
+          resolvedOnAfterRequest?.(next, query);
         }
       } catch {
         if (active) {
           setItems([]);
-          onAfterRequest?.([], query);
+          resolvedOnAfterRequest?.([], query);
         }
       } finally {
         if (active) {
@@ -203,7 +215,7 @@ export default function Select<T extends string | number = string | number>({
       active = false;
       window.clearTimeout(timer);
     };
-  }, [open, query, isRemote, loadOptions, request]);
+  }, [open, query, isRemote, resolvedLoadOptions, resolvedRequest, resolvedOnAfterRequest]);
 
   React.useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -237,7 +249,7 @@ export default function Select<T extends string | number = string | number>({
     }
   }, [open, searchable]);
 
-  const allOptions = React.useMemo<Array<SelectOption<T> | { value: T | null; label: string; disabled?: boolean }>>(
+  const allOptions = React.useMemo<SelectItem<T>[]>(
     () => (emptyOption ? [emptyOption, ...items] : items),
     [emptyOption, items],
   );
@@ -307,10 +319,7 @@ export default function Select<T extends string | number = string | number>({
     return emptyOption ? [emptyOption, ...filtered] : filtered;
   }, [items, query, isRemote, emptyOption]);
 
-  const updateValue = (
-    next: T | T[] | null | undefined,
-    nextOptions: Array<SelectOption<T> | { value: T | null; label: string; disabled?: boolean }>,
-  ) => {
+  const updateValue = (next: T | T[] | null | undefined, nextOptions: SelectItem<T>[]) => {
     if (!isControlled) {
       setInternalValue(next);
     }
@@ -318,10 +327,7 @@ export default function Select<T extends string | number = string | number>({
       (onChange as MultiProps<T>['onChange'])?.(next as T[], nextOptions as SelectOption<T>[]);
     } else {
       if (allowEmpty) {
-        (onChange as SingleAllowEmptyProps<T>['onChange'])?.(
-          next as T | null | undefined,
-          nextOptions as Array<SelectOption<T> | { value: T | null; label: string; disabled?: boolean }>,
-        );
+        (onChange as SingleAllowEmptyProps<T>['onChange'])?.(next as T | null | undefined, nextOptions);
       } else {
         if (clearable) {
           (onChange as SingleClearableProps<T>['onChange'])?.(
@@ -338,7 +344,7 @@ export default function Select<T extends string | number = string | number>({
     }
   };
 
-  const handleSelect = (option: SelectOption<T> | { value: T | null; label: string; disabled?: boolean }) => {
+  const handleSelect = (option: SelectItem<T>) => {
     if (option.disabled) {
       return;
     }

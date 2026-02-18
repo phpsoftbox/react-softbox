@@ -233,6 +233,30 @@ export default function App() {
     []
   );
 
+  const tableColumnsWithActions = React.useMemo<TableColumn<(typeof tableRows)[number]>[]>(
+    () => [
+      ...tableColumns,
+      {
+        id: 'actions',
+        header: 'Действия',
+        align: 'right',
+        width: 140,
+        cell: (row: (typeof tableRows)[number]) => (
+          <Dropdown
+            align="right"
+            trigger={<Button size="sm" appearance="outline">Действия</Button>}
+          >
+            <Dropdown.Item>Открыть</Dropdown.Item>
+            <Dropdown.Item>Редактировать</Dropdown.Item>
+            <Dropdown.Separator />
+            <Dropdown.Item>Удалить</Dropdown.Item>
+          </Dropdown>
+        ),
+      },
+    ],
+    [tableColumns],
+  );
+
   const sortedRows = React.useMemo(() => {
     const next = [...tableRows];
     const direction = tableSort.direction === 'asc' ? 1 : -1;
@@ -730,6 +754,14 @@ export default function App() {
                   />
                 </Stack>
                 <Stack gap="8px">
+                  <Text weight="semibold">Row actions (Dropdown)</Text>
+                  <Table
+                    columns={tableColumnsWithActions}
+                    data={sortedRows}
+                    showFooter={false}
+                  />
+                </Stack>
+                <Stack gap="8px">
                   <Text weight="semibold">One row + bulk actions</Text>
                   <Table
                     columns={tableColumns}
@@ -742,8 +774,8 @@ export default function App() {
                     bulkActions={{
                       selectedIds: smallSelectedIds,
                       actions: [
-                        { id: 'remove', label: 'Удалить', onClick: () => setSmallSelectedIds([]) },
-                        { id: 'restore', label: 'Восстановить', onClick: () => setSmallSelectedIds([]) },
+                        { id: 'remove', label: 'Удалить', variant: 'danger', icon: '-', onClick: () => setSmallSelectedIds([]) },
+                        { id: 'restore', label: 'Восстановить', variant: 'success', icon: '+', onClick: () => setSmallSelectedIds([]) },
                       ],
                       onClear: () => setSmallSelectedIds([]),
                     }}

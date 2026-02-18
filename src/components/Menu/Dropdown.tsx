@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import Menu, { MenuItem } from './Menu';
 import styles from './Menu.module.css';
 import useDropdownPosition from '../../hooks/useDropdownPosition';
@@ -11,6 +12,7 @@ type Props = {
   align?: 'left' | 'right';
   placement?: 'auto' | 'down' | 'up';
   fullWidth?: boolean;
+  portal?: boolean;
   className?: string;
 };
 
@@ -133,17 +135,22 @@ function Dropdown({
   align = 'right',
   placement = 'auto',
   fullWidth = false,
+  portal = true,
   className,
 }: Props) {
   const [open, setOpen] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const triggerRef = React.useRef<HTMLElement | null>(null);
+  const canPortal = typeof document !== 'undefined' && Boolean(document.body);
+  const shouldPortal = portal && canPortal;
   const { ref: menuRef, style: menuPositionStyle } = useDropdownPosition(open, {
     gap: 8,
     align,
     placement,
     anchorRef: triggerRef,
+    strategy: shouldPortal ? 'fixed' : 'absolute',
   });
+  const alignClass = shouldPortal ? null : styles[`align-${align}`];
   const isElementTrigger = React.isValidElement(trigger);
 
   const resolved = children ? buildItemsFromChildren(children) : { items: items ?? [] };
@@ -156,7 +163,10 @@ function Dropdown({
         return;
       }
 
-      if (!containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const insideTrigger = containerRef.current.contains(target);
+      const insideMenu = menuRef.current ? menuRef.current.contains(target) : false;
+      if (!insideTrigger && !insideMenu) {
         setOpen(false);
       }
     };
@@ -166,13 +176,23 @@ function Dropdown({
   }, []);
 
   React.useEffect(() => {
-    if (!open || !containerRef.current) {
+    if (!open) {
       return;
     }
-
-    const firstItem = containerRef.current.querySelector('[data-menu-item="true"]') as HTMLElement | null;
-    firstItem?.focus();
-  }, [open]);
+    const scope = menuRef.current ?? containerRef.current;
+    if (!scope) {
+      return;
+    }
+    const firstItem = scope.querySelector('[data-menu-item="true"]') as HTMLElement | null;
+    if (!firstItem) {
+      return;
+    }
+    try {
+      firstItem.focus({ preventScroll: true });
+    } catch {
+      firstItem.focus();
+    }
+  }, [open, menuRef]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Escape') {
@@ -192,6 +212,16 @@ function Dropdown({
       setOpen(false);
     }
   };
+
+  const menu = open ? (
+    <div
+      ref={menuRef}
+      className={[styles.dropdownMenu, alignClass, navProps?.className].filter(Boolean).join(' ')}
+      style={{ ...menuPositionStyle, ...navProps?.style }}
+    >
+      <Menu items={resolvedItems} orientation={orientation} onItemSelect={() => setOpen(false)} />
+    </div>
+  ) : null;
 
   return (
     <div
@@ -226,15 +256,7 @@ function Dropdown({
           {trigger}
         </button>
       )}
-      {open ? (
-        <div
-          ref={menuRef}
-          className={[styles.dropdownMenu, styles[`align-${align}`], navProps?.className].filter(Boolean).join(' ')}
-          style={{ ...menuPositionStyle, ...navProps?.style }}
-        >
-          <Menu items={resolvedItems} orientation={orientation} onItemSelect={() => setOpen(false)} />
-        </div>
-      ) : null}
+      {menu ? (shouldPortal ? createPortal(menu, document.body) : menu) : null}
     </div>
   );
 }

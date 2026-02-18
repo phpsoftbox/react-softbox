@@ -227,6 +227,9 @@ const topMenu = [
 <Menu items={topMenu} orientation="horizontal" />
 ```
 
+`Dropdown` по умолчанию рендерится через портал (`portal={true}`), чтобы не клиппиться контейнерами со скроллом.
+Если нужно встроенное поведение, передайте `portal={false}`.
+
 ### Collapsible Menu
 
 ```tsx

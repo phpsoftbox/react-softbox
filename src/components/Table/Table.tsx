@@ -3,6 +3,7 @@ import Button from '../Button/Button';
 import Dropdown from '../Menu/Dropdown';
 import Checkbox from '../Input/Checkbox/Checkbox';
 import styles from './Table.module.css';
+import type { UiVariant } from '../../types';
 
 export type TableSortDirection = 'asc' | 'desc';
 
@@ -27,6 +28,8 @@ export type TableBulkAction = {
   label: React.ReactNode;
   onClick: (selectedIds: React.Key[]) => void;
   disabled?: boolean;
+  variant?: UiVariant;
+  icon?: React.ReactNode;
 };
 
 export type TableBulkActions = {
@@ -268,6 +271,14 @@ function TableBase<T>({
     const label = selectedCount > 0 ? `Действия (${selectedCount})` : 'Действия';
     const isDisabled = Boolean(bulkActions.disabled);
     const alignClass = bulkActions.align === 'right' ? styles.bulkActionsRight : styles.bulkActionsLeft;
+    const variantClassMap: Record<UiVariant, string> = {
+      default: styles.bulkActionDefault,
+      primary: styles.bulkActionPrimary,
+      info: styles.bulkActionInfo,
+      success: styles.bulkActionSuccess,
+      warning: styles.bulkActionWarning,
+      danger: styles.bulkActionDanger,
+    };
 
     return (
       <div className={styles.bulkActions} data-position={position}>
@@ -286,6 +297,8 @@ function TableBase<T>({
                   key={action.id}
                   disabled={!hasSelected || isDisabled || action.disabled}
                   onClick={!hasSelected || isDisabled ? undefined : () => action.onClick(bulkActions.selectedIds)}
+                  className={action.variant ? variantClassMap[action.variant] : undefined}
+                  icon={action.icon}
                 >
                   {action.label}
                 </Dropdown.Item>

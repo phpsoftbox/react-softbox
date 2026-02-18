@@ -117,7 +117,8 @@ const [selected, setSelected] = useState<React.Key[]>([]);
   bulkActions={{
     selectedIds: selected,
     actions: [
-      { id: 'remove', label: 'Удалить', onClick: (ids) => console.log(ids) },
+      { id: 'remove', label: 'Удалить', onClick: (ids) => console.log(ids), variant: 'danger' },
+      { id: 'restore', label: 'Восстановить', onClick: (ids) => console.log(ids), icon: '+' },
     ],
     disabled: false,
     placement: 'both',

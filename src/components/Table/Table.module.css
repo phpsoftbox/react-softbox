@@ -42,6 +42,30 @@
   min-width: 180px;
 }
 
+.bulkActionDefault {
+  color: var(--color-text);
+}
+
+.bulkActionPrimary {
+  color: var(--color-teal);
+}
+
+.bulkActionInfo {
+  color: var(--color-blue);
+}
+
+.bulkActionSuccess {
+  color: var(--color-mint);
+}
+
+.bulkActionWarning {
+  color: var(--badge-warning-color, #f6c86a);
+}
+
+.bulkActionDanger {
+  color: var(--badge-danger-color, #ff6b6b);
+}
+
 .ghost {
   border: none;
   background: transparent;
