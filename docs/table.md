@@ -104,6 +104,29 @@ const [selected, setSelected] = useState<React.Key[]>([]);
 />;
 ```
 
+## Bulk actions
+
+```tsx
+<Table
+  columns={columns}
+  data={rows}
+  selection={{
+    selectedIds: selected,
+    onToggle: (id) => setSelected((prev) => prev.includes(id) ? prev.filter((key) => key !== id) : [...prev, id]),
+  }}
+  bulkActions={{
+    selectedIds: selected,
+    actions: [
+      { id: 'remove', label: 'Удалить', onClick: (ids) => console.log(ids) },
+    ],
+    disabled: false,
+    placement: 'both',
+  }}
+/>;
+```
+
+По умолчанию `placement` = `both`.
+
 ## Полезные поля колонки
 
 - `field` / `accessor` / `cell` — источник данных

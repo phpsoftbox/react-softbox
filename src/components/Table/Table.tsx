@@ -35,6 +35,7 @@ export type TableBulkActions = {
   onClear?: () => void;
   align?: 'left' | 'right';
   placement?: 'top' | 'bottom' | 'both';
+  disabled?: boolean;
 };
 
 export type TableRenderBulkAction<T> = (selectedIds: React.Key[], selectedRows: T[]) => React.ReactNode;
@@ -240,7 +241,7 @@ function TableBase<T>({
     ? selection.someSelected ?? rowKeys.some((key) => selectedSet?.has(key))
     : false;
 
-  const placement = renderBulkAction ? bulkActionPlacement ?? 'top' : bulkActions?.placement ?? 'top';
+  const placement = renderBulkAction ? bulkActionPlacement ?? 'both' : bulkActions?.placement ?? 'both';
   const hasBulkRenderer = Boolean(renderBulkAction || bulkActions);
   const shouldRenderBulkTop = Boolean(hasBulkRenderer && (placement === 'top' || placement === 'both'));
   const shouldRenderBulkBottom = Boolean(hasBulkRenderer && (placement === 'bottom' || placement === 'both'));
@@ -265,6 +266,7 @@ function TableBase<T>({
     const selectedCount = bulkActions.selectedIds.length;
     const hasSelected = selectedCount > 0;
     const label = selectedCount > 0 ? `Действия (${selectedCount})` : 'Действия';
+    const isDisabled = Boolean(bulkActions.disabled);
     const alignClass = bulkActions.align === 'right' ? styles.bulkActionsRight : styles.bulkActionsLeft;
 
     return (
@@ -273,7 +275,7 @@ function TableBase<T>({
           <Dropdown
             align={bulkActions.align === 'right' ? 'right' : 'left'}
             trigger={
-              <Button size="sm" appearance="outline" disabled={!hasSelected}>
+              <Button size="sm" appearance="outline" disabled={!hasSelected || isDisabled}>
                 {label}
               </Button>
             }
@@ -282,8 +284,8 @@ function TableBase<T>({
               {bulkActions.actions.map((action) => (
                 <Dropdown.Item
                   key={action.id}
-                  disabled={!hasSelected || action.disabled}
-                  onClick={hasSelected ? () => action.onClick(bulkActions.selectedIds) : undefined}
+                  disabled={!hasSelected || isDisabled || action.disabled}
+                  onClick={!hasSelected || isDisabled ? undefined : () => action.onClick(bulkActions.selectedIds)}
                 >
                   {action.label}
                 </Dropdown.Item>
@@ -291,7 +293,10 @@ function TableBase<T>({
               {bulkActions.onClear ? (
                 <>
                   <Dropdown.Separator />
-                  <Dropdown.Item disabled={!hasSelected} onClick={hasSelected ? bulkActions.onClear : undefined}>
+                  <Dropdown.Item
+                    disabled={!hasSelected || isDisabled}
+                    onClick={!hasSelected || isDisabled ? undefined : bulkActions.onClear}
+                  >
                     Сбросить выбор
                   </Dropdown.Item>
                 </>
@@ -315,150 +320,40 @@ function TableBase<T>({
   return (
     <div className={wrapperClasses} {...props}>
       {shouldRenderBulkTop ? renderBulkActions('top') : null}
-      <table className={[styles.table, tableClassName].filter(Boolean).join(' ')}>
-        {caption ? <caption className={styles.caption}>{caption}</caption> : null}
-        <thead className={[styles.head, headClassName].filter(Boolean).join(' ')}>
-          <tr>
-            {showSelection ? (
-              <th className={[styles.headCell, styles.selectionCell].filter(Boolean).join(' ')}>
-                <Checkbox
-                  checked={allSelected}
-                  indeterminate={!allSelected && someSelected}
-                  onChange={handleToggleAll}
-                  aria-label="Выбрать все строки"
-                />
-              </th>
-            ) : null}
-            {visibleColumns.map((column, columnIndex) => {
-              const header = resolveHeaderContent(column);
-              const sortKey = resolveSortKey(column);
-              const isSortable = Boolean(column.sortable && sortKey);
-              const isSorted = Boolean(isSortable && currentSortKey && sortKey === currentSortKey);
-              const direction = isSorted ? currentSortDirection ?? defaultDirection : null;
-              const nextDirection = isSorted ? (direction === 'asc' ? 'desc' : 'asc') : defaultDirection;
-              const nextState = sortKey ? { key: sortKey, direction: nextDirection } : null;
-              const sortUrl = nextState ? getSortUrl(sort, nextState) : '';
-              const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
-              const hideClass = getHideClass(column.hideOn);
-              const headerClasses = [
-                styles.headCell,
-                alignClass,
-                hideClass,
-                isSortable ? styles.sortable : null,
-                isSorted && direction === 'asc' ? styles.sortedAsc : null,
-                isSorted && direction === 'desc' ? styles.sortedDesc : null,
-                column.headerClassName,
-                column.className,
-              ]
-                .filter(Boolean)
-                .join(' ');
-              const inlineStyle: React.CSSProperties = {
-                width: toCssValue(column.width),
-                minWidth: toCssValue(column.minWidth),
-              };
-
-              const handleSortClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-                if (!nextState) {
-                  event.preventDefault();
-                  return;
-                }
-                if (sort?.onChange) {
-                  event.preventDefault();
-                  sort.onChange(nextState, sortUrl);
-                  return;
-                }
-                if (!sortUrl) {
-                  event.preventDefault();
-                }
-              };
-
-              return (
-                <th
-                  key={column.id ?? `${columnIndex}`}
-                  className={headerClasses}
-                  style={inlineStyle}
-                  aria-sort={isSortable ? (direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none') : undefined}
-                  scope="col"
-                >
-                  {isSortable ? (
-                    <a href={sortUrl || '#'} className={styles.sortButton} onClick={handleSortClick}>
-                      <span>{header}</span>
-                      <span className={styles.sortIndicator} aria-hidden="true" />
-                    </a>
-                  ) : (
-                    header
-                  )}
+      <div className={styles.tableScroll}>
+        <table className={[styles.table, tableClassName].filter(Boolean).join(' ')}>
+          {caption ? <caption className={styles.caption}>{caption}</caption> : null}
+          <thead className={[styles.head, headClassName].filter(Boolean).join(' ')}>
+            <tr>
+              {showSelection ? (
+                <th className={[styles.headCell, styles.selectionCell].filter(Boolean).join(' ')}>
+                  <Checkbox
+                    checked={allSelected}
+                    indeterminate={!allSelected && someSelected}
+                    onChange={handleToggleAll}
+                    aria-label="Выбрать все строки"
+                  />
                 </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody className={[styles.body, bodyClassName].filter(Boolean).join(' ')}>
-          {data.length === 0 ? (
-            <tr className={styles.row}>
-              <td className={[styles.cell, styles.emptyCell, styles.noLabel].filter(Boolean).join(' ')} colSpan={colSpan} data-label="">
-                {emptyState}
-              </td>
-            </tr>
-          ) : (
-            data.map((row, rowIndex) => {
-              const resolvedRowClassName = typeof rowClassName === 'function' ? rowClassName(row, rowIndex) : rowClassName;
-              const resolvedKey = getRowKey(row, rowIndex);
-              return (
-                <tr key={resolvedKey} className={[styles.row, resolvedRowClassName].filter(Boolean).join(' ')}>
-                  {showSelection ? (
-                    <td className={[styles.cell, styles.selectionCell].filter(Boolean).join(' ')}>
-                      <Checkbox
-                        checked={Boolean(selectedSet?.has(resolvedKey))}
-                        onChange={() => selection?.onToggle(resolvedKey, row, rowIndex)}
-                        aria-label={`Выбрать строку ${rowIndex + 1}`}
-                      />
-                    </td>
-                  ) : null}
-                  {visibleColumns.map((column, columnIndex) => {
-                    const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
-                    const hideClass = getHideClass(column.hideOn);
-                    const cellClasses = [
-                      styles.cell,
-                      alignClass,
-                      hideClass,
-                      column.cellClassName,
-                      column.className,
-                    ]
-                      .filter(Boolean)
-                      .join(' ');
-                    const inlineStyle: React.CSSProperties = {
-                      width: toCssValue(column.width),
-                      minWidth: toCssValue(column.minWidth),
-                    };
-                    const value = resolveCellValue(row, column, rowIndex);
-
-                    return (
-                      <td
-                        key={`${resolvedKey}-${column.id ?? columnIndex}`}
-                        className={cellClasses}
-                        style={inlineStyle}
-                      >
-                        <div className={styles.cellContent}>{value}</div>
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-        {shouldShowFooter ? (
-          <tfoot className={[styles.footer, footerClassName].filter(Boolean).join(' ')}>
-            <tr className={styles.footerRow}>
-              {showSelection ? <td className={[styles.footerCell, styles.selectionCell].filter(Boolean).join(' ')} /> : null}
+              ) : null}
               {visibleColumns.map((column, columnIndex) => {
+                const header = resolveHeaderContent(column);
+                const sortKey = resolveSortKey(column);
+                const isSortable = Boolean(column.sortable && sortKey);
+                const isSorted = Boolean(isSortable && currentSortKey && sortKey === currentSortKey);
+                const direction = isSorted ? currentSortDirection ?? defaultDirection : null;
+                const nextDirection = isSorted ? (direction === 'asc' ? 'desc' : 'asc') : defaultDirection;
+                const nextState = sortKey ? { key: sortKey, direction: nextDirection } : null;
+                const sortUrl = nextState ? getSortUrl(sort, nextState) : '';
                 const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
                 const hideClass = getHideClass(column.hideOn);
-                const footerClasses = [
-                  styles.footerCell,
+                const headerClasses = [
+                  styles.headCell,
                   alignClass,
                   hideClass,
+                  isSortable ? styles.sortable : null,
+                  isSorted && direction === 'asc' ? styles.sortedAsc : null,
+                  isSorted && direction === 'desc' ? styles.sortedDesc : null,
+                  column.headerClassName,
                   column.className,
                 ]
                   .filter(Boolean)
@@ -467,23 +362,135 @@ function TableBase<T>({
                   width: toCssValue(column.width),
                   minWidth: toCssValue(column.minWidth),
                 };
-                let footerValue: React.ReactNode = null;
-                if (typeof column.footer === 'function') {
-                  footerValue = column.footer(data, column);
-                } else if (column.footer !== undefined) {
-                  footerValue = column.footer;
-                }
+
+                const handleSortClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+                  if (!nextState) {
+                    event.preventDefault();
+                    return;
+                  }
+                  if (sort?.onChange) {
+                    event.preventDefault();
+                    sort.onChange(nextState, sortUrl);
+                    return;
+                  }
+                  if (!sortUrl) {
+                    event.preventDefault();
+                  }
+                };
 
                 return (
-                  <td key={`footer-${column.id ?? columnIndex}`} className={footerClasses} style={inlineStyle}>
-                    <div className={styles.cellContent}>{footerValue}</div>
-                  </td>
+                  <th
+                    key={column.id ?? `${columnIndex}`}
+                    className={headerClasses}
+                    style={inlineStyle}
+                    aria-sort={isSortable ? (direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none') : undefined}
+                    scope="col"
+                  >
+                    {isSortable ? (
+                      <a href={sortUrl || '#'} className={styles.sortButton} onClick={handleSortClick}>
+                        <span>{header}</span>
+                        <span className={styles.sortIndicator} aria-hidden="true" />
+                      </a>
+                    ) : (
+                      header
+                    )}
+                  </th>
                 );
               })}
             </tr>
-          </tfoot>
-        ) : null}
-      </table>
+          </thead>
+          <tbody className={[styles.body, bodyClassName].filter(Boolean).join(' ')}>
+            {data.length === 0 ? (
+              <tr className={styles.row}>
+                <td className={[styles.cell, styles.emptyCell, styles.noLabel].filter(Boolean).join(' ')} colSpan={colSpan} data-label="">
+                  {emptyState}
+                </td>
+              </tr>
+            ) : (
+              data.map((row, rowIndex) => {
+                const resolvedRowClassName = typeof rowClassName === 'function' ? rowClassName(row, rowIndex) : rowClassName;
+                const resolvedKey = getRowKey(row, rowIndex);
+                return (
+                  <tr key={resolvedKey} className={[styles.row, resolvedRowClassName].filter(Boolean).join(' ')}>
+                    {showSelection ? (
+                      <td className={[styles.cell, styles.selectionCell].filter(Boolean).join(' ')}>
+                        <Checkbox
+                          checked={Boolean(selectedSet?.has(resolvedKey))}
+                          onChange={() => selection?.onToggle(resolvedKey, row, rowIndex)}
+                          aria-label={`Выбрать строку ${rowIndex + 1}`}
+                        />
+                      </td>
+                    ) : null}
+                    {visibleColumns.map((column, columnIndex) => {
+                      const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
+                      const hideClass = getHideClass(column.hideOn);
+                      const cellClasses = [
+                        styles.cell,
+                        alignClass,
+                        hideClass,
+                        column.cellClassName,
+                        column.className,
+                      ]
+                        .filter(Boolean)
+                        .join(' ');
+                      const inlineStyle: React.CSSProperties = {
+                        width: toCssValue(column.width),
+                        minWidth: toCssValue(column.minWidth),
+                      };
+                      const value = resolveCellValue(row, column, rowIndex);
+
+                      return (
+                        <td
+                          key={`${resolvedKey}-${column.id ?? columnIndex}`}
+                          className={cellClasses}
+                          style={inlineStyle}
+                        >
+                          <div className={styles.cellContent}>{value}</div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+          {shouldShowFooter ? (
+            <tfoot className={[styles.footer, footerClassName].filter(Boolean).join(' ')}>
+              <tr className={styles.footerRow}>
+                {showSelection ? <td className={[styles.footerCell, styles.selectionCell].filter(Boolean).join(' ')} /> : null}
+                {visibleColumns.map((column, columnIndex) => {
+                  const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
+                  const hideClass = getHideClass(column.hideOn);
+                  const footerClasses = [
+                    styles.footerCell,
+                    alignClass,
+                    hideClass,
+                    column.className,
+                  ]
+                    .filter(Boolean)
+                    .join(' ');
+                  const inlineStyle: React.CSSProperties = {
+                    width: toCssValue(column.width),
+                    minWidth: toCssValue(column.minWidth),
+                  };
+                  let footerValue: React.ReactNode = null;
+                  if (typeof column.footer === 'function') {
+                    footerValue = column.footer(data, column);
+                  } else if (column.footer !== undefined) {
+                    footerValue = column.footer;
+                  }
+
+                  return (
+                    <td key={`footer-${column.id ?? columnIndex}`} className={footerClasses} style={inlineStyle}>
+                      <div className={styles.cellContent}>{footerValue}</div>
+                    </td>
+                  );
+                })}
+              </tr>
+            </tfoot>
+          ) : null}
+        </table>
+      </div>
       {shouldRenderBulkBottom ? renderBulkActions('bottom') : null}
     </div>
   );

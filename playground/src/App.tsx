@@ -103,6 +103,7 @@ export default function App() {
     direction: 'asc',
   });
   const [selectedIds, setSelectedIds] = React.useState<React.Key[]>([]);
+  const [smallSelectedIds, setSmallSelectedIds] = React.useState<React.Key[]>([]);
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
 
   const pushToast = (variant: 'info' | 'success' | 'warning' | 'danger') => {
@@ -275,6 +276,14 @@ export default function App() {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
+  const handleSmallToggleAll = (ids: React.Key[]) => {
+    setSmallSelectedIds((prev) => (ids.length > 0 && ids.every((id) => prev.includes(id)) ? [] : ids));
+  };
+
+  const handleSmallToggleRow = (id: React.Key) => {
+    setSmallSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  };
+
   return (
     <div style={{ padding: '32px 40px' }}>
       <Stack gap="24px">
@@ -341,14 +350,21 @@ export default function App() {
           <Card className="gridCard">
             <Card.Header title="Badges" />
             <Card.Body>
-              <Row gap="10px" wrap="wrap">
-                <Badge variant="default">default</Badge>
-                <Badge variant="primary">primary</Badge>
-                <Badge variant="info">info</Badge>
-                <Badge variant="success">success</Badge>
-                <Badge variant="warning">warning</Badge>
-                <Badge variant="danger">danger</Badge>
-              </Row>
+              <Stack gap="10px">
+                <Row gap="10px" wrap="wrap">
+                  <Badge variant="default">default</Badge>
+                  <Badge variant="primary">primary</Badge>
+                  <Badge variant="info">info</Badge>
+                  <Badge variant="success">success</Badge>
+                  <Badge variant="warning">warning</Badge>
+                  <Badge variant="danger">danger</Badge>
+                </Row>
+                <Row gap="10px" wrap="wrap">
+                  <Badge size="sm" variant="info">sm</Badge>
+                  <Badge size="md" variant="info">md</Badge>
+                  <Badge size="lg" variant="info">lg</Badge>
+                </Row>
+              </Stack>
             </Card.Body>
           </Card>
 
@@ -568,6 +584,21 @@ export default function App() {
                   </Input.FloatLabel>
                 </Input>
                 <Input>
+                  <Input.FloatLabel label="Async select">
+                    <Input.Select
+                        name="async"
+                        value={asyncValue}
+                        onChange={(next) => setAsyncValue(next as string)}
+                        options={[
+                          { value: 'cache', label: 'Cache' },
+                          { value: 'queue', label: 'Queue' },
+                          { value: 'db', label: 'Database' },
+                          { value: 'search', label: 'Search' },
+                        ]}
+                    />
+                  </Input.FloatLabel>
+                </Input>
+                <Input>
                   <Input.Label>Сумма</Input.Label>
                   <Input.Group stretch>
                     <Input.Addon>₽</Input.Addon>
@@ -696,6 +727,26 @@ export default function App() {
                     data={sortedRows}
                     variant="bordered"
                     showFooter
+                  />
+                </Stack>
+                <Stack gap="8px">
+                  <Text weight="semibold">One row + bulk actions</Text>
+                  <Table
+                    columns={tableColumns}
+                    data={[tableRows[0]]}
+                    selection={{
+                      selectedIds: smallSelectedIds,
+                      onToggle: (id) => handleSmallToggleRow(id),
+                      onToggleAll: (ids) => handleSmallToggleAll(ids),
+                    }}
+                    bulkActions={{
+                      selectedIds: smallSelectedIds,
+                      actions: [
+                        { id: 'remove', label: 'Удалить', onClick: () => setSmallSelectedIds([]) },
+                        { id: 'restore', label: 'Восстановить', onClick: () => setSmallSelectedIds([]) },
+                      ],
+                      onClear: () => setSmallSelectedIds([]),
+                    }}
                   />
                 </Stack>
               </Stack>

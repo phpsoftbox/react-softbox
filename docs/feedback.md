@@ -11,6 +11,9 @@
 <Badge variant="success">Success</Badge>
 <Badge variant="warning">Warning</Badge>
 <Badge variant="danger">Danger</Badge>
+<Badge size="sm" variant="info">Small</Badge>
+<Badge size="md" variant="info">Medium</Badge>
+<Badge size="lg" variant="info">Large</Badge>
 ```
 
 ## Alert

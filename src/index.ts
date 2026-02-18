@@ -9,6 +9,7 @@ export { default as Radio } from './components/Input/Radio/Radio';
 export { default as Switch } from './components/Input/Switch/Switch';
 export { default as Checkbox } from './components/Input/Checkbox/Checkbox';
 export { default as Select } from './components/Input/Select/Select';
+export type { SelectOption, SelectOptionValue } from './components/Input/Select/Select';
 export { default as Alert } from './components/Alert/Alert';
 export { default as Notifier } from './components/Notifier/Notifier';
 export { default as FloatLabel } from './components/Input/FloatLabel/FloatLabel';

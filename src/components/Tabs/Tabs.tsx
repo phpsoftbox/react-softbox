@@ -1,5 +1,4 @@
 import React from 'react';
-import styles from './Tabs.module.css';
 
 export type TabItem = {
   id: string;
@@ -144,9 +143,11 @@ export default function Tabs({
     }
   };
 
-  const classes = [styles.tabs, styles[orientation], className].filter(Boolean).join(' ');
-  const listClasses = [styles.list, listClassName].filter(Boolean).join(' ');
-  const panelClasses = [styles.panel, panelClassName].filter(Boolean).join(' ');
+  const classes = ['tabs', orientation === 'vertical' ? 'tabs-vertical' : 'tabs-horizontal', className]
+    .filter(Boolean)
+    .join(' ');
+  const listClasses = ['tabs-list', listClassName].filter(Boolean).join(' ');
+  const panelClasses = ['tabs-panel', panelClassName].filter(Boolean).join(' ');
 
   const activeItem = items.find((item) => item.id === currentId && !item.disabled);
 
@@ -170,7 +171,7 @@ export default function Tabs({
               id={tabId}
               type="button"
               role="tab"
-              className={[styles.tab, selected ? styles.active : null].filter(Boolean).join(' ')}
+              className={['tab', selected ? 'tab-active' : null].filter(Boolean).join(' ')}
               aria-selected={selected}
               aria-controls={panelId}
               aria-disabled={item.disabled ? 'true' : undefined}
@@ -179,8 +180,8 @@ export default function Tabs({
               onClick={() => handleSelect(item.id, item.disabled)}
               disabled={item.disabled}
             >
-              <span className={styles.tabLabel}>{item.label}</span>
-              {item.badge ? <span className={styles.tabBadge}>{item.badge}</span> : null}
+              <span className="tab-label">{item.label}</span>
+              {item.badge ? <span className="tab-badge">{item.badge}</span> : null}
             </button>
           );
         })}
@@ -195,7 +196,7 @@ export default function Tabs({
             {activeItem.content}
           </div>
         ) : (
-          <div className={styles.empty}>Нет доступных вкладок</div>
+          <div className="tabs-empty">Нет доступных вкладок</div>
         )}
       </div>
     </div>

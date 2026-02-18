@@ -32,3 +32,20 @@ const [activeId, setActiveId] = useState('overview');
 
 - `badge` — дополнительная метка справа (например, `<Badge variant="info">3</Badge>`).
 - `defaultActiveId` — активная вкладка по умолчанию (uncontrolled).
+
+## CSS‑классы для ссылок
+
+Можно использовать стили табов для ссылок:
+
+```tsx
+<div className="tabs tabs-horizontal">
+  <div className="tabs-list">
+    <a className="tab tab-active" href="#overview">
+      <span className="tab-label">Обзор</span>
+    </a>
+    <a className="tab" href="#metrics">
+      <span className="tab-label">Метрики</span>
+    </a>
+  </div>
+</div>
+```

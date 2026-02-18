@@ -5,9 +5,27 @@
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 12px;
+  line-height: 1;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border: 1px solid transparent;
+}
+
+.sizeSm {
+  padding: 2px 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.sizeMd {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.sizeLg {
+  padding: 6px 12px;
+  font-size: 13px;
+  letter-spacing: 0.07em;
 }
 
 .default {

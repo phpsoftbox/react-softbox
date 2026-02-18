@@ -106,6 +106,28 @@ const options = [
 </Input>
 ```
 
+`value` и `options.value` могут быть `string` или `number`.
+
+Для строгой типизации можно указать тип значения:
+
+```tsx
+import type { SelectOption } from '@phpsoftbox/react-softbox';
+
+type StatusValue = 10 | 20 | 30;
+
+const statusOptions: SelectOption<StatusValue>[] = [
+  { value: 10, label: 'Active' },
+  { value: 20, label: 'Blocked' },
+  { value: 30, label: 'Deleted' },
+];
+
+<Input.Select<StatusValue>
+  options={statusOptions}
+  value={status}
+  onChange={(value) => setStatus(value)}
+/>;
+```
+
 ### Поиск + multiple
 
 ```tsx
