@@ -14,6 +14,9 @@ export type FileUploaderProps = {
   maxFileSizeKb?: number;
   disabled?: boolean;
   showPreview?: boolean;
+  uploadButtonAlign?: 'left' | 'right';
+  uploadButtonPlacement?: 'beforePreview' | 'afterPreview' | 'both';
+  externalErrors?: string[];
   dropLabel?: React.ReactNode;
   supportedTypesLabel?: React.ReactNode;
   maxFileSizeLabel?: React.ReactNode;
@@ -71,6 +74,9 @@ export default function FileUploader({
   maxFileSizeKb,
   disabled = false,
   showPreview = false,
+  uploadButtonAlign = 'right',
+  uploadButtonPlacement = 'afterPreview',
+  externalErrors = [],
   dropLabel = 'Перетащите файлы сюда или выберите вручную',
   supportedTypesLabel = 'Допустимые форматы:',
   maxFileSizeLabel = 'Максимальный размер файла:',
@@ -220,6 +226,30 @@ export default function FileUploader({
     .filter(Boolean)
     .join(' ');
 
+  const shouldShowUploadButton = !!onUpload && !autoUpload && files.length > 0;
+  const shouldRenderBeforePreview = uploadButtonPlacement === 'beforePreview' || uploadButtonPlacement === 'both';
+  const shouldRenderAfterPreview = uploadButtonPlacement === 'afterPreview' || uploadButtonPlacement === 'both';
+  const actionsClasses = [
+    styles.actions,
+    uploadButtonAlign === 'left' ? styles.actionsLeft : styles.actionsRight,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const renderUploadButton = () => {
+    if (!shouldShowUploadButton) {
+      return null;
+    }
+
+    return (
+      <div className={actionsClasses}>
+        <Button variant="primary" type="button" onClick={handleUpload} disabled={disabled || isUploading}>
+          {isUploading ? 'Загрузка...' : uploadLabel}
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className={wrapperClasses}>
       <div
@@ -252,6 +282,13 @@ export default function FileUploader({
           <Button appearance="outline" type="button" onClick={handleBrowse} disabled={disabled}>
             {buttonLabel}
           </Button>
+          {externalErrors.length ? (
+            <ul className={styles.inlineErrors}>
+              {externalErrors.map((error, index) => (
+                <li key={`${error}-${index}`}>{error}</li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </div>
 
@@ -269,6 +306,8 @@ export default function FileUploader({
         </div>
       ) : null}
 
+      {shouldRenderBeforePreview ? renderUploadButton() : null}
+
       {showPreview && previews.length ? (
         <div className={styles.previewGrid}>
           {previews.map((preview) => (
@@ -280,20 +319,14 @@ export default function FileUploader({
         </div>
       ) : null}
 
+      {shouldRenderAfterPreview ? renderUploadButton() : null}
+
       {errors.length ? (
         <ul className={styles.errors}>
           {errors.map((error, index) => (
             <li key={`${error}-${index}`}>{error}</li>
           ))}
         </ul>
-      ) : null}
-
-      {onUpload && !autoUpload && files.length ? (
-        <div className={styles.actions}>
-          <Button variant="primary" type="button" onClick={handleUpload} disabled={disabled || isUploading}>
-            {isUploading ? 'Загрузка...' : uploadLabel}
-          </Button>
-        </div>
       ) : null}
     </div>
   );
