@@ -6,23 +6,33 @@ type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChan
   value?: string;
   onChange?: (value: string) => void;
   placeholderChar?: string;
+  escapeChar?: string;
 };
 
 const isDigit = (char: string) => /\d/.test(char);
 const isLetter = (char: string) => /[a-zA-Z]/.test(char);
 const isAlphaNum = (char: string) => /[a-zA-Z0-9]/.test(char);
 
-const stripRaw = (value: string) => value.replace(/[^a-zA-Z0-9]/g, '');
+const isToken = (char: string) => char === '9' || char === 'A' || char === '*';
 
-const applyMask = (raw: string, mask: string, placeholderChar?: string) => {
+const applyMask = (raw: string, mask: string, placeholderChar?: string, escapeChar = '\\') => {
   let rawIndex = 0;
   let output = '';
 
   for (let i = 0; i < mask.length; i += 1) {
     const maskChar = mask[i];
+    if (maskChar === escapeChar) {
+      if (i + 1 < mask.length) {
+        output += mask[i + 1];
+        i += 1;
+        continue;
+      }
+      output += maskChar;
+      continue;
+    }
     const rawChar = raw[rawIndex];
 
-    if (maskChar === '9' || maskChar === 'A' || maskChar === '*') {
+    if (isToken(maskChar)) {
       if (!rawChar) {
         if (placeholderChar) {
           output += placeholderChar;
@@ -52,7 +62,7 @@ const applyMask = (raw: string, mask: string, placeholderChar?: string) => {
   return output;
 };
 
-const extractRaw = (masked: string, mask: string) => {
+const extractRaw = (masked: string, mask: string, escapeChar = '\\') => {
   let raw = '';
   let maskIndex = 0;
 
@@ -60,7 +70,18 @@ const extractRaw = (masked: string, mask: string) => {
     const maskChar = mask[maskIndex];
     const char = masked[i];
 
-    if (maskChar === '9' || maskChar === 'A' || maskChar === '*') {
+    if (maskChar === escapeChar) {
+      const literal = maskIndex + 1 < mask.length ? mask[maskIndex + 1] : escapeChar;
+      if (char === literal) {
+        maskIndex += 2;
+      } else {
+        maskIndex += 2;
+        i -= 1;
+      }
+      continue;
+    }
+
+    if (isToken(maskChar)) {
       const matches =
         (maskChar === '9' && isDigit(char)) ||
         (maskChar === 'A' && isLetter(char)) ||
@@ -84,18 +105,26 @@ const extractRaw = (masked: string, mask: string) => {
   return raw;
 };
 
-export default function MaskedInput({ mask, value, onChange, placeholderChar, ...props }: Props) {
+export default function MaskedInput({
+  mask,
+  value,
+  onChange,
+  placeholderChar,
+  escapeChar = '\\',
+  onPaste,
+  ...props
+}: Props) {
   const isControlled = value !== undefined;
   const [internal, setInternal] = React.useState('');
 
   const displayValue = React.useMemo(() => {
-    const raw = stripRaw(String(isControlled ? value ?? '' : internal));
-    return applyMask(raw, mask, placeholderChar);
-  }, [value, internal, mask, placeholderChar, isControlled]);
+    const raw = extractRaw(String(isControlled ? value ?? '' : internal), mask, escapeChar);
+    return applyMask(raw, mask, placeholderChar, escapeChar);
+  }, [value, internal, mask, placeholderChar, isControlled, escapeChar]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const rawInput = event.target.value;
-    const raw = extractRaw(rawInput, mask);
+    const raw = extractRaw(rawInput, mask, escapeChar);
 
     if (!isControlled) {
       setInternal(raw);
@@ -104,5 +133,26 @@ export default function MaskedInput({ mask, value, onChange, placeholderChar, ..
     onChange?.(raw);
   };
 
-  return <InputField {...props} value={displayValue} onChange={handleChange} />;
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    onPaste?.(event);
+    if (event.defaultPrevented) {
+      return;
+    }
+    const text = event.clipboardData?.getData('text');
+    if (!text) {
+      return;
+    }
+    const raw = extractRaw(text, mask, escapeChar);
+    console.log(raw)
+    if (!raw) {
+      return;
+    }
+    event.preventDefault();
+    if (!isControlled) {
+      setInternal(raw);
+    }
+    onChange?.(raw);
+  };
+
+  return <InputField {...props} value={displayValue} onChange={handleChange} onPaste={handlePaste} />;
 }
