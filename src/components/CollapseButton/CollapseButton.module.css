@@ -5,8 +5,8 @@
   border: 1px solid rgba(30, 99, 233, 0.3);
   background: var(--surface-control);
   color: var(--color-text);
-  padding: 8px 12px;
-  border-radius: 999px;
+  padding: var(--spacing-3) calc(var(--spacing-4) + var(--spacing-1) / 2);
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 

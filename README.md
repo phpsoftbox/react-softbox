@@ -16,6 +16,7 @@ import {
   Button,
   Card,
   Checkbox,
+  Collapse,
   CollapseButton,
   Drawer,
   Dropdown,

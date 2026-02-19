@@ -38,6 +38,24 @@
 - `align`, `justify` — соответствуют flex‑свойствам
 - `wrap` — управление переносом для `Row`
 
+## Collapse
+
+`Collapse` — анимированное сворачивание контента. Обычно используется вместе с `CollapseButton`.
+
+```tsx
+const [open, setOpen] = useState(false);
+
+<CollapseButton targetId="filters-panel" open={open} onClick={() => setOpen((v) => !v)}>
+  Фильтры
+</CollapseButton>
+
+<Collapse id="filters-panel" open={open}>
+  <Card>
+    <Card.Body>Контент фильтров</Card.Body>
+  </Card>
+</Collapse>
+```
+
 ## Утилитарные отступы
 
 Глобальные классы для отступов и gap основаны на `--spacing-1…10`.

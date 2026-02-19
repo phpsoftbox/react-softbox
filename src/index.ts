@@ -2,6 +2,7 @@ export { default as Button } from './components/Button/Button';
 export { default as Badge } from './components/Badge/Badge';
 export { default as Card } from './components/Card/Card';
 export { default as CollapseButton } from './components/CollapseButton/CollapseButton';
+export { default as Collapse } from './components/Collapse/Collapse';
 export { default as FormField } from './components/Input/FormField/FormField';
 export { default as Input } from './components/Input/Input';
 export { default as Textarea } from './components/Input/Textarea/Textarea';

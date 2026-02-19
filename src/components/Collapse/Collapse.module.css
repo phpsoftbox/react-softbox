@@ -1,0 +1,25 @@
+.collapse {
+  --collapse-padding-y: var(--spacing-3);
+  --collapse-padding-x: var(--spacing-4);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: height var(--collapse-duration, 180ms) ease, opacity var(--collapse-duration, 180ms) ease;
+  will-change: height, opacity;
+}
+
+.collapse[data-state='open'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.inner {
+  display: block;
+  padding: var(--collapse-padding-y) var(--collapse-padding-x);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse {
+    transition: none;
+  }
+}

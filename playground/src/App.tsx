@@ -23,6 +23,8 @@ import {
   Tooltip,
   FileUploader,
   Drawer,
+  Collapse,
+  CollapseButton,
   getStoredThemeMode,
   setThemeMode,
 } from '@phpsoftbox/react-softbox';
@@ -95,6 +97,7 @@ export default function App() {
   >([]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [collapseOpen, setCollapseOpen] = React.useState(false);
   const [multiValue, setMultiValue] = React.useState<string[]>(['cache']);
   const [asyncValue, setAsyncValue] = React.useState<string>('alpha');
   const [pageNumber, setPageNumber] = React.useState(2);
@@ -438,6 +441,26 @@ export default function App() {
                 </Dropdown>
 
                 <Tabs items={tabs} />
+              </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard">
+            <Card.Header title="Collapse" />
+            <Card.Body>
+              <Stack gap="12px">
+                <CollapseButton
+                  targetId="playground-collapse"
+                  open={collapseOpen}
+                  onClick={() => setCollapseOpen((prev) => !prev)}
+                >
+                  Дополнительные детали
+                </CollapseButton>
+                <Collapse id="playground-collapse" open={collapseOpen}>
+                  <Text size="sm" muted>
+                    Сворачиваемый контент. Можно размещать фильтры, списки и формы.
+                  </Text>
+                </Collapse>
               </Stack>
             </Card.Body>
           </Card>
