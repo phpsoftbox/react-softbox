@@ -14,6 +14,7 @@ export type MenuItem = {
   label?: React.ReactNode;
   href?: string;
   onClick?: () => void;
+  onMouseEnter?: () => void;
   icon?: React.ReactNode;
   meta?: React.ReactNode;
   active?: boolean;
@@ -268,9 +269,16 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
           handleSelect(item);
         };
 
+        const handleMouseEnter = () => {
+          if (item.disabled) {
+            return;
+          }
+          item.onMouseEnter?.();
+        };
+
         if (item.static) {
           return (
-            <div key={key} className={staticClasses} role="presentation">
+            <div key={key} className={staticClasses} role="presentation" onMouseEnter={handleMouseEnter}>
               {content}
             </div>
           );
@@ -344,6 +352,7 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
               className={classNames}
               href={item.href}
               onClick={handleClick}
+              onMouseEnter={handleMouseEnter}
               aria-current={item.active ? 'page' : undefined}
               aria-disabled={item.disabled ? 'true' : undefined}
               tabIndex={item.disabled ? -1 : undefined}
@@ -360,6 +369,7 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
             type="button"
             className={classNames}
             onClick={handleClick}
+            onMouseEnter={handleMouseEnter}
             disabled={item.disabled}
             aria-current={item.active ? 'page' : undefined}
             data-menu-item="true"

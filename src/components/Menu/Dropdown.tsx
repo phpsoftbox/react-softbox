@@ -27,6 +27,7 @@ type DropdownItemProps = {
     children?: React.ReactNode;
   }>;
   onClick?: () => void;
+  onMouseEnter?: () => void;
   icon?: React.ReactNode;
   meta?: React.ReactNode;
   disabled?: boolean;
@@ -126,6 +127,7 @@ const buildItemsFromChildren = (
           href: child.props.href,
           as: child.props.as,
           onClick: child.props.onClick,
+          onMouseEnter: child.props.onMouseEnter,
           icon: child.props.icon,
           meta: child.props.meta,
           disabled: child.props.disabled,
