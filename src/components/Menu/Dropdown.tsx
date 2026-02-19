@@ -20,6 +20,12 @@ type DropdownItemProps = {
   id?: string;
   children: React.ReactNode;
   href?: string;
+  as?: React.ElementType<{
+    href?: string;
+    className?: string;
+    onClick?: React.MouseEventHandler<HTMLElement>;
+    children?: React.ReactNode;
+  }>;
   onClick?: () => void;
   icon?: React.ReactNode;
   meta?: React.ReactNode;
@@ -118,6 +124,7 @@ const buildItemsFromChildren = (
           id: childId,
           label: child.props.children,
           href: child.props.href,
+          as: child.props.as,
           onClick: child.props.onClick,
           icon: child.props.icon,
           meta: child.props.meta,
