@@ -98,7 +98,7 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
   const isHorizontal = orientation === 'horizontal';
 
   const getKey = (item: MenuItem, index: number) =>
-    item.id ?? (typeof item.label === 'string' ? item.label : null) ?? `item-${index}`;
+    item.id ?? (typeof item.label === 'string' ? `label-${item.label}-${index}` : null) ?? `item-${index}`;
 
   const initGroups = React.useCallback(() => {
     const map: Record<string, boolean> = {};

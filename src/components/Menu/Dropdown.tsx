@@ -17,6 +17,7 @@ type Props = {
 };
 
 type DropdownItemProps = {
+  id?: string;
   children: React.ReactNode;
   href?: string;
   onClick?: () => void;
@@ -28,11 +29,13 @@ type DropdownItemProps = {
 };
 
 type DropdownHeaderProps = {
+  id?: string;
   children: React.ReactNode;
   className?: string;
 };
 
 type DropdownSeparatorProps = {
+  id?: string;
   className?: string;
 };
 
@@ -78,6 +81,8 @@ const buildItemsFromChildren = (
         return;
       }
 
+      const childId = (child.props as { id?: string }).id;
+
       if (child.type === React.Fragment) {
         const fragment = child as React.ReactElement<{ children?: React.ReactNode }>;
         walk(fragment.props.children);
@@ -94,12 +99,13 @@ const buildItemsFromChildren = (
       }
 
       if (isDropdownSeparator(child)) {
-        items.push({ divider: true, className: child.props.className });
+        items.push({ id: childId, divider: true, className: child.props.className });
         return;
       }
 
       if (isDropdownHeader(child)) {
         items.push({
+          id: childId,
           static: true,
           label: child.props.children,
           className: combine(styles.dropdownHeader, child.props.className),
@@ -109,6 +115,7 @@ const buildItemsFromChildren = (
 
       if (isDropdownItem(child)) {
         items.push({
+          id: childId,
           label: child.props.children,
           href: child.props.href,
           onClick: child.props.onClick,
