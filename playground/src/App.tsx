@@ -12,6 +12,7 @@ import {
   Input,
   Menu,
   Modal,
+  MarkdownEditor,
   Notifier,
   Pagination,
   Progress,
@@ -108,6 +109,9 @@ export default function App() {
   const [selectedIds, setSelectedIds] = React.useState<React.Key[]>([]);
   const [smallSelectedIds, setSmallSelectedIds] = React.useState<React.Key[]>([]);
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
+  const [markdownValue, setMarkdownValue] = React.useState(
+    '# Документация\n\n**ReactSoftBox** — быстрый старт.\n\n- Пункты списка\n- Поддержка `inline` кода\n\n```ts\nconst ready = true;\nconst title = \"ReactSoftBox\";\nconsole.log(title, ready);\n```\n\n[Открыть сайт](https://phpsoftbox.com)\n'
+  );
 
   const pushToast = (variant: 'info' | 'success' | 'warning' | 'danger') => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -668,6 +672,34 @@ export default function App() {
                   <Input.Switch label="Автообновление" defaultChecked />
                 </Row>
               </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard gridCardWide">
+            <Card.Header title="MarkdownEditor" />
+            <Card.Body>
+              <MarkdownEditor
+                label="Описание релиза"
+                value={markdownValue}
+                onChange={setMarkdownValue}
+                placeholder="Введите markdown..."
+              >
+                <Tabs
+                  items={[
+                    {
+                      id: 'markdown-editor-tab',
+                      label: 'Редактор',
+                      content: <MarkdownEditor.Textarea label="Редактор" />,
+                    },
+                    {
+                      id: 'markdown-preview-tab',
+                      label: 'Просмотр',
+                      content: <MarkdownEditor.Preview label="Предпросмотр" />,
+                    },
+                  ]}
+                  defaultActiveId="markdown-editor-tab"
+                />
+              </MarkdownEditor>
             </Card.Body>
           </Card>
 

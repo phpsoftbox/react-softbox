@@ -6,11 +6,14 @@ type Props = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   hasError?: boolean;
 };
 
-export default function Textarea({
-  hasError = false,
-  className,
-  ...props
-}: Props) {
+const Textarea = React.forwardRef<HTMLTextAreaElement, Props>(function Textarea(
+  {
+    hasError = false,
+    className,
+    ...props
+  },
+  ref
+) {
   const context = useFormFieldContext();
   const generatedId = React.useId();
   const resolvedId = props.id ?? context?.fieldId ?? (props.name ? `field-${props.name}` : generatedId);
@@ -27,5 +30,9 @@ export default function Textarea({
     context?.registerField(resolvedId, props.name);
   }, [context, resolvedId, props.name]);
 
-  return <textarea id={resolvedId} className={classes} {...props} />;
-}
+  return <textarea ref={ref} id={resolvedId} className={classes} {...props} />;
+});
+
+Textarea.displayName = 'Textarea';
+
+export default Textarea;

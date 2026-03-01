@@ -6,6 +6,7 @@ type LinkComponent = React.ElementType<{
   href?: string;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLElement>;
+  onMouseEnter?: React.MouseEventHandler<HTMLElement>;
   children?: React.ReactNode;
 }>;
 

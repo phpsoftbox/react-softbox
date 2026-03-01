@@ -27,6 +27,8 @@ export { default as Progress } from './components/Progress/Progress';
 export { default as Breadcrumbs } from './components/Breadcrumbs/Breadcrumbs';
 export { default as Image } from './components/Image/Image';
 export { default as FileUploader } from './components/FileUploader/FileUploader';
+export { default as MarkdownEditor } from './components/MarkdownEditor/MarkdownEditor';
+export { default as Markdown } from './components/MarkdownEditor/MarkdownEditor';
 export { default as Tooltip } from './components/Tooltip/Tooltip';
 export { default as Table } from './components/Table/Table';
 export type {

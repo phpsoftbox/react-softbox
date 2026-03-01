@@ -24,6 +24,7 @@ type DropdownItemProps = {
     href?: string;
     className?: string;
     onClick?: React.MouseEventHandler<HTMLElement>;
+    onMouseEnter?: React.MouseEventHandler<HTMLElement>;
     children?: React.ReactNode;
   }>;
   onClick?: () => void;

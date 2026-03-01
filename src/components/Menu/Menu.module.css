@@ -164,11 +164,15 @@
 }
 
 .icon {
-  width: 16px;
+  min-width: 18px;
   height: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  line-height: 1;
+  font-size: 12px;
 }
 
 .dropdown {
