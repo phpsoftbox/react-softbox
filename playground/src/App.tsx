@@ -101,6 +101,12 @@ export default function App() {
   const [collapseOpen, setCollapseOpen] = React.useState(false);
   const [multiValue, setMultiValue] = React.useState<string[]>(['cache']);
   const [asyncValue, setAsyncValue] = React.useState<string>('alpha');
+  const [creatableOptions, setCreatableOptions] = React.useState([
+    { value: 'feature-a', label: 'Feature A' },
+    { value: 'feature-b', label: 'Feature B' },
+    { value: 'feature-c', label: 'Feature C' },
+  ]);
+  const [creatableValue, setCreatableValue] = React.useState<string | undefined>('feature-a');
   const [pageNumber, setPageNumber] = React.useState(2);
   const [tableSort, setTableSort] = React.useState<{ key: string; direction: 'asc' | 'desc' }>({
     key: 'client',
@@ -646,6 +652,27 @@ export default function App() {
                           { value: 'db', label: 'Database' },
                           { value: 'search', label: 'Search' },
                         ]}
+                    />
+                  </Input.FloatLabel>
+                </Input>
+                <Input>
+                  <Input.FloatLabel label="Creatable select">
+                    <Input.Select
+                        name="creatable"
+                        searchable
+                        creatable
+                        value={creatableValue}
+                        options={creatableOptions}
+                        onChange={(next) => setCreatableValue(next as string | undefined)}
+                        onCreateOption={(query) => {
+                          const trimmed = query.trim();
+                          if (!trimmed) {
+                            return undefined;
+                          }
+                          const next = { value: trimmed.toLowerCase().replace(/\s+/g, '-'), label: trimmed };
+                          setCreatableOptions((prev) => [...prev, next]);
+                          return next;
+                        }}
                     />
                   </Input.FloatLabel>
                 </Input>

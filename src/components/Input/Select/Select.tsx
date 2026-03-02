@@ -43,6 +43,10 @@ type SharedProps<T extends string | number> = {
   emptyOptionValue?: T | null;
   loadingText?: string;
   emptyText?: string;
+  creatable?: boolean;
+  createLabel?: (query: string) => string;
+  creatingText?: string;
+  onCreateOption?: (query: string) => Promise<SelectOption<T> | null | undefined> | SelectOption<T> | null | undefined;
   loadOptions?: (query: string) => Promise<SelectOption<T>[]>;
   request?: RequestConfig<T>;
   onAfterRequest?: (options: SelectOption<T>[], query: string) => void;
@@ -120,6 +124,10 @@ export default function Select<T extends string | number = string | number>({
   emptyOptionValue,
   loadingText = 'Загрузка...',
   emptyText = 'Нет данных',
+  creatable = false,
+  createLabel = (nextQuery) => `Добавить "${nextQuery}"`,
+  creatingText = 'Добавление...',
+  onCreateOption,
   loadOptions,
   request,
   onAfterRequest,
@@ -137,8 +145,10 @@ export default function Select<T extends string | number = string | number>({
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [creating, setCreating] = React.useState(false);
   const isRemote = Boolean(resolvedLoadOptions || resolvedRequest);
   const [items, setItems] = React.useState<SelectOption<T>[]>(resolvedOptions);
+  const [createdItems, setCreatedItems] = React.useState<SelectOption<T>[]>([]);
   const controlRef = React.useRef<HTMLButtonElement>(null);
   const { ref: dropdownRef, style: dropdownStyle } = useDropdownPosition(open, {
     gap: 6,
@@ -170,6 +180,17 @@ export default function Select<T extends string | number = string | number>({
       setItems(resolvedOptions);
     }
   }, [resolvedOptions, isRemote]);
+
+  const mergedItems = React.useMemo(() => {
+    const map = new Map<T, SelectOption<T>>();
+    items.forEach((item) => {
+      map.set(item.value, item);
+    });
+    createdItems.forEach((item) => {
+      map.set(item.value, item);
+    });
+    return Array.from(map.values());
+  }, [items, createdItems]);
 
   React.useEffect(() => {
     if (!open || !isRemote) {
@@ -250,8 +271,8 @@ export default function Select<T extends string | number = string | number>({
   }, [open, searchable]);
 
   const allOptions = React.useMemo<SelectItem<T>[]>(
-    () => (emptyOption ? [emptyOption, ...items] : items),
-    [emptyOption, items],
+    () => (emptyOption ? [emptyOption, ...mergedItems] : mergedItems),
+    [emptyOption, mergedItems],
   );
   const optionMap = React.useMemo(() => {
     return new Map(allOptions.map((item) => [item.value, item]));
@@ -306,18 +327,30 @@ export default function Select<T extends string | number = string | number>({
 
   const displayedOptions = React.useMemo(() => {
     if (isRemote) {
-      const filtered = items;
+      const filtered = mergedItems;
       return emptyOption ? [emptyOption, ...filtered] : filtered;
     }
 
     if (!query) {
-      return emptyOption ? [emptyOption, ...items] : items;
+      return emptyOption ? [emptyOption, ...mergedItems] : mergedItems;
     }
 
     const lowered = query.toLowerCase();
-    const filtered = items.filter((item) => item.label.toLowerCase().includes(lowered));
+    const filtered = mergedItems.filter((item) => item.label.toLowerCase().includes(lowered));
     return emptyOption ? [emptyOption, ...filtered] : filtered;
-  }, [items, query, isRemote, emptyOption]);
+  }, [mergedItems, query, isRemote, emptyOption]);
+
+  const trimmedQuery = query.trim();
+  const selectableDisplayedCount = React.useMemo(
+    () => displayedOptions.filter((option) => option.value !== null).length,
+    [displayedOptions],
+  );
+  const canCreate = searchable
+    && creatable
+    && trimmedQuery.length > 0
+    && !loading
+    && !creating
+    && selectableDisplayedCount === 0;
 
   const updateValue = (next: T | T[] | null | undefined, nextOptions: SelectItem<T>[]) => {
     if (!isControlled) {
@@ -394,6 +427,52 @@ export default function Select<T extends string | number = string | number>({
     const nextOptions = multiple ? [] : allowEmpty && emptyOption ? [emptyOption] : [];
     updateValue(nextValue, nextOptions);
     setQuery('');
+  };
+
+  const createFallbackOption = (nextQuery: string): SelectOption<T> => ({
+    value: nextQuery as unknown as T,
+    label: nextQuery,
+  });
+
+  const handleCreateOption = async () => {
+    if (!canCreate || disabled) {
+      return;
+    }
+
+    const nextQuery = trimmedQuery;
+    if (!nextQuery) {
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const created = await onCreateOption?.(nextQuery);
+      const nextOption = created ?? createFallbackOption(nextQuery);
+      if (nextOption.value === null || nextOption.value === undefined) {
+        return;
+      }
+
+      setCreatedItems((prev) => {
+        const exists = prev.some((item) => item.value === nextOption.value);
+        if (exists) {
+          return prev.map((item) => (item.value === nextOption.value ? nextOption : item));
+        }
+        return [...prev, nextOption];
+      });
+
+      if (multiple) {
+        const values = selectedValues as T[];
+        if (!values.includes(nextOption.value as T)) {
+          updateValue([...values, nextOption.value as T], [...selectedList, nextOption]);
+        }
+      } else {
+        updateValue(nextOption.value as T, [nextOption]);
+        setOpen(false);
+      }
+      setQuery('');
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -492,12 +571,37 @@ export default function Select<T extends string | number = string | number>({
               placeholder="Поиск..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && canCreate) {
+                  event.preventDefault();
+                  void handleCreateOption();
+                }
+              }}
             />
           ) : null}
           <div className={styles.list} role="listbox" id={listId}>
             {loading ? <div className={styles.status}>{loadingText}</div> : null}
-            {!loading && (allowEmpty ? displayedOptions.length <= 1 : displayedOptions.length === 0) ? (
+            {!loading && !canCreate && (allowEmpty ? displayedOptions.length <= 1 : displayedOptions.length === 0) ? (
               <div className={styles.status}>{emptyText}</div>
+            ) : null}
+            {!loading && canCreate ? (
+              <button
+                type="button"
+                className={[styles.option, styles.optionCreate].filter(Boolean).join(' ')}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  void handleCreateOption();
+                }}
+                onClick={(event) => {
+                  if (event.detail === 0) {
+                    void handleCreateOption();
+                  }
+                }}
+                disabled={creating}
+              >
+                <span>{creating ? creatingText : createLabel(trimmedQuery)}</span>
+                <span className={styles.createMark}>+</span>
+              </button>
             ) : null}
             {!loading
               ? displayedOptions.map((option) => {
