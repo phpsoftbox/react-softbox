@@ -1224,9 +1224,9 @@ function MarkdownEditorRoot({
     },
   ];
 
-  const renderEditorPanel = (slotProps?: MarkdownEditorSlotProps) => {
+  const renderEditorPanel = (slotProps?: MarkdownEditorSlotProps, slotKey?: React.Key) => {
     return (
-      <div className={[styles.panel, editorClassName, slotProps?.className].filter(Boolean).join(' ')}>
+      <div key={slotKey} className={[styles.panel, editorClassName, slotProps?.className].filter(Boolean).join(' ')}>
         <div className={styles.panelHeader}>{slotProps?.label ?? editorLabel}</div>
         <div className={styles.toolbar}>
           <div className={styles.toolbarGroup}>
@@ -1399,9 +1399,9 @@ function MarkdownEditorRoot({
     );
   };
 
-  const renderPreviewPanel = (slotProps?: MarkdownEditorSlotProps) => {
+  const renderPreviewPanel = (slotProps?: MarkdownEditorSlotProps, slotKey?: React.Key) => {
     return (
-      <div className={[styles.panel, previewClassName, slotProps?.className].filter(Boolean).join(' ')}>
+      <div key={slotKey} className={[styles.panel, previewClassName, slotProps?.className].filter(Boolean).join(' ')}>
         <div className={styles.panelHeader}>{slotProps?.label ?? previewLabel}</div>
         <div className={styles.preview} data-empty={value === ''} onClick={handlePreviewClick}>
           {value ? (
@@ -1414,11 +1414,11 @@ function MarkdownEditorRoot({
     );
   };
 
-  const renderValue = (input: unknown): unknown => {
+  const renderValue = (input: unknown, path = 'root'): unknown => {
     if (Array.isArray(input)) {
       let changed = false;
-      const next = input.map((item) => {
-        const rendered = renderValue(item);
+      const next = input.map((item, index) => {
+        const rendered = renderValue(item, `${path}.${index}`);
         if (rendered !== item) {
           changed = true;
         }
@@ -1429,17 +1429,17 @@ function MarkdownEditorRoot({
 
     if (React.isValidElement(input)) {
       if (input.type === MarkdownEditorTextareaSlot) {
-        return renderEditorPanel(input.props as MarkdownEditorSlotProps);
+        return renderEditorPanel(input.props as MarkdownEditorSlotProps, input.key ?? `${path}:editor`);
       }
       if (input.type === MarkdownEditorPreviewSlot) {
-        return renderPreviewPanel(input.props as MarkdownEditorSlotProps);
+        return renderPreviewPanel(input.props as MarkdownEditorSlotProps, input.key ?? `${path}:preview`);
       }
 
       const props = (input.props ?? {}) as Record<string, unknown>;
       let changed = false;
       const nextProps: Record<string, unknown> = {};
       Object.keys(props).forEach((key) => {
-        const nextValue = renderValue(props[key]);
+        const nextValue = renderValue(props[key], `${path}.${key}`);
         nextProps[key] = nextValue;
         if (nextValue !== props[key]) {
           changed = true;
@@ -1456,7 +1456,7 @@ function MarkdownEditorRoot({
       let changed = false;
       const nextRecord: Record<string, unknown> = {};
       Object.keys(record).forEach((key) => {
-        const nextValue = renderValue(record[key]);
+        const nextValue = renderValue(record[key], `${path}.${key}`);
         nextRecord[key] = nextValue;
         if (nextValue !== record[key]) {
           changed = true;
