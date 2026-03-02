@@ -35,6 +35,8 @@ export type MarkdownEditorProps = {
 export type MarkdownEditorSlotProps = {
   className?: string;
   label?: string;
+  id?: string;
+  name?: string;
 };
 
 const MarkdownEditorTextareaSlot: React.FC<MarkdownEditorSlotProps> = () => null;
@@ -345,6 +347,7 @@ function MarkdownEditorRoot({
     list: null,
     heading: null,
   });
+  const textareaFallbackId = React.useId();
 
   React.useEffect(() => () => {
     if (typeof URL === 'undefined') {
@@ -1380,6 +1383,8 @@ function MarkdownEditorRoot({
         ) : null}
         <Textarea
           ref={textareaRef}
+          id={slotProps?.id ?? textareaFallbackId}
+          name={slotProps?.name ?? 'markdown'}
           value={value}
           placeholder={placeholder}
           onChange={(event) => onChange(event.target.value)}
