@@ -1404,11 +1404,7 @@ function MarkdownEditorRoot({
       <div key={slotKey} className={[styles.panel, previewClassName, slotProps?.className].filter(Boolean).join(' ')}>
         <div className={styles.panelHeader}>{slotProps?.label ?? previewLabel}</div>
         <div className={styles.preview} data-empty={value === ''} onClick={handlePreviewClick}>
-          {value ? (
-            <div dangerouslySetInnerHTML={{ __html: html }} />
-          ) : (
-            <div className={styles.empty}>Нет текста для предпросмотра.</div>
-          )}
+          {value ? <div dangerouslySetInnerHTML={{ __html: html }} /> : null}
         </div>
       </div>
     );

@@ -23,6 +23,8 @@ export type FileUploaderProps = {
   buttonLabel?: React.ReactNode;
   uploadLabel?: React.ReactNode;
   filesLabel?: (count: number) => React.ReactNode;
+  allowRemove?: boolean;
+  removeLabel?: React.ReactNode;
   className?: string;
 };
 
@@ -83,13 +85,15 @@ export default function FileUploader({
   buttonLabel = 'Выбрать файлы',
   uploadLabel = 'Загрузить',
   filesLabel = defaultFilesLabel,
+  allowRemove = true,
+  removeLabel = 'Удалить',
   className,
 }: FileUploaderProps) {
   const [internalFiles, setInternalFiles] = React.useState<File[]>(defaultValue ?? []);
   const [errors, setErrors] = React.useState<string[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
-  const [previews, setPreviews] = React.useState<{ name: string; url: string }[]>([]);
+  const [previews, setPreviews] = React.useState<Array<{ name: string; url: string; fileIndex: number }>>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const files = value ?? internalFiles;
@@ -190,6 +194,16 @@ export default function FileUploader({
     }
   }, [disabled, files, onUpload, updateFiles]);
 
+  const removeFile = React.useCallback((fileIndex: number) => {
+    if (disabled || fileIndex < 0 || fileIndex >= files.length) {
+      return;
+    }
+
+    const next = files.filter((_, index) => index !== fileIndex);
+    updateFiles(next);
+    setErrors([]);
+  }, [disabled, files, updateFiles]);
+
   React.useEffect(() => {
     if (autoUpload && onUpload && files.length) {
       handleUpload();
@@ -201,10 +215,20 @@ export default function FileUploader({
       setPreviews([]);
       return;
     }
-    const next = files.filter(isImage).map((file) => ({
-      name: file.name,
-      url: URL.createObjectURL(file),
-    }));
+
+    const next: Array<{ name: string; url: string; fileIndex: number }> = [];
+    files.forEach((file, fileIndex) => {
+      if (!isImage(file)) {
+        return;
+      }
+
+      next.push({
+        name: file.name,
+        url: URL.createObjectURL(file),
+        fileIndex,
+      });
+    });
+
     setPreviews(next);
     return () => {
       next.forEach((item) => URL.revokeObjectURL(item.url));
@@ -296,10 +320,22 @@ export default function FileUploader({
         <div className={styles.filesInfo}>
           <div className={styles.filesCount}>{filesLabel(files.length)}</div>
           <div className={styles.filesList}>
-            {files.map((file) => (
+            {files.map((file, index) => (
               <div key={`${file.name}-${file.size}-${file.lastModified}`} className={styles.fileItem}>
-                <span className={styles.fileName}>{file.name}</span>
-                <span className={styles.fileSize}>{Math.ceil(file.size / 1024)} кбайт</span>
+                <div className={styles.fileMeta}>
+                  <span className={styles.fileName}>{file.name}</span>
+                  <span className={styles.fileSize}>{Math.ceil(file.size / 1024)} кбайт</span>
+                </div>
+                {allowRemove ? (
+                  <button
+                    type="button"
+                    className={styles.removeButton}
+                    onClick={() => removeFile(index)}
+                    disabled={disabled || isUploading}
+                  >
+                    {removeLabel}
+                  </button>
+                ) : null}
               </div>
             ))}
           </div>
@@ -312,6 +348,17 @@ export default function FileUploader({
         <div className={styles.previewGrid}>
           {previews.map((preview) => (
             <div key={preview.url} className={styles.previewItem}>
+              {allowRemove ? (
+                <button
+                  type="button"
+                  className={styles.previewRemove}
+                  onClick={() => removeFile(preview.fileIndex)}
+                  disabled={disabled || isUploading}
+                  aria-label={`Удалить ${preview.name}`}
+                >
+                  ×
+                </button>
+              ) : null}
               <img src={preview.url} alt={preview.name} className={styles.previewImage} />
               <div className={styles.previewName}>{preview.name}</div>
             </div>

@@ -876,6 +876,16 @@ export default function App() {
                   maxFileSizeKb={2048}
                   multiple
                   showPreview
+                  allowRemove
+                  removeLabel="Убрать"
+                  uploadButtonPlacement="both"
+                  uploadButtonAlign="left"
+                  buttonLabel="Выбрать файлы"
+                  uploadLabel="Отправить"
+                  dropLabel="Перетащите файлы или нажмите «Выбрать файлы»"
+                  externalErrors={uploadedFiles.some((file) => file.name.toLowerCase().endsWith('.svg'))
+                    ? ['SVG не поддерживается в этом примере.']
+                    : []}
                   onChange={(files) => setUploadedFiles(files)}
                   onUpload={handleUpload}
                 />
@@ -884,6 +894,9 @@ export default function App() {
                     Загружено: {uploadedFiles.length}
                   </Text>
                 ) : null}
+                <Text size="sm" muted>
+                  Можно удалить выбранные файлы до отправки: из списка и из превью.
+                </Text>
               </Stack>
             </Card.Body>
           </Card>
