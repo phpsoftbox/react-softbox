@@ -141,6 +141,7 @@
   --ui-control-padding-y: 12px;
   --ui-control-font-size: var(--font-size-3);
   --ui-control-line-height: 1.2;
+  --ui-table-min: 560px;
 }
 
 :root[data-theme="light"] {
