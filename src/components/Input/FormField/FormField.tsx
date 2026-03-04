@@ -18,6 +18,7 @@ type FormFieldProps = React.HTMLAttributes<HTMLDivElement> & {
 type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement> & {
   hint?: React.ReactNode;
   hintPlacement?: TooltipPlacement;
+  required?: boolean;
 };
 
 type ControlProps = React.HTMLAttributes<HTMLDivElement>;
@@ -35,7 +36,8 @@ type FormFieldComponent = React.FC<FormFieldProps> & {
 type FormFieldContextValue = {
   fieldId?: string;
   fieldName?: string;
-  registerField: (id: string, name?: string) => void;
+  fieldRequired?: boolean;
+  registerField: (id: string, name?: string, required?: boolean) => void;
   registerErrorTooltip?: () => () => void;
   hasErrorTooltip?: boolean;
 };
@@ -68,12 +70,16 @@ function FormFieldRoot({
 }: FormFieldProps) {
   const [fieldId, setFieldId] = React.useState<string | undefined>(undefined);
   const [fieldName, setFieldName] = React.useState<string | undefined>(undefined);
+  const [fieldRequired, setFieldRequired] = React.useState(false);
   const [errorTooltipCount, setErrorTooltipCount] = React.useState(0);
 
-  const registerField = React.useCallback((id: string, name?: string) => {
+  const registerField = React.useCallback((id: string, name?: string, required?: boolean) => {
     setFieldId(id);
     if (name) {
       setFieldName(name);
+    }
+    if (required !== undefined) {
+      setFieldRequired(required);
     }
   }, []);
 
@@ -105,6 +111,7 @@ function FormFieldRoot({
       value={{
         fieldId,
         fieldName,
+        fieldRequired,
         registerField,
         registerErrorTooltip,
         hasErrorTooltip: errorTooltipCount > 0,
@@ -120,16 +127,21 @@ function FormFieldLabel({ className, ...props }: LabelProps) {
   const {
     hint,
     hintPlacement = 'auto',
+    required,
     children,
     ...rest
   } = props;
   const classes = [styles.label, className].filter(Boolean).join(' ');
   const htmlFor = rest.htmlFor ?? context?.fieldId;
+  const isRequired = required ?? context?.fieldRequired ?? false;
 
   return (
     <label className={classes} {...rest} htmlFor={htmlFor}>
       <span className={styles.labelInner}>
-        <span>{children}</span>
+        <span>
+          {children}
+          {isRequired ? <span className={styles.requiredMark} aria-hidden="true"> *</span> : null}
+        </span>
         <Hint content={hint} placement={hintPlacement} ariaLabel="Подсказка к полю" />
       </span>
     </label>

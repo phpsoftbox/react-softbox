@@ -20,6 +20,10 @@
   pointer-events: none;
 }
 
+.requiredMark {
+  color: var(--badge-danger-color, #ff6b6b);
+}
+
 .wrapper input:focus + .label,
 .wrapper input:not(:placeholder-shown) + .label {
   transform: translateY(-10px);

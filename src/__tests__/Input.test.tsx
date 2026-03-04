@@ -16,4 +16,15 @@ describe('Input', () => {
     const input = screen.getByPlaceholderText('Email') as HTMLInputElement;
     expect(input.value).toBe('test@example.com');
   });
+
+  it('shows required marker in label when field is required', () => {
+    render(
+      <Input>
+        <Input.Label>Email</Input.Label>
+        <Input.Field name="email" required />
+      </Input>,
+    );
+
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
 });

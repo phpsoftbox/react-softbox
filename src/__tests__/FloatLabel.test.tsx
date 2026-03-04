@@ -28,4 +28,14 @@ describe('FloatLabel', () => {
     const textarea = screen.getByLabelText('Комментарий');
     expect(textarea.tagName).toBe('TEXTAREA');
   });
+
+  it('shows required marker when input is required', () => {
+    render(
+      <FloatLabel label="Email">
+        <Input.Field name="email" required />
+      </FloatLabel>,
+    );
+
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
 });

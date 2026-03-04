@@ -27,8 +27,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, Props>(function Textarea(
   }
 
   React.useEffect(() => {
-    context?.registerField(resolvedId, props.name);
-  }, [context, resolvedId, props.name]);
+    context?.registerField(resolvedId, props.name, props.required === true);
+  }, [context, resolvedId, props.name, props.required]);
 
   return <textarea ref={ref} id={resolvedId} className={classes} {...props} />;
 });

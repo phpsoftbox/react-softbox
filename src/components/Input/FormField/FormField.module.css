@@ -25,6 +25,10 @@
   gap: 8px;
 }
 
+.requiredMark {
+  color: var(--badge-danger-color, #ff6b6b);
+}
+
 .control {
   flex: 1;
   min-width: 0;

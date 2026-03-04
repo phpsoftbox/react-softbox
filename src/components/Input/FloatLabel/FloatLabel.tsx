@@ -6,6 +6,7 @@ import ActionStack from '../ActionStack/ActionStack';
 
 type Props = {
   label: string;
+  required?: boolean;
   hasError?: boolean;
   hint?: React.ReactNode;
   hintPlacement?: TooltipPlacement;
@@ -18,10 +19,11 @@ type FloatLabelCapable = {
   floatLabelKind?: 'select' | 'default';
 };
 
-export default function FloatLabel({ label, hasError, hint, hintPlacement = 'auto', className, children }: Props) {
+export default function FloatLabel({ label, required, hasError, hint, hintPlacement = 'auto', className, children }: Props) {
   const inputId = React.useId();
   const childElement = React.isValidElement(children) ? (children as React.ReactElement<any>) : null;
   const hasHint = hint !== null && hint !== undefined && hint !== '';
+  const isRequired = required ?? Boolean(childElement?.props.required);
   const supportsFloatLabel =
     childElement &&
     typeof childElement.type !== 'string' &&
@@ -72,7 +74,10 @@ export default function FloatLabel({ label, hasError, hint, hintPlacement = 'aut
   return (
     <label className={wrapperClass} htmlFor={htmlFor}>
       {child}
-      <span className={styles.label}>{label}</span>
+      <span className={styles.label}>
+        {label}
+        {isRequired ? <span className={styles.requiredMark} aria-hidden="true"> *</span> : null}
+      </span>
       {hasHint && floatLabelKind !== 'select' ? (
         <ActionStack className={styles.hint}>
           <Hint content={hint} placement={hintPlacement} ariaLabel={`Подсказка к полю "${label}"`} />

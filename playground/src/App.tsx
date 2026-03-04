@@ -333,6 +333,7 @@ export default function App() {
           <Input>
             <Input.Label hint="Переключает тему playground.">Тема</Input.Label>
             <Input.Select
+              required
               options={[
                 { value: 'system', label: 'Как в системе' },
                 { value: 'auto', label: 'Авто (день/ночь)' },
@@ -542,39 +543,39 @@ export default function App() {
               <Stack gap="12px">
                 <Input>
                   <Input.Label hint="Текстовая подсказка для поля без float label.">Обычный input</Input.Label>
-                  <Input.Field name="title" placeholder="Введите текст" />
+                  <Input.Field name="title" placeholder="Введите текст" required />
                 </Input>
                 <Input>
                   <Input.Label>Ошибка</Input.Label>
-                  <Input.Field name="error-field" placeholder="С заполнением" hasError />
+                  <Input.Field name="error-field" placeholder="С заполнением" hasError required />
                   <Input.ErrorBag>Введите корректное значение.</Input.ErrorBag>
                 </Input>
                 <Input>
                   <Input.Label>Ошибка (tooltip)</Input.Label>
                   <Input.Control>
-                    <Input.Field name="error-tooltip-icon" placeholder="С заполнением" hasError />
+                    <Input.Field name="error-tooltip-icon" placeholder="С заполнением" hasError required />
                     <Input.ErrorTooltip content="Некорректное значение" placement={"auto"} />
                   </Input.Control>
                 </Input>
                 <Input>
                   <Input.Label>Ошибка (tooltip на поле)</Input.Label>
-                  <Input.Field name="error-tooltip-input" placeholder="С заполнением" hasError />
+                  <Input.Field name="error-tooltip-input" placeholder="С заполнением" hasError required />
                   <Input.ErrorTooltip target="input" content="Введите корректное значение" placement="bottom" />
                 </Input>
                 <Input layout="row" labelWidth={140} align="center" labelAlign="right">
                   <Input.Label>Телефон</Input.Label>
                   <Input.Control>
-                    <Input.MaskedInput name="phone" mask="+7 (999) 999-99-99" placeholder="+7 (___) ___-__-__" />
+                    <Input.MaskedInput name="phone" mask="+7 (999) 999-99-99" placeholder="+7 (___) ___-__-__" required />
                   </Input.Control>
                 </Input>
                 <Input>
                   <Input.FloatLabel label="Email" hint="Подсказка внутри поля справа.">
-                    <Input.Field type="email" name="email" />
+                    <Input.Field type="email" name="email" required />
                   </Input.FloatLabel>
                 </Input>
                 <Input>
                   <Input.FloatLabel label="Комментарий" hint="Работает и для textarea.">
-                    <Input.TextArea name="comment" rows={3} />
+                    <Input.TextArea name="comment" rows={3} required />
                   </Input.FloatLabel>
                 </Input>
                 <Input>
@@ -584,6 +585,7 @@ export default function App() {
                 <Input>
                   <Input.Label hint="Выберите окружение для запуска.">Окружение</Input.Label>
                   <Input.Select
+                    required
                     name="environment"
                     options={[
                       { value: 'dev', label: 'Development' },
@@ -598,6 +600,7 @@ export default function App() {
                 <Input>
                   <Input.Label hint="Можно выбрать несколько сервисов.">Сервисы</Input.Label>
                   <Input.Select
+                    required
                     name="services"
                     options={[
                       { value: 'cache', label: 'Cache' },
@@ -613,6 +616,7 @@ export default function App() {
                 <Input>
                   <Input.FloatLabel label="Float label select with tags" hint="Подсказка у float label-select.">
                     <Input.Select
+                        required
                         name="services"
                         options={[
                           { value: 'cache', label: 'Cache' },
@@ -629,6 +633,7 @@ export default function App() {
                 <Input>
                   <Input.FloatLabel label="Async select" hint="Загружает варианты по мере ввода.">
                     <Input.Select
+                        required
                         name="async"
                         loadOptions={loadAsync}
                         value={asyncValue}
@@ -643,6 +648,7 @@ export default function App() {
                 <Input>
                   <Input.FloatLabel label="Async select" hint="Статический вариант без загрузки.">
                     <Input.Select
+                        required
                         name="async"
                         value={asyncValue}
                         onChange={(next) => setAsyncValue(next as string)}
@@ -658,6 +664,7 @@ export default function App() {
                 <Input>
                   <Input.FloatLabel label="Creatable select" hint="Можно добавить новый вариант из поиска.">
                     <Input.Select
+                        required
                         name="creatable"
                         searchable
                         creatable
@@ -680,21 +687,24 @@ export default function App() {
                   <Input.Label>Сумма</Input.Label>
                   <Input.Group stretch>
                     <Input.Addon>₽</Input.Addon>
-                    <Input.Number name="amount" placeholder="0.00" />
+                    <Input.Number name="amount" placeholder="0.00" required />
                     <Button appearance="outline">OK</Button>
                   </Input.Group>
                 </Input>
                 <Input>
                   <Input.Label hint="Выбор начальной и конечной даты.">Диапазон дат</Input.Label>
-                  <Input.DateRange startProps={{ name: 'range-start' }} endProps={{ name: 'range-end' }} />
+                  <Input.DateRange
+                    startProps={{ name: 'range-start', required: true }}
+                    endProps={{ name: 'range-end', required: true }}
+                  />
                 </Input>
                 <Input>
                   <Input.Label hint="Выберите одну дату.">Дата</Input.Label>
-                  <Input.DatePicker name="date" />
+                  <Input.DatePicker name="date" required />
                 </Input>
                 <Input layout="row" labelWidth={140} align="center" labelAlign="right">
                   <Input.Label hint="Формат HH:mm, ввод вручную поддерживается.">Время</Input.Label>
-                  <Input.TimePicker name="time" />
+                  <Input.TimePicker name="time" required />
                 </Input>
                 <Row gap="14px" wrap="wrap">
                   <Input.Radio name="mode" label="Основной" hint="Основной режим работы." defaultChecked />

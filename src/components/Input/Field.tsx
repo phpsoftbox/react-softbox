@@ -30,8 +30,8 @@ const InputField = React.forwardRef<HTMLInputElement, Props>(({ hasError, classN
   }
 
   React.useEffect(() => {
-    context?.registerField(resolvedId, props.name);
-  }, [context, resolvedId, props.name]);
+    context?.registerField(resolvedId, props.name, props.required === true);
+  }, [context, resolvedId, props.name, props.required]);
 
   return <input ref={ref} id={resolvedId} className={classes} {...props} autoComplete={autoComplete} />;
 });

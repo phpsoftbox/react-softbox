@@ -33,6 +33,7 @@ type SharedProps<T extends string | number> = {
   label?: string;
   id?: string;
   name?: string;
+  required?: boolean;
   options?: SelectOption<T>[];
   placeholder?: string;
   multiple?: boolean;
@@ -113,6 +114,7 @@ export default function Select<T extends string | number = string | number>({
   label,
   id,
   name,
+  required = false,
   options = [],
   value,
   defaultValue,
@@ -257,8 +259,8 @@ export default function Select<T extends string | number = string | number>({
   }, []);
 
   React.useEffect(() => {
-    context?.registerField(controlId, name);
-  }, [context, controlId, name]);
+    context?.registerField(controlId, name, required === true);
+  }, [context, controlId, name, required]);
 
   if (process.env.NODE_ENV !== 'production') {
     if (!id && !name) {
