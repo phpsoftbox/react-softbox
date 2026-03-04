@@ -13,6 +13,7 @@ import Radio from './Radio/Radio';
 import Switch from './Switch/Switch';
 import Checkbox from './Checkbox/Checkbox';
 import ErrorTooltip from './ErrorTooltip/ErrorTooltip';
+import Hint from './Hint/Hint';
 
 const Input = Object.assign(FormField, {
   Label: FormField.Label,
@@ -33,6 +34,7 @@ const Input = Object.assign(FormField, {
   Switch,
   Checkbox,
   ErrorTooltip,
+  Hint,
   FormField,
 });
 

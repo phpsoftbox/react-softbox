@@ -60,3 +60,9 @@
   font-size: 14px;
   color: var(--color-muted);
 }
+
+.labelWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}

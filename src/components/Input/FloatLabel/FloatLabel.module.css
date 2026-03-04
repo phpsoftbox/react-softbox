@@ -3,6 +3,11 @@
   display: block;
 }
 
+.wrapperWithHint > input,
+.wrapperWithHint > textarea {
+  padding-right: calc(var(--ui-control-padding-x, 16px) + 48px);
+}
+
 .label {
   position: absolute;
   left: 16px;
@@ -54,4 +59,8 @@
   min-height: var(--ui-control-height, 48px);
   padding-top: calc(var(--ui-control-padding-y, 12px) + 6px);
   padding-bottom: calc(var(--ui-control-padding-y, 12px) - 2px);
+}
+
+.hint {
+  right: 12px;
 }

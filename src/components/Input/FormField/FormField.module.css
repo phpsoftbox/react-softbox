@@ -19,6 +19,12 @@
   padding-top: 6px;
 }
 
+.labelInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .control {
   flex: 1;
   min-width: 0;

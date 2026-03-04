@@ -39,7 +39,12 @@
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
-  padding: var(--ui-control-padding-y, 12px) calc(var(--ui-control-padding-x, 16px) + 26px)
+  padding: var(--ui-control-padding-y, 12px)
+    calc(
+      var(--ui-control-padding-x, 16px)
+      + var(--ui-select-controls-space, 26px)
+      + var(--ui-select-extra-right, 0px)
+    )
     var(--ui-control-padding-y, 12px) var(--ui-control-padding-x, 16px);
   font-size: var(--ui-control-font-size, var(--font-size-4));
   line-height: var(--ui-control-line-height, 1.2);
@@ -51,10 +56,6 @@
 .wrapper[data-float-label="true"] .control {
   padding-top: calc(var(--ui-control-padding-y, 12px) + 8px);
   padding-bottom: calc(var(--ui-control-padding-y, 12px) - 4px);
-}
-
-.wrapper[data-has-clear="true"] .control {
-  padding-right: calc(var(--ui-control-padding-x, 16px) + 50px);
 }
 
 .wrapper[data-has-label="false"] .control {

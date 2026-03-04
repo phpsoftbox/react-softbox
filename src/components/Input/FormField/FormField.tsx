@@ -1,5 +1,7 @@
 import React from 'react';
 import styles from './FormField.module.css';
+import Hint from '../Hint/Hint';
+import type { TooltipPlacement } from '../../Tooltip/Tooltip';
 
 type Layout = 'column' | 'row';
 type Align = 'start' | 'center' | 'end';
@@ -13,7 +15,10 @@ type FormFieldProps = React.HTMLAttributes<HTMLDivElement> & {
   labelAlign?: LabelAlign;
 };
 
-type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement>;
+type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement> & {
+  hint?: React.ReactNode;
+  hintPlacement?: TooltipPlacement;
+};
 
 type ControlProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -112,9 +117,23 @@ function FormFieldRoot({
 
 function FormFieldLabel({ className, ...props }: LabelProps) {
   const context = useFormFieldContext();
+  const {
+    hint,
+    hintPlacement = 'auto',
+    children,
+    ...rest
+  } = props;
   const classes = [styles.label, className].filter(Boolean).join(' ');
-  const htmlFor = props.htmlFor ?? context?.fieldId;
-  return <label className={classes} {...props} htmlFor={htmlFor} />;
+  const htmlFor = rest.htmlFor ?? context?.fieldId;
+
+  return (
+    <label className={classes} {...rest} htmlFor={htmlFor}>
+      <span className={styles.labelInner}>
+        <span>{children}</span>
+        <Hint content={hint} placement={hintPlacement} ariaLabel="Подсказка к полю" />
+      </span>
+    </label>
+  );
 }
 
 function FormFieldControl({ className, ...props }: ControlProps) {

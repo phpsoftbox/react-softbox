@@ -3,6 +3,7 @@ import axios from 'axios';
 import styles from './Select.module.css';
 import useDropdownPosition from '../../../hooks/useDropdownPosition';
 import { useFormFieldContext } from '../FormField/FormField';
+import ActionStack, { countActionItems } from '../ActionStack/ActionStack';
 
 export type SelectOptionValue = string | number | null;
 
@@ -53,6 +54,7 @@ type SharedProps<T extends string | number> = {
   placement?: 'auto' | 'down' | 'up';
   disabled?: boolean;
   floatLabel?: boolean;
+  endActions?: React.ReactNode;
   className?: string;
 };
 
@@ -134,6 +136,7 @@ export default function Select<T extends string | number = string | number>({
   placement = 'auto',
   disabled = false,
   floatLabel = false,
+  endActions,
   className,
   onChange,
 }: Props<T>) {
@@ -420,6 +423,14 @@ export default function Select<T extends string | number = string | number>({
   };
 
   const showClear = clearable && searchable && !disabled && hasValue && !isEmptySelection;
+  const controlActionCount = 1 + (showClear ? 1 : 0) + countActionItems(endActions);
+  const controlStyle = React.useMemo(
+    () =>
+      ({
+        ['--ui-select-controls-space']: `${26 + Math.max(0, controlActionCount - 1) * 24}px`,
+      }) as React.CSSProperties,
+    [controlActionCount],
+  );
 
   const handleClear = (event: React.MouseEvent | React.KeyboardEvent) => {
     event.stopPropagation();
@@ -496,6 +507,7 @@ export default function Select<T extends string | number = string | number>({
       <button
         type="button"
         className={styles.control}
+        style={controlStyle}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
@@ -539,28 +551,29 @@ export default function Select<T extends string | number = string | number>({
             <span className={styles.placeholder}>{placeholder}</span>
           )}
         </div>
-        <span className={styles.controls}>
-          {showClear ? (
-            <span
-              role="button"
-              tabIndex={0}
-              className={styles.clearButton}
-              aria-label={clearLabel}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={handleClear}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  handleClear(event);
-                }
-              }}
-            >
-              ×
-            </span>
-          ) : null}
-          <span className={styles.chevron} aria-hidden="true" />
-        </span>
       </button>
+      <ActionStack className={styles.controls}>
+        {endActions}
+        {showClear ? (
+          <span
+            role="button"
+            tabIndex={0}
+            className={styles.clearButton}
+            aria-label={clearLabel}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={handleClear}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                handleClear(event);
+              }
+            }}
+          >
+            ×
+          </span>
+        ) : null}
+        <span className={styles.chevron} aria-hidden="true" />
+      </ActionStack>
 
       {open ? (
         <div className={styles.dropdown} ref={dropdownRef} style={dropdownStyle}>
@@ -647,3 +660,4 @@ export default function Select<T extends string | number = string | number>({
 }
 
 Select.supportsFloatLabel = true;
+Select.floatLabelKind = 'select';
