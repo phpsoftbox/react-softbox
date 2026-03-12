@@ -13,6 +13,8 @@ import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/components/prism-php';
 import Textarea from '../Input/Textarea/Textarea';
+import Hint from '../Input/Hint/Hint';
+import type { TooltipPlacement } from '../Tooltip/Tooltip';
 import Dropdown from '../Menu/Dropdown';
 import type { MenuItem } from '../Menu/Menu';
 import styles from './MarkdownEditor.module.css';
@@ -25,6 +27,8 @@ export type MarkdownEditorProps = {
   label?: string;
   editorLabel?: string;
   previewLabel?: string;
+  hint?: React.ReactNode;
+  hintPlacement?: TooltipPlacement;
   readOnly?: boolean;
   minHeight?: number;
   className?: string;
@@ -318,6 +322,8 @@ function MarkdownEditorRoot({
   label,
   editorLabel = 'Редактор',
   previewLabel = 'Предпросмотр',
+  hint,
+  hintPlacement = 'auto',
   readOnly = false,
   minHeight = 220,
   className,
@@ -1471,7 +1477,12 @@ function MarkdownEditorRoot({
         ['--markdown-editor-min-height' as string]: `${minHeight}px`,
       }}
     >
-      {label ? <div className={styles.label}>{label}</div> : null}
+      {label ? (
+        <div className={styles.label}>
+          <span>{label}</span>
+          <Hint content={hint} placement={hintPlacement} ariaLabel={`Подсказка к полю "${label}"`} />
+        </div>
+      ) : null}
       {renderValue(children) as React.ReactNode}
     </div>
   );
