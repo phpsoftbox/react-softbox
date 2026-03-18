@@ -4,11 +4,13 @@ import { useFormFieldContext } from '../FormField/FormField';
 
 type Props = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   hasError?: boolean;
+  floatLabel?: boolean;
 };
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, Props>(function Textarea(
   {
     hasError = false,
+    floatLabel = false,
     className,
     ...props
   },
@@ -17,7 +19,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, Props>(function Textarea(
   const context = useFormFieldContext();
   const generatedId = React.useId();
   const resolvedId = props.id ?? context?.fieldId ?? (props.name ? `field-${props.name}` : generatedId);
-  const classes = [styles.textarea, hasError ? styles.error : null, className].filter(Boolean).join(' ');
+  const classes = [styles.textarea, floatLabel ? styles.floatLabel : null, hasError ? styles.error : null, className]
+    .filter(Boolean)
+    .join(' ');
 
   if (process.env.NODE_ENV !== 'production') {
     if (!props.id && !props.name) {
@@ -34,5 +38,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, Props>(function Textarea(
 });
 
 Textarea.displayName = 'Textarea';
+(Textarea as typeof Textarea & { supportsFloatLabel?: boolean }).supportsFloatLabel = true;
 
 export default Textarea;

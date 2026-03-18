@@ -151,10 +151,12 @@ export default function Select<T extends string | number = string | number>({
   const [query, setQuery] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
+  const [activeOptionIndex, setActiveOptionIndex] = React.useState(-1);
   const isRemote = Boolean(resolvedLoadOptions || resolvedRequest);
   const [items, setItems] = React.useState<SelectOption<T>[]>(resolvedOptions);
   const [createdItems, setCreatedItems] = React.useState<SelectOption<T>[]>([]);
   const controlRef = React.useRef<HTMLButtonElement>(null);
+  const optionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const { ref: dropdownRef, style: dropdownStyle } = useDropdownPosition(open, {
     gap: 6,
     align: 'left',
@@ -357,6 +359,34 @@ export default function Select<T extends string | number = string | number>({
     && !creating
     && selectableDisplayedCount === 0;
 
+  const findFirstSelectableIndex = React.useCallback(
+    () => displayedOptions.findIndex((option) => !option.disabled),
+    [displayedOptions],
+  );
+  const findLastSelectableIndex = React.useCallback(() => {
+    for (let index = displayedOptions.length - 1; index >= 0; index -= 1) {
+      if (!displayedOptions[index]?.disabled) {
+        return index;
+      }
+    }
+    return -1;
+  }, [displayedOptions]);
+  const findAdjacentSelectableIndex = React.useCallback((current: number, direction: 1 | -1) => {
+    if (displayedOptions.length === 0) {
+      return -1;
+    }
+    if (current < 0) {
+      return direction === 1 ? findFirstSelectableIndex() : findLastSelectableIndex();
+    }
+    for (let step = 1; step <= displayedOptions.length; step += 1) {
+      const nextIndex = (current + direction * step + displayedOptions.length) % displayedOptions.length;
+      if (!displayedOptions[nextIndex]?.disabled) {
+        return nextIndex;
+      }
+    }
+    return -1;
+  }, [displayedOptions, findFirstSelectableIndex, findLastSelectableIndex]);
+
   const updateValue = (next: T | T[] | null | undefined, nextOptions: SelectItem<T>[]) => {
     if (!isControlled) {
       setInternalValue(next);
@@ -404,6 +434,42 @@ export default function Select<T extends string | number = string | number>({
     }
   };
 
+  React.useEffect(() => {
+    if (!open) {
+      setActiveOptionIndex(-1);
+      return;
+    }
+
+    setActiveOptionIndex((prev) => {
+      if (prev >= 0 && prev < displayedOptions.length && !displayedOptions[prev]?.disabled) {
+        return prev;
+      }
+
+      const selectedIndex = displayedOptions.findIndex((option) => {
+        if (option.disabled) {
+          return false;
+        }
+
+        return multiple
+          ? option.value !== null && (selectedValues as T[]).includes(option.value as T)
+          : selectedValues === option.value;
+      });
+
+      if (selectedIndex >= 0) {
+        return selectedIndex;
+      }
+
+      return findFirstSelectableIndex();
+    });
+  }, [open, displayedOptions, multiple, selectedValues, findFirstSelectableIndex]);
+
+  React.useEffect(() => {
+    if (!open || activeOptionIndex < 0) {
+      return;
+    }
+    optionRefs.current[activeOptionIndex]?.scrollIntoView({ block: 'nearest' });
+  }, [open, activeOptionIndex]);
+
   const handleRemove = (valueToRemove: T | null) => {
     if (!multiple) {
       return;
@@ -419,8 +485,48 @@ export default function Select<T extends string | number = string | number>({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.defaultPrevented || disabled) {
+      return;
+    }
+    const target = event.target as EventTarget | null;
+    if (target instanceof HTMLButtonElement && target !== controlRef.current) {
+      return;
+    }
+
     if (event.key === 'Escape') {
-      setOpen(false);
+      if (open) {
+        event.preventDefault();
+        setOpen(false);
+        controlRef.current?.focus();
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
+
+      if (!open) {
+        setOpen(true);
+        setActiveOptionIndex(direction === 1 ? findFirstSelectableIndex() : findLastSelectableIndex());
+        return;
+      }
+
+      setActiveOptionIndex((prev) => findAdjacentSelectableIndex(prev, direction));
+      return;
+    }
+
+    if (event.key === 'Enter' && open) {
+      const activeOption = displayedOptions[activeOptionIndex];
+      if (activeOption) {
+        event.preventDefault();
+        handleSelect(activeOption);
+        return;
+      }
+      if (canCreate) {
+        event.preventDefault();
+        void handleCreateOption();
+      }
     }
   };
 
@@ -619,10 +725,11 @@ export default function Select<T extends string | number = string | number>({
               </button>
             ) : null}
             {!loading
-              ? displayedOptions.map((option) => {
+              ? displayedOptions.map((option, index) => {
                   const selected = multiple
                     ? option.value !== null && (selectedValues as T[]).includes(option.value as T)
                     : selectedValues === option.value;
+                  const active = index === activeOptionIndex;
 
                   return (
                     <button
@@ -631,12 +738,17 @@ export default function Select<T extends string | number = string | number>({
                       className={[
                         styles.option,
                         selected ? styles.optionSelected : null,
+                        active ? styles.optionActive : null,
                         option.disabled ? styles.optionDisabled : null,
                       ]
                         .filter(Boolean)
                         .join(' ')}
+                      ref={(node) => {
+                        optionRefs.current[index] = node;
+                      }}
                       role="option"
                       aria-selected={selected}
+                      onMouseEnter={() => setActiveOptionIndex(index)}
                       onMouseDown={(event) => {
                         event.preventDefault();
                         handleSelect(option);

@@ -214,6 +214,11 @@
   background: rgba(79, 230, 163, 0.08);
 }
 
+.optionActive {
+  border-color: rgba(79, 230, 163, 0.35);
+  background: rgba(79, 230, 163, 0.08);
+}
+
 .optionSelected {
   border-color: rgba(20, 201, 214, 0.6);
   color: var(--color-teal);

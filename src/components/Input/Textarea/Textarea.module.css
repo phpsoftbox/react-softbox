@@ -10,6 +10,10 @@
   resize: vertical;
 }
 
+.textarea.floatLabel {
+  padding-top: calc(var(--ui-control-padding-y, 12px) + 14px);
+}
+
 .textarea:focus {
   outline: none;
   border-color: rgba(20, 201, 214, 0.8);
