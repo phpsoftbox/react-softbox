@@ -46,4 +46,50 @@ describe('Select', () => {
     expect(screen.getAllByText('Cache').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Database').length).toBeGreaterThan(0);
   });
+
+  it('supports meta and custom option rendering', async () => {
+    const user = userEvent.setup();
+    type UserMeta = {
+      email: string;
+      phone: string;
+      countryIcon: string;
+    };
+
+    render(
+      <Select<number, UserMeta>
+        label="Пользователь"
+        options={[
+          {
+            value: 1,
+            label: 'Vasya',
+            meta: {
+              email: 'email@email.ltd',
+              phone: '9998887766',
+              countryIcon: 'ru',
+            },
+          },
+        ]}
+        renderOption={(option) => {
+          if (option.value === null) {
+            return option.label;
+          }
+
+          return (
+            <div>
+              <div>{`${option.meta?.countryIcon ?? ''} ${option.label}`.trim()}</div>
+              <div>{option.meta?.email}</div>
+              <div>{option.meta?.phone}</div>
+            </div>
+          );
+        }}
+      />,
+    );
+
+    const control = screen.getByRole('button');
+    await user.click(control);
+
+    expect(screen.getByText('ru Vasya')).toBeInTheDocument();
+    expect(screen.getByText('email@email.ltd')).toBeInTheDocument();
+    expect(screen.getByText('9998887766')).toBeInTheDocument();
+  });
 });

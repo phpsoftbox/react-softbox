@@ -29,7 +29,7 @@ import {
   getStoredThemeMode,
   setThemeMode,
 } from '@phpsoftbox/react-softbox';
-import type { ThemeMode, TableColumn } from '@phpsoftbox/react-softbox';
+import type { SelectOption, ThemeMode, TableColumn } from '@phpsoftbox/react-softbox';
 import avatarImage from '../avatar.png';
 
 const paletteRow: Array<Parameters<typeof Button>[0]> = [
@@ -48,6 +48,56 @@ const asyncMockData = [
   { value: 'delta', label: 'Delta' },
   { value: 'epsilon', label: 'Epsilon' },
 ];
+
+type UserEntity = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  country_icon: string;
+};
+
+type UserMeta = {
+  email: string;
+  phone: string;
+  countryIcon: string;
+};
+
+const usersApiMock: UserEntity[] = [
+  {
+    id: 1,
+    name: 'Василий Петров',
+    email: 'vasya.petrov@email.ltd',
+    phone: '+7 999 888-77-66',
+    country_icon: 'ru',
+  },
+  {
+    id: 2,
+    name: 'Anna Schmidt',
+    email: 'anna.schmidt@email.ltd',
+    phone: '+49 152 2345 6789',
+    country_icon: 'de',
+  },
+  {
+    id: 3,
+    name: 'John Miller',
+    email: 'john.miller@email.ltd',
+    phone: '+1 415 555 0192',
+    country_icon: 'us',
+  },
+];
+
+const mapUserEntityToOption = (entity: UserEntity): SelectOption<number, UserMeta> => ({
+  value: entity.id,
+  label: entity.name,
+  meta: {
+    email: entity.email,
+    phone: entity.phone,
+    countryIcon: entity.country_icon,
+  },
+});
+
+const userOptionsMock: SelectOption<number, UserMeta>[] = usersApiMock.map(mapUserEntityToOption);
 
 const tableRows = [
   { id: 'INV-1024', client: 'ООО Север', project: 'B2B портал', status: 'В работе', manager: 'Андрей', amount: 248000, due: '12.03.2026' },
@@ -101,6 +151,7 @@ export default function App() {
   const [collapseOpen, setCollapseOpen] = React.useState(false);
   const [multiValue, setMultiValue] = React.useState<string[]>(['cache']);
   const [asyncValue, setAsyncValue] = React.useState<string>('alpha');
+  const [userValue, setUserValue] = React.useState<number | undefined>(1);
   const [creatableOptions, setCreatableOptions] = React.useState([
     { value: 'feature-a', label: 'Feature A' },
     { value: 'feature-b', label: 'Feature B' },
@@ -194,6 +245,21 @@ export default function App() {
       window.setTimeout(() => {
         const lowered = query.toLowerCase();
         const next = asyncMockData.filter((item) => item.label.toLowerCase().includes(lowered));
+        resolve(next);
+      }, 500);
+    });
+
+  const loadUsers = (query: string) =>
+    new Promise<SelectOption<number, UserMeta>[]>((resolve) => {
+      window.setTimeout(() => {
+        const lowered = query.trim().toLowerCase();
+        const next = usersApiMock
+          .filter((entity) => (
+            `${entity.name} ${entity.email} ${entity.phone}`
+              .toLowerCase()
+              .includes(lowered)
+          ))
+          .map(mapUserEntityToOption);
         resolve(next);
       }, 500);
     });
@@ -642,6 +708,42 @@ export default function App() {
                         emptyText="Ничего не найдено"
                         searchable
                         clearable
+                    />
+                  </Input.FloatLabel>
+                </Input>
+                <Input>
+                  <Input.FloatLabel label="Select + meta (API shape)" hint="Многострочный рендер и маппинг сущностей из API в options.">
+                    <Input.Select<number, UserMeta>
+                        required
+                        name="users-api-shape"
+                        searchable
+                        clearable
+                        value={userValue}
+                        options={userOptionsMock}
+                        loadOptions={loadUsers}
+                        onChange={(next) => setUserValue(next as number | undefined)}
+                        loadingText="Поиск пользователей..."
+                        emptyText="Пользователь не найден"
+                        placeholder="Начните вводить имя/email/телефон"
+                        renderOption={(option) => {
+                          if (option.value === null) {
+                            return option.label;
+                          }
+
+                          return (
+                            <div className="userOption">
+                              <div className="userOptionPrimary">
+                                <span className="userOptionCountry">{option.meta?.countryIcon?.toUpperCase()}</span>
+                                <span>{option.label}</span>
+                              </div>
+                              <div className="userOptionMeta">{option.meta?.email}</div>
+                              <div className="userOptionMeta">{option.meta?.phone}</div>
+                            </div>
+                          );
+                        }}
+                        renderValue={(option) => (
+                          option.value === null ? option.label : `${option.meta?.countryIcon?.toUpperCase() ?? ''} ${option.label}`.trim()
+                        )}
                     />
                   </Input.FloatLabel>
                 </Input>

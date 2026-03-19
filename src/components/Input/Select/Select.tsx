@@ -7,34 +7,36 @@ import ActionStack, { countActionItems } from '../ActionStack/ActionStack';
 
 export type SelectOptionValue = string | number | null;
 
-export type SelectOption<T extends string | number = string | number> = {
+export type SelectOption<T extends string | number = string | number, M = unknown> = {
   value: T;
   label: string;
   disabled?: boolean;
+  meta?: M;
 };
 
-type SelectEmptyOption<T extends string | number> = {
+type SelectEmptyOption<T extends string | number, M = unknown> = {
   value: T | null;
   label: string;
   disabled?: boolean;
+  meta?: M;
 };
 
-type SelectItem<T extends string | number> = SelectOption<T> | SelectEmptyOption<T>;
+type SelectItem<T extends string | number, M = unknown> = SelectOption<T, M> | SelectEmptyOption<T, M>;
 
-type RequestConfig<T extends string | number = string | number> = {
+type RequestConfig<T extends string | number = string | number, M = unknown> = {
   url: string;
   method?: 'get' | 'post';
   params?: Record<string, unknown>;
   data?: Record<string, unknown>;
-  mapOptions?: (data: unknown) => SelectOption<T>[];
+  mapOptions?: (data: unknown) => SelectOption<T, M>[];
 };
 
-type SharedProps<T extends string | number> = {
+type SharedProps<T extends string | number, M = unknown> = {
   label?: string;
   id?: string;
   name?: string;
   required?: boolean;
-  options?: SelectOption<T>[];
+  options?: SelectOption<T, M>[];
   placeholder?: string;
   multiple?: boolean;
   searchable?: boolean;
@@ -48,10 +50,19 @@ type SharedProps<T extends string | number> = {
   creatable?: boolean;
   createLabel?: (query: string) => string;
   creatingText?: string;
-  onCreateOption?: (query: string) => Promise<SelectOption<T> | null | undefined> | SelectOption<T> | null | undefined;
-  loadOptions?: (query: string) => Promise<SelectOption<T>[]>;
-  request?: RequestConfig<T>;
-  onAfterRequest?: (options: SelectOption<T>[], query: string) => void;
+  onCreateOption?: (query: string) => Promise<SelectOption<T, M> | null | undefined> | SelectOption<T, M> | null | undefined;
+  loadOptions?: (query: string) => Promise<SelectOption<T, M>[]>;
+  request?: RequestConfig<T, M>;
+  onAfterRequest?: (options: SelectOption<T, M>[], query: string) => void;
+  renderOption?: (
+    option: SelectItem<T, M>,
+    state: {
+      selected: boolean;
+      active: boolean;
+      multiple: boolean;
+    }
+  ) => React.ReactNode;
+  renderValue?: (option: SelectItem<T, M>) => React.ReactNode;
   placement?: 'auto' | 'down' | 'up';
   disabled?: boolean;
   floatLabel?: boolean;
@@ -59,25 +70,25 @@ type SharedProps<T extends string | number> = {
   className?: string;
 };
 
-type SingleProps<T extends string | number> = SharedProps<T> & {
+type SingleProps<T extends string | number, M = unknown> = SharedProps<T, M> & {
   multiple?: false;
   clearable?: false;
   allowEmptyValue?: false;
   value?: T;
   defaultValue?: T;
-  onChange?: (value: T, options: SelectOption<T>[]) => void;
+  onChange?: (value: T, options: SelectOption<T, M>[]) => void;
 };
 
-type SingleClearableProps<T extends string | number> = SharedProps<T> & {
+type SingleClearableProps<T extends string | number, M = unknown> = SharedProps<T, M> & {
   multiple?: false;
   clearable: true;
   allowEmptyValue?: false;
   value?: T | undefined;
   defaultValue?: T | undefined;
-  onChange?: (value: T | undefined, options: SelectOption<T>[]) => void;
+  onChange?: (value: T | undefined, options: SelectOption<T, M>[]) => void;
 };
 
-type SingleAllowEmptyProps<T extends string | number> = SharedProps<T> & {
+type SingleAllowEmptyProps<T extends string | number, M = unknown> = SharedProps<T, M> & {
   multiple?: false;
   allowEmptyValue: true;
   clearable?: boolean;
@@ -86,31 +97,31 @@ type SingleAllowEmptyProps<T extends string | number> = SharedProps<T> & {
   emptyOptionValue?: T | null;
   onChange?: (
     value: T | null | undefined,
-    options: SelectItem<T>[]
+    options: SelectItem<T, M>[]
   ) => void;
 };
 
-type MultiProps<T extends string | number> = SharedProps<T> & {
+type MultiProps<T extends string | number, M = unknown> = SharedProps<T, M> & {
   multiple: true;
   value?: T[];
   defaultValue?: T[];
-  onChange?: (value: T[], options: SelectOption<T>[]) => void;
+  onChange?: (value: T[], options: SelectOption<T, M>[]) => void;
 };
 
-type Props<T extends string | number> =
-  | SingleProps<T>
-  | SingleClearableProps<T>
-  | SingleAllowEmptyProps<T>
-  | MultiProps<T>;
+type Props<T extends string | number, M = unknown> =
+  | SingleProps<T, M>
+  | SingleClearableProps<T, M>
+  | SingleAllowEmptyProps<T, M>
+  | MultiProps<T, M>;
 
-const defaultMapOptions = <T extends string | number>(data: unknown): SelectOption<T>[] => {
+const defaultMapOptions = <T extends string | number, M = unknown>(data: unknown): SelectOption<T, M>[] => {
   if (Array.isArray(data)) {
-    return data as SelectOption<T>[];
+    return data as SelectOption<T, M>[];
   }
   return [];
 };
 
-export default function Select<T extends string | number = string | number>({
+export default function Select<T extends string | number = string | number, M = unknown>({
   label,
   id,
   name,
@@ -135,17 +146,19 @@ export default function Select<T extends string | number = string | number>({
   loadOptions,
   request,
   onAfterRequest,
+  renderOption,
+  renderValue,
   placement = 'auto',
   disabled = false,
   floatLabel = false,
   endActions,
   className,
   onChange,
-}: Props<T>) {
-  const resolvedOptions = options as SelectOption<T>[];
-  const resolvedLoadOptions = loadOptions as ((query: string) => Promise<SelectOption<T>[]>) | undefined;
-  const resolvedRequest = request as RequestConfig<T> | undefined;
-  const resolvedOnAfterRequest = onAfterRequest as ((options: SelectOption<T>[], query: string) => void) | undefined;
+}: Props<T, M>) {
+  const resolvedOptions = options as SelectOption<T, M>[];
+  const resolvedLoadOptions = loadOptions as ((query: string) => Promise<SelectOption<T, M>[]>) | undefined;
+  const resolvedRequest = request as RequestConfig<T, M> | undefined;
+  const resolvedOnAfterRequest = onAfterRequest as ((options: SelectOption<T, M>[], query: string) => void) | undefined;
   const context = useFormFieldContext();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
@@ -153,8 +166,8 @@ export default function Select<T extends string | number = string | number>({
   const [creating, setCreating] = React.useState(false);
   const [activeOptionIndex, setActiveOptionIndex] = React.useState(-1);
   const isRemote = Boolean(resolvedLoadOptions || resolvedRequest);
-  const [items, setItems] = React.useState<SelectOption<T>[]>(resolvedOptions);
-  const [createdItems, setCreatedItems] = React.useState<SelectOption<T>[]>([]);
+  const [items, setItems] = React.useState<SelectOption<T, M>[]>(resolvedOptions);
+  const [createdItems, setCreatedItems] = React.useState<SelectOption<T, M>[]>([]);
   const controlRef = React.useRef<HTMLButtonElement>(null);
   const optionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const { ref: dropdownRef, style: dropdownStyle } = useDropdownPosition(open, {
@@ -177,7 +190,7 @@ export default function Select<T extends string | number = string | number>({
   const [internalValue, setInternalValue] = React.useState<T | T[] | null | undefined>(
     defaultValue ?? (multiple ? [] : allowEmpty ? resolvedEmptyValue ?? undefined : undefined),
   );
-  const emptyOption = React.useMemo<SelectEmptyOption<T> | null>(
+  const emptyOption = React.useMemo<SelectEmptyOption<T, M> | null>(
     () => (allowEmpty ? { value: resolvedEmptyValue, label: emptyOptionLabel, disabled: false } : null),
     [allowEmpty, emptyOptionLabel, resolvedEmptyValue],
   );
@@ -189,7 +202,7 @@ export default function Select<T extends string | number = string | number>({
   }, [resolvedOptions, isRemote]);
 
   const mergedItems = React.useMemo(() => {
-    const map = new Map<T, SelectOption<T>>();
+    const map = new Map<T, SelectOption<T, M>>();
     items.forEach((item) => {
       map.set(item.value, item);
     });
@@ -209,7 +222,7 @@ export default function Select<T extends string | number = string | number>({
 
     const timer = window.setTimeout(async () => {
       try {
-        let next: SelectOption<T>[] = [];
+        let next: SelectOption<T, M>[] = [];
         if (resolvedLoadOptions) {
           next = await resolvedLoadOptions(query);
         } else if (resolvedRequest) {
@@ -219,7 +232,7 @@ export default function Select<T extends string | number = string | number>({
             params: { ...resolvedRequest.params, q: query },
             data: resolvedRequest.data,
           });
-          const mapper = resolvedRequest.mapOptions ?? defaultMapOptions<T>;
+          const mapper = resolvedRequest.mapOptions ?? defaultMapOptions<T, M>;
           next = mapper(response.data);
         }
 
@@ -277,7 +290,7 @@ export default function Select<T extends string | number = string | number>({
     }
   }, [open, searchable]);
 
-  const allOptions = React.useMemo<SelectItem<T>[]>(
+  const allOptions = React.useMemo<SelectItem<T, M>[]>(
     () => (emptyOption ? [emptyOption, ...mergedItems] : mergedItems),
     [emptyOption, mergedItems],
   );
@@ -315,9 +328,9 @@ export default function Select<T extends string | number = string | number>({
       return values.map((val) => {
         const mapped = optionMap.get(val);
         if (mapped && mapped.value !== null) {
-          return mapped as SelectOption<T>;
+          return mapped as SelectOption<T, M>;
         }
-        return { value: val, label: String(val) } as SelectOption<T>;
+        return { value: val, label: String(val) } as SelectOption<T, M>;
       });
     }
     const single = selectedValues as T | null | undefined;
@@ -387,32 +400,32 @@ export default function Select<T extends string | number = string | number>({
     return -1;
   }, [displayedOptions, findFirstSelectableIndex, findLastSelectableIndex]);
 
-  const updateValue = (next: T | T[] | null | undefined, nextOptions: SelectItem<T>[]) => {
+  const updateValue = (next: T | T[] | null | undefined, nextOptions: SelectItem<T, M>[]) => {
     if (!isControlled) {
       setInternalValue(next);
     }
     if (multiple) {
-      (onChange as MultiProps<T>['onChange'])?.(next as T[], nextOptions as SelectOption<T>[]);
+      (onChange as MultiProps<T, M>['onChange'])?.(next as T[], nextOptions as SelectOption<T, M>[]);
     } else {
       if (allowEmpty) {
-        (onChange as SingleAllowEmptyProps<T>['onChange'])?.(next as T | null | undefined, nextOptions);
+        (onChange as SingleAllowEmptyProps<T, M>['onChange'])?.(next as T | null | undefined, nextOptions);
       } else {
         if (clearable) {
-          (onChange as SingleClearableProps<T>['onChange'])?.(
+          (onChange as SingleClearableProps<T, M>['onChange'])?.(
             next as T | undefined,
-            nextOptions as SelectOption<T>[],
+            nextOptions as SelectOption<T, M>[],
           );
         } else {
-          (onChange as SingleProps<T>['onChange'])?.(
+          (onChange as SingleProps<T, M>['onChange'])?.(
             next as T,
-            nextOptions as SelectOption<T>[],
+            nextOptions as SelectOption<T, M>[],
           );
         }
       }
     }
   };
 
-  const handleSelect = (option: SelectItem<T>) => {
+  const handleSelect = (option: SelectItem<T, M>) => {
     if (option.disabled) {
       return;
     }
@@ -548,7 +561,7 @@ export default function Select<T extends string | number = string | number>({
     setQuery('');
   };
 
-  const createFallbackOption = (nextQuery: string): SelectOption<T> => ({
+  const createFallbackOption = (nextQuery: string): SelectOption<T, M> => ({
     value: nextQuery as unknown as T,
     label: nextQuery,
   });
@@ -629,8 +642,8 @@ export default function Select<T extends string | number = string | number>({
           {hasValue ? (
             multiple ? (
               selectedList.map((item) => (
-                <span key={String(item.value)} className={styles.tag}>
-                  {item.label}
+                <div key={String(item.value)} className={styles.tag}>
+                  {renderValue ? renderValue(item) : item.label}
                   <span
                     role="button"
                     tabIndex={0}
@@ -650,10 +663,10 @@ export default function Select<T extends string | number = string | number>({
                   >
                     ×
                   </span>
-                </span>
+                </div>
               ))
             ) : (
-              <span>{selectedList[0]?.label}</span>
+              selectedList[0] ? (renderValue ? renderValue(selectedList[0]) : selectedList[0].label) : null
             )
           ) : (
             <span className={styles.placeholder}>{placeholder}</span>
@@ -748,6 +761,7 @@ export default function Select<T extends string | number = string | number>({
                       }}
                       role="option"
                       aria-selected={selected}
+                      aria-label={option.label}
                       onMouseEnter={() => setActiveOptionIndex(index)}
                       onMouseDown={(event) => {
                         event.preventDefault();
@@ -760,7 +774,7 @@ export default function Select<T extends string | number = string | number>({
                       }}
                       disabled={option.disabled}
                     >
-                      <span>{option.label}</span>
+                      {renderOption ? renderOption(option, { selected, active, multiple }) : <span>{option.label}</span>}
                       {selected ? <span className={styles.check}>✓</span> : null}
                     </button>
                   );
