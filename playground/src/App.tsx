@@ -640,6 +640,16 @@ export default function App() {
                   </Input.FloatLabel>
                 </Input>
                 <Input>
+                  <Input.FloatLabel label="Float label + placeholder" hint="Placeholder скрыт без фокуса и виден только при фокусе.">
+                    <Input.Field
+                      type="text"
+                      name="float-with-placeholder"
+                      placeholder="Введите значение (placeholder виден только в фокусе)"
+                      required
+                    />
+                  </Input.FloatLabel>
+                </Input>
+                <Input>
                   <Input.FloatLabel label="Комментарий" hint="Работает и для textarea.">
                     <Input.TextArea name="comment" rows={3} required />
                   </Input.FloatLabel>
