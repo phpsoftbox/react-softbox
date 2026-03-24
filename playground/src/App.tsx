@@ -906,6 +906,13 @@ export default function App() {
           </Card>
 
           <Card className="gridCard gridCardWide">
+            <Card.Toolbar align="between">
+              <Text size="sm" muted>Всего записей: {sortedRows.length}</Text>
+              <Row gap="8px" wrap="wrap">
+                <Button size="sm" appearance="outline">Экспорт</Button>
+                <Button size="sm" variant="primary">Добавить</Button>
+              </Row>
+            </Card.Toolbar>
             <Card.Header title="Tables" />
             <Card.Body>
               <Stack gap="20px">
