@@ -906,12 +906,38 @@ export default function App() {
           </Card>
 
           <Card className="gridCard gridCardWide">
+            <Card.Header title="Toolbar Groups" subtitle="Группы с разделителями как в desktop UI." />
+            <Card.Body>
+              <Stack gap="12px">
+                <Card.Toolbar align="left">
+                  <Card.Toolbar.Group>
+                    <Button size="sm" appearance="outline">Назад</Button>
+                    <Button size="sm" appearance="outline">Вперед</Button>
+                  </Card.Toolbar.Group>
+                  <Card.Toolbar.Group>
+                    <Button size="sm" appearance="outline">Вырезать</Button>
+                    <Button size="sm" appearance="outline">Копировать</Button>
+                    <Button size="sm" appearance="outline">Вставить</Button>
+                  </Card.Toolbar.Group>
+                  <Card.Toolbar.Group>
+                    <Button size="sm" variant="primary">Сохранить</Button>
+                  </Card.Toolbar.Group>
+                </Card.Toolbar>
+              </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard gridCardWide">
             <Card.Toolbar align="between">
-              <Text size="sm" muted>Всего записей: {sortedRows.length}</Text>
-              <Row gap="8px" wrap="wrap">
-                <Button size="sm" appearance="outline">Экспорт</Button>
-                <Button size="sm" variant="primary">Добавить</Button>
-              </Row>
+              <Card.Toolbar.Group>
+                <Text size="sm" muted>Всего записей: {sortedRows.length}</Text>
+              </Card.Toolbar.Group>
+              <Card.Toolbar.Group>
+                <Row gap="8px" wrap="wrap">
+                  <Button size="sm" appearance="outline">Экспорт</Button>
+                  <Button size="sm" variant="primary">Добавить</Button>
+                </Row>
+              </Card.Toolbar.Group>
             </Card.Toolbar>
             <Card.Header title="Tables" />
             <Card.Body>

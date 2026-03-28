@@ -39,6 +39,30 @@
   justify-content: space-between;
 }
 
+.toolbarGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  min-height: 30px;
+  position: relative;
+}
+
+.toolbarGroup + .toolbarGroup {
+  margin-left: var(--spacing-1);
+  padding-left: var(--spacing-3);
+}
+
+.toolbarGroup + .toolbarGroup::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--color-line);
+  opacity: 0.55;
+}
+
 .headerMain {
   display: flex;
   flex-direction: column;

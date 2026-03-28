@@ -13,10 +13,15 @@ type CardSectionProps = React.HTMLAttributes<HTMLDivElement>;
 type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
   align?: 'left' | 'right' | 'between';
 };
+type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement>;
+
+type CardToolbarComponent = React.FC<CardToolbarProps> & {
+  Group: React.FC<CardToolbarGroupProps>;
+};
 
 type CardComponent = React.FC<CardProps> & {
   Header: React.FC<CardHeaderProps>;
-  Toolbar: React.FC<CardToolbarProps>;
+  Toolbar: CardToolbarComponent;
   Body: React.FC<CardSectionProps>;
   Footer: React.FC<CardSectionProps>;
 };
@@ -53,7 +58,7 @@ function CardFooter({ className, ...props }: CardSectionProps) {
   return <div className={classes} {...props} />;
 }
 
-function CardToolbar({ align = 'left', className, ...props }: CardToolbarProps) {
+function CardToolbarBase({ align = 'left', className, ...props }: CardToolbarProps) {
   const alignClass = align === 'right'
     ? styles.toolbarAlignRight
     : align === 'between'
@@ -63,6 +68,16 @@ function CardToolbar({ align = 'left', className, ...props }: CardToolbarProps) 
 
   return <div className={classes} {...props} />;
 }
+
+function CardToolbarGroup({ className, ...props }: CardToolbarGroupProps) {
+  const classes = [styles.toolbarGroup, className].filter(Boolean).join(' ');
+
+  return <div className={classes} {...props} />;
+}
+
+const CardToolbar = Object.assign(CardToolbarBase, {
+  Group: CardToolbarGroup,
+}) as CardToolbarComponent;
 
 const Card = Object.assign(CardBase, {
   Header: CardHeader,
