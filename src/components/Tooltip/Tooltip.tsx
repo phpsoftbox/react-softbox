@@ -357,6 +357,11 @@ function TooltipBase({
         setOpen(!isOpen);
       }
     : childProps.onClick ?? noop;
+  const handleWrapperClick = openOnClick
+    ? () => {
+        setOpen(!isOpen);
+      }
+    : undefined;
 
   const isForwardRef = (children as any)?.type?.$$typeof === Symbol.for('react.forward_ref');
   const canAttachRef = typeof (children as any)?.type === 'string' || isForwardRef;
@@ -378,7 +383,7 @@ function TooltipBase({
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      onClick={handleClick}
+      onClick={handleWrapperClick}
     >
       {children}
     </span>
