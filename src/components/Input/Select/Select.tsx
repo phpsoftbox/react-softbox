@@ -612,6 +612,7 @@ export default function Select<T extends string | number = string | number, M = 
       className={[styles.wrapper, className].filter(Boolean).join(' ')}
       data-open={open}
       data-has-value={hasValue}
+      data-multiple={multiple ? 'true' : 'false'}
       data-has-query={query.length > 0}
       data-has-label={hasLabel}
       data-float-label={floatLabel ? 'true' : undefined}
@@ -666,7 +667,9 @@ export default function Select<T extends string | number = string | number, M = 
                 </div>
               ))
             ) : (
-              selectedList[0] ? (renderValue ? renderValue(selectedList[0]) : selectedList[0].label) : null
+              <span className={styles.singleValue}>
+                {selectedList[0] ? (renderValue ? renderValue(selectedList[0]) : selectedList[0].label) : null}
+              </span>
             )
           ) : (
             <span className={styles.placeholder}>{placeholder}</span>

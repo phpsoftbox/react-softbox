@@ -48,6 +48,7 @@
     var(--ui-control-padding-y, 12px) var(--ui-control-padding-x, 16px);
   font-size: var(--ui-control-font-size, var(--font-size-4));
   line-height: var(--ui-control-line-height, 1.2);
+  text-align: left;
   cursor: pointer;
   position: relative;
 }
@@ -84,14 +85,34 @@
   gap: 6px;
   flex: 1;
   min-width: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  text-align: left;
   padding: 0;
+}
+
+.wrapper[data-multiple="true"] .value {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.singleValue {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
 }
 
 .placeholder {
   color: var(--color-muted-2);
   font-size: var(--ui-control-font-size, var(--font-size-4));
   transition: opacity 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wrapper[data-float-label="true"]:not([data-float-active="true"]) .placeholder {
