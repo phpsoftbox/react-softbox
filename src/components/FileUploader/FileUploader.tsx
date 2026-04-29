@@ -11,6 +11,7 @@ export type FileUploaderProps = {
   multiple?: boolean;
   accept?: string;
   allowedTypes?: string[];
+  allowedMimeTypes?: string[];
   maxFileSizeKb?: number;
   disabled?: boolean;
   showPreview?: boolean;
@@ -73,6 +74,7 @@ export default function FileUploader({
   multiple = false,
   accept,
   allowedTypes = [],
+  allowedMimeTypes = [],
   maxFileSizeKb,
   disabled = false,
   showPreview = false,
@@ -97,6 +99,12 @@ export default function FileUploader({
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const files = value ?? internalFiles;
+  const mergedAllowedTypes = React.useMemo(() => {
+    const tokens = [...allowedTypes, ...allowedMimeTypes]
+      .map((item) => toLower(item))
+      .filter(Boolean);
+    return Array.from(new Set(tokens));
+  }, [allowedTypes, allowedMimeTypes]);
 
   const updateFiles = React.useCallback(
     (next: File[]) => {
@@ -112,7 +120,7 @@ export default function FileUploader({
     (incoming: File[]) => {
       const nextErrors: string[] = [];
       const validFiles = incoming.filter((file) => {
-        if (!isAllowedType(file, allowedTypes)) {
+        if (!isAllowedType(file, mergedAllowedTypes)) {
           nextErrors.push(`Файл ${file.name} имеет недопустимый формат`);
           return false;
         }
@@ -127,7 +135,7 @@ export default function FileUploader({
       });
       return { validFiles, nextErrors };
     },
-    [allowedTypes, maxFileSizeKb],
+    [maxFileSizeKb, mergedAllowedTypes],
   );
 
   const handleFiles = React.useCallback(
@@ -235,7 +243,7 @@ export default function FileUploader({
     };
   }, [files, showPreview]);
 
-  const acceptValue = accept ?? (allowedTypes.length ? allowedTypes.join(',') : undefined);
+  const acceptValue = accept ?? (mergedAllowedTypes.length ? mergedAllowedTypes.join(',') : undefined);
   const metaParts = [
     allowedTypes.length ? `${supportedTypesLabel} ${allowedTypes.join(', ')}` : null,
     maxFileSizeKb ? `${maxFileSizeLabel} ${maxFileSizeKb} кбайт` : null,

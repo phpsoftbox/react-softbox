@@ -1332,6 +1332,7 @@ export default function App() {
               <Stack gap="12px">
                 <FileUploader
                   allowedTypes={['.jpg', '.png', '.pdf']}
+                  allowedMimeTypes={['image/jpeg', 'image/png', 'application/pdf']}
                   maxFileSizeKb={2048}
                   multiple
                   showPreview
