@@ -111,11 +111,13 @@ export default function MaskedInput({
   onChange,
   placeholderChar,
   escapeChar = '\\',
+  onKeyDown,
   onPaste,
   ...props
 }: Props) {
   const isControlled = value !== undefined;
   const [internal, setInternal] = React.useState('');
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   const displayValue = React.useMemo(() => {
     const raw = extractRaw(String(isControlled ? value ?? '' : internal), mask, escapeChar);
@@ -126,11 +128,58 @@ export default function MaskedInput({
     const rawInput = event.target.value;
     const raw = extractRaw(rawInput, mask, escapeChar);
 
-    if (!isControlled) {
-      setInternal(raw);
+    const updateRaw = (nextRaw: string) => {
+      if (!isControlled) {
+        setInternal(nextRaw);
+      }
+
+      onChange?.(nextRaw);
+    };
+
+    updateRaw(raw);
+  };
+
+  const handleKeyDownInternal = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    onKeyDown?.(event);
+    if (event.defaultPrevented) {
+      return;
+    }
+    if (event.key !== 'Backspace') {
+      return;
     }
 
-    onChange?.(raw);
+    const target = event.currentTarget;
+    const start = target.selectionStart ?? 0;
+    const end = target.selectionEnd ?? start;
+    if (start <= 0 || start !== end) {
+      return;
+    }
+
+    const masked = target.value;
+    const raw = extractRaw(masked, mask, escapeChar);
+    const rawBefore = extractRaw(masked.slice(0, start), mask, escapeChar);
+    const rawBeforePrev = extractRaw(masked.slice(0, start - 1), mask, escapeChar);
+
+    // If deleting a literal mask symbol, remove the previous data char instead.
+    if (rawBefore.length !== rawBeforePrev.length) {
+      return;
+    }
+    if (rawBefore.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    const deleteIndex = rawBefore.length - 1;
+    const nextRaw = raw.slice(0, deleteIndex) + raw.slice(deleteIndex + 1);
+    const caret = applyMask(nextRaw.slice(0, deleteIndex), mask, placeholderChar, escapeChar).length;
+
+    if (!isControlled) {
+      setInternal(nextRaw);
+    }
+    onChange?.(nextRaw);
+    requestAnimationFrame(() => {
+      inputRef.current?.setSelectionRange(caret, caret);
+    });
   };
 
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
@@ -143,7 +192,6 @@ export default function MaskedInput({
       return;
     }
     const raw = extractRaw(text, mask, escapeChar);
-    console.log(raw)
     if (!raw) {
       return;
     }
@@ -154,5 +202,14 @@ export default function MaskedInput({
     onChange?.(raw);
   };
 
-  return <InputField {...props} value={displayValue} onChange={handleChange} onPaste={handlePaste} />;
+  return (
+    <InputField
+      {...props}
+      ref={inputRef}
+      value={displayValue}
+      onChange={handleChange}
+      onKeyDown={handleKeyDownInternal}
+      onPaste={handlePaste}
+    />
+  );
 }

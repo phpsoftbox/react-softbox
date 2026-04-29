@@ -11,6 +11,7 @@
 .label {
   position: absolute;
   left: 16px;
+  right: 16px;
   top: 16px;
   color: var(--color-muted-2);
   font-size: var(--ui-control-font-size, var(--font-size-3));
@@ -22,6 +23,13 @@
   background: var(--surface-input);
   padding: 0;
   border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wrapperWithHint .label {
+  right: 52px;
 }
 
 .requiredMark {

@@ -21,4 +21,21 @@ describe('Card', () => {
     expect(screen.getByText('Контент')).toBeInTheDocument();
     expect(screen.getByText('Сохранить')).toBeInTheDocument();
   });
+
+  it('renders toolbar button with icon and label', () => {
+    render(
+      <Card>
+        <Card.Toolbar>
+          <Card.Toolbar.Group>
+            <Card.Toolbar.Button
+              icon={<span aria-hidden="true">+</span>}
+              label="Добавить"
+            />
+          </Card.Toolbar.Group>
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Добавить' })).toBeInTheDocument();
+  });
 });

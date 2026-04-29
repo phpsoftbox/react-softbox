@@ -32,6 +32,7 @@ export { default as MarkdownEditor } from './components/MarkdownEditor/MarkdownE
 export { default as Markdown } from './components/MarkdownEditor/MarkdownEditor';
 export { default as Tooltip } from './components/Tooltip/Tooltip';
 export { default as Table } from './components/Table/Table';
+export { default as Wizard } from './components/Wizard/Wizard';
 export type {
   TableBulkAction,
   TableBulkActions,
@@ -43,6 +44,20 @@ export type {
   TableSortState,
 } from './components/Table/Table';
 export type { TooltipPlacement, TooltipVariant } from './components/Tooltip/Tooltip';
+export type {
+  WizardBlockedTransition,
+  WizardDirection,
+  WizardProgressState,
+  WizardStep,
+  WizardStepProps,
+  WizardStepContentProps,
+  WizardStepRenderProps,
+  WizardStepStatus,
+  WizardTemplateProps,
+  WizardWindowSizeMap,
+  WizardStepVisibilityContext,
+  WizardTransitionContext,
+} from './components/Wizard/Wizard';
 export { default as Text } from './components/Typography/Text';
 export { default as Heading } from './components/Typography/Heading';
 export { default as useMediaQuery } from './hooks/useMediaQuery';

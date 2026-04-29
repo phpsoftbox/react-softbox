@@ -233,7 +233,14 @@ function Dropdown({
   const menu = open ? (
     <div
       ref={menuRef}
-      className={[styles.dropdownMenu, alignClass, navProps?.className].filter(Boolean).join(' ')}
+      className={[
+        styles.dropdownMenu,
+        fullWidth ? styles.dropdownMenuFull : null,
+        alignClass,
+        navProps?.className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       style={{ ...menuPositionStyle, ...navProps?.style }}
     >
       <Menu items={resolvedItems} orientation={orientation} onItemSelect={() => setOpen(false)} />

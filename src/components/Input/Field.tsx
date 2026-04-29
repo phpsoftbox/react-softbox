@@ -22,12 +22,17 @@ const InputField = React.forwardRef<HTMLInputElement, Props>(({ hasError, classN
     .filter(Boolean)
     .join(' ');
 
-  if (process.env.NODE_ENV !== 'production') {
-    if (!props.id && !props.name) {
+  const warnedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
+    if (!props.id && !props.name && !warnedRef.current) {
+      warnedRef.current = true;
       // eslint-disable-next-line no-console
       console.warn('Input.Field: рекомендуется передавать id или name для связки с label.');
     }
-  }
+  }, [props.id, props.name]);
 
   React.useEffect(() => {
     context?.registerField(resolvedId, props.name, props.required === true);

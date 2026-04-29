@@ -42,3 +42,4 @@ import { Button, Card, Menu } from '@phpsoftbox/react-softbox';
 - `tabs.md` — Tabs (горизонтальные и вертикальные)
 - `progress.md` — Progress и его варианты
 - `breadcrumbs.md` — Breadcrumbs и разделители
+- `wizard.md` — Wizard и поэтапные формы

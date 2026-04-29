@@ -26,10 +26,11 @@ import {
   Drawer,
   Collapse,
   CollapseButton,
+  Wizard,
   getStoredThemeMode,
   setThemeMode,
 } from '@phpsoftbox/react-softbox';
-import type { SelectOption, ThemeMode, TableColumn } from '@phpsoftbox/react-softbox';
+import type { SelectOption, ThemeMode, TableColumn, WizardProgressState } from '@phpsoftbox/react-softbox';
 import avatarImage from '../avatar.png';
 
 const paletteRow: Array<Parameters<typeof Button>[0]> = [
@@ -61,6 +62,22 @@ type UserMeta = {
   email: string;
   phone: string;
   countryIcon: string;
+};
+
+type WizardSimpleState = {
+  company: string;
+  owner: string;
+  contact: string;
+};
+
+type WizardGuardedState = {
+  email: string;
+  plan: 'basic' | 'pro' | 'enterprise' | '';
+  approved: boolean;
+};
+
+type WizardWindowState = {
+  project: string;
 };
 
 const usersApiMock: UserEntity[] = [
@@ -166,6 +183,33 @@ export default function App() {
   const [selectedIds, setSelectedIds] = React.useState<React.Key[]>([]);
   const [smallSelectedIds, setSmallSelectedIds] = React.useState<React.Key[]>([]);
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
+  const [wizardShowFutureSteps, setWizardShowFutureSteps] = React.useState(false);
+  const [wizardShowPrevOnFirstStep, setWizardShowPrevOnFirstStep] = React.useState(false);
+  const [wizardSimpleProgress, setWizardSimpleProgress] = React.useState<WizardProgressState>({
+    total: 0,
+    current: 0,
+    completed: 0,
+    percent: 0,
+  });
+  const [wizardGuardedProgress, setWizardGuardedProgress] = React.useState<WizardProgressState>({
+    total: 0,
+    current: 0,
+    completed: 0,
+    percent: 0,
+  });
+  const [wizardSimpleState, setWizardSimpleState] = React.useState<WizardSimpleState>({
+    company: '',
+    owner: '',
+    contact: '',
+  });
+  const [wizardGuardedState, setWizardGuardedState] = React.useState<WizardGuardedState>({
+    email: '',
+    plan: '',
+    approved: false,
+  });
+  const [wizardWindowState] = React.useState<WizardWindowState>({
+    project: 'API migration',
+  });
   const [markdownValue, setMarkdownValue] = React.useState(
     '# Документация\n\n**ReactSoftBox** — быстрый старт.\n\n- Пункты списка\n- Поддержка `inline` кода\n\n```ts\nconst ready = true;\nconst title = \"ReactSoftBox\";\nconsole.log(title, ready);\n```\n\n[Открыть сайт](https://phpsoftbox.com)\n'
   );
@@ -640,7 +684,7 @@ export default function App() {
                   </Input.FloatLabel>
                 </Input>
                 <Input>
-                  <Input.FloatLabel label="Float label + placeholder" hint="Placeholder скрыт без фокуса и виден только при фокусе.">
+                  <Input.FloatLabel label="Float label + placeholder + mega long text" hint="Placeholder скрыт без фокуса и виден только при фокусе.">
                     <Input.Field
                       type="text"
                       name="float-with-placeholder"
@@ -911,19 +955,275 @@ export default function App() {
               <Stack gap="12px">
                 <Card.Toolbar align="left">
                   <Card.Toolbar.Group>
-                    <Button size="sm" appearance="outline">Назад</Button>
-                    <Button size="sm" appearance="outline">Вперед</Button>
+                    <Tooltip content="Назад" placement="top">
+                      <Card.Toolbar.Button
+                        aria-label="Назад"
+                        icon={<span aria-hidden="true">←</span>}
+                      />
+                    </Tooltip>
+                    <Tooltip content="Вперед" placement="top">
+                      <Card.Toolbar.Button
+                        aria-label="Вперед"
+                        icon={<span aria-hidden="true">→</span>}
+                      />
+                    </Tooltip>
                   </Card.Toolbar.Group>
                   <Card.Toolbar.Group>
-                    <Button size="sm" appearance="outline">Вырезать</Button>
-                    <Button size="sm" appearance="outline">Копировать</Button>
-                    <Button size="sm" appearance="outline">Вставить</Button>
+                    <Card.Toolbar.Button
+                      icon={<span aria-hidden="true">✂</span>}
+                      label="Вырезать"
+                    />
+                    <Card.Toolbar.Button
+                      icon={<span aria-hidden="true">⎘</span>}
+                      label="Копировать"
+                    />
+                    <Card.Toolbar.Button
+                      icon={<span aria-hidden="true">⎘</span>}
+                      label="Вставить"
+                    />
                   </Card.Toolbar.Group>
                   <Card.Toolbar.Group>
-                    <Button size="sm" variant="primary">Сохранить</Button>
+                    <Tooltip content="Настройки" placement="top">
+                      <Card.Toolbar.Button
+                        aria-label="Настройки"
+                        icon={<span aria-hidden="true">⚙</span>}
+                      />
+                    </Tooltip>
+                    <Card.Toolbar.Button
+                      icon={<span aria-hidden="true">✓</span>}
+                      label="Сохранить"
+                      variant="primary"
+                    />
                   </Card.Toolbar.Group>
                 </Card.Toolbar>
               </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard gridCardWide">
+            <Card.Header title="Wizard · Без условий" subtitle="Переходы вперед/назад без валидации шагов." />
+            <Card.Body>
+              <Stack gap="14px">
+                <Input.Switch
+                  label="Показывать будущие шаги"
+                  checked={wizardShowFutureSteps}
+                  onChange={(event) => setWizardShowFutureSteps(event.target.checked)}
+                />
+                <Input.Switch
+                  label="Показывать кнопку «Назад» на первом шаге"
+                  checked={wizardShowPrevOnFirstStep}
+                  onChange={(event) => setWizardShowPrevOnFirstStep(event.target.checked)}
+                />
+                <Progress
+                  value={wizardSimpleProgress.percent}
+                  size="sm"
+                  variant="primary"
+                  label={`Шаг ${wizardSimpleProgress.current} из ${wizardSimpleProgress.total || 0}`}
+                  showValue
+                />
+                <Wizard<WizardSimpleState>
+                  state={wizardSimpleState}
+                  showFutureSteps={wizardShowFutureSteps}
+                  showPrevOnFirstStep={wizardShowPrevOnFirstStep}
+                  onStepStateChange={({ progress }) => setWizardSimpleProgress(progress)}
+                  onComplete={() => pushToast('success')}
+                >
+                  <Wizard.Step id="company" title="Компания" description="Профиль">
+                    <Input>
+                      <Input.Label>Название компании</Input.Label>
+                      <Input.Field
+                        name="wizard-company"
+                        placeholder="ООО Пример"
+                        value={wizardSimpleState.company}
+                        onChange={(event) => setWizardSimpleState((prev) => ({
+                          ...prev,
+                          company: event.target.value,
+                        }))}
+                      />
+                    </Input>
+                  </Wizard.Step>
+                  <Wizard.Step id="owner" title="Контакт" description="Ответственный">
+                    <Input>
+                      <Input.Label>ФИО</Input.Label>
+                      <Input.Field
+                        name="wizard-owner"
+                        placeholder="Иван Иванов"
+                        value={wizardSimpleState.owner}
+                        onChange={(event) => setWizardSimpleState((prev) => ({
+                          ...prev,
+                          owner: event.target.value,
+                        }))}
+                      />
+                    </Input>
+                  </Wizard.Step>
+                  <Wizard.Step id="final" title="Финал" description="Подтверждение">
+                    <Input>
+                      <Input.Label>Email</Input.Label>
+                      <Input.Field
+                        name="wizard-contact-email"
+                        type="email"
+                        placeholder="manager@example.com"
+                        value={wizardSimpleState.contact}
+                        onChange={(event) => setWizardSimpleState((prev) => ({
+                          ...prev,
+                          contact: event.target.value,
+                        }))}
+                      />
+                    </Input>
+                  </Wizard.Step>
+                </Wizard>
+              </Stack>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard gridCardWide">
+            <Card.Header title="Wizard · С условиями" subtitle="Три шага с canEnter/canExit." />
+            <Card.Body>
+              <Wizard<WizardGuardedState>
+                state={wizardGuardedState}
+                showFutureSteps={wizardShowFutureSteps}
+                showPrevOnFirstStep={wizardShowPrevOnFirstStep}
+                showProgress
+                progressProps={{
+                  label: `Шаг ${wizardGuardedProgress.current} из ${wizardGuardedProgress.total || 0}`,
+                  showValue: true,
+                  variant: 'info',
+                  size: 'sm',
+                }}
+                stepsOrientation="vertical"
+                template={({ stepsNode, progressNode, contentNode, actionsNode }) => (
+                  <Stack gap="14px">
+                    <div className="wizardSplit">
+                      <div className="wizardSplitSteps">
+                        {stepsNode}
+                      </div>
+                      <div className="wizardSplitContent">
+                        {contentNode}
+                      </div>
+                    </div>
+                    {progressNode}
+                    {actionsNode}
+                  </Stack>
+                )}
+                onStepStateChange={({ progress }) => setWizardGuardedProgress(progress)}
+                onComplete={() => pushToast('success')}
+              >
+                <Wizard.Step<WizardGuardedState>
+                  id="profile"
+                  title="Профиль"
+                  description="Email"
+                  canExit={({ state }) => state.email.trim().includes('@')}
+                >
+                  <Input>
+                    <Input.Label>Email</Input.Label>
+                    <Input.Field
+                      name="wizard-profile-email"
+                      type="email"
+                      placeholder="name@example.com"
+                      value={wizardGuardedState.email}
+                      onChange={(event) => setWizardGuardedState((prev) => ({
+                        ...prev,
+                        email: event.target.value,
+                      }))}
+                    />
+                  </Input>
+                </Wizard.Step>
+                <Wizard.Step<WizardGuardedState>
+                  id="plan"
+                  title="Тариф"
+                  description="Выбор"
+                  canEnter={({ state }) => state.email.trim().includes('@')}
+                  canExit={({ state }) => state.plan !== ''}
+                >
+                  <Row gap="12px" wrap="wrap">
+                    <Input.Radio
+                      name="wizard-plan"
+                      label="Basic"
+                      checked={wizardGuardedState.plan === 'basic'}
+                      onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'basic' }))}
+                    />
+                    <Input.Radio
+                      name="wizard-plan"
+                      label="Pro"
+                      checked={wizardGuardedState.plan === 'pro'}
+                      onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'pro' }))}
+                    />
+                    <Input.Radio
+                      name="wizard-plan"
+                      label="Enterprise"
+                      checked={wizardGuardedState.plan === 'enterprise'}
+                      onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'enterprise' }))}
+                    />
+                  </Row>
+                </Wizard.Step>
+                <Wizard.Step<WizardGuardedState>
+                  id="confirm"
+                  title="Подтверждение"
+                  description="Проверка"
+                  canEnter={({ state }) => state.plan !== ''}
+                >
+                  <Stack gap="12px">
+                    <Text size="sm">Email: {wizardGuardedState.email || '—'}</Text>
+                    <Text size="sm">Тариф: {wizardGuardedState.plan || '—'}</Text>
+                    <Input.Checkbox
+                      label="Данные подтверждены"
+                      checked={wizardGuardedState.approved}
+                      onChange={(event) => setWizardGuardedState((prev) => ({
+                        ...prev,
+                        approved: event.target.checked,
+                      }))}
+                    />
+                  </Stack>
+                </Wizard.Step>
+              </Wizard>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard gridCardWide">
+            <Card.Header title="Wizard · Много шагов" subtitle="Окно шагов: показывается только часть списка вокруг текущего." />
+            <Card.Body>
+              <Wizard<WizardWindowState>
+                state={wizardWindowState}
+                stepsViewMode="window"
+                stepsWindowSize={4}
+                stepsWindowSizeByBreakpoint={{
+                  sm: 1,
+                  md: 2,
+                  lg: 3,
+                  xl: 4,
+                }}
+                showFutureSteps
+                showPrevOnFirstStep
+                showProgress
+                progressProps={{
+                  label: 'Прогресс',
+                  showValue: true,
+                  variant: 'primary',
+                  size: 'sm',
+                }}
+              >
+                <Wizard.Step id="s1" title="Инициализация" description="Шаг 1">
+                  <Text size="sm">Проект: {wizardWindowState.project}</Text>
+                </Wizard.Step>
+                <Wizard.Step id="s2" title="Доступы" description="Шаг 2">
+                  <Text size="sm">Проверка прав и ролей.</Text>
+                </Wizard.Step>
+                <Wizard.Step id="s3" title="Схема" description="Шаг 3">
+                  <Text size="sm">Подготовка структуры данных.</Text>
+                </Wizard.Step>
+                <Wizard.Step id="s4" title="Импорт" description="Шаг 4">
+                  <Text size="sm">Загрузка первичного набора.</Text>
+                </Wizard.Step>
+                <Wizard.Step id="s5" title="Валидация" description="Шаг 5">
+                  <Text size="sm">Контроль целостности данных.</Text>
+                </Wizard.Step>
+                <Wizard.Step id="s6" title="Индексы" description="Шаг 6">
+                  <Text size="sm">Оптимизация запросов.</Text>
+                </Wizard.Step>
+                <Wizard.Step id="s7" title="Финал" description="Шаг 7">
+                  <Text size="sm">Проверка и завершение.</Text>
+                </Wizard.Step>
+              </Wizard>
             </Card.Body>
           </Card>
 

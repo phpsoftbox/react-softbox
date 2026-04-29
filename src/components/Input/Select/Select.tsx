@@ -277,12 +277,17 @@ export default function Select<T extends string | number = string | number, M = 
     context?.registerField(controlId, name, required === true);
   }, [context, controlId, name, required]);
 
-  if (process.env.NODE_ENV !== 'production') {
-    if (!id && !name) {
+  const warnedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
+    if (!id && !name && !warnedRef.current) {
+      warnedRef.current = true;
       // eslint-disable-next-line no-console
       console.warn('Input.Select: рекомендуется передавать id или name для связки с label.');
     }
-  }
+  }, [id, name]);
 
   React.useEffect(() => {
     if (open && searchable) {
@@ -672,7 +677,7 @@ export default function Select<T extends string | number = string | number, M = 
               </span>
             )
           ) : (
-            <span className={styles.placeholder}>{placeholder}</span>
+            <span className={[styles.placeholder, styles.singleValue].join(' ')}>{placeholder}</span>
           )}
         </div>
       </button>
@@ -777,7 +782,9 @@ export default function Select<T extends string | number = string | number, M = 
                       }}
                       disabled={option.disabled}
                     >
-                      {renderOption ? renderOption(option, { selected, active, multiple }) : <span>{option.label}</span>}
+                      {renderOption
+                        ? renderOption(option, { selected, active, multiple })
+                        : <span className={styles.optionLabel}>{option.label}</span>}
                       {selected ? <span className={styles.check}>✓</span> : null}
                     </button>
                   );

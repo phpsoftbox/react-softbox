@@ -42,6 +42,7 @@ import {
   Text,
   Textarea,
   Tooltip,
+  Wizard,
 } from '@phpsoftbox/react-softbox';
 ```
 
@@ -71,6 +72,7 @@ setThemeMode('dark');
 - `docs/tabs.md`
 - `docs/progress.md`
 - `docs/breadcrumbs.md`
+- `docs/wizard.md`
 
 ## Playground
 
