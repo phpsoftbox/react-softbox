@@ -49,6 +49,8 @@ export type TableSelection<T> = {
   onToggleAll?: (currentIds: React.Key[]) => void;
   allSelected?: boolean;
   someSelected?: boolean;
+  storageKey?: string;
+  onRestore?: (selectedIds: React.Key[]) => void;
 };
 
 export type TableColumn<T> = {
@@ -198,6 +200,8 @@ function TableBase<T>({
   rowClassName,
   ...props
 }: TableProps<T>) {
+  const restoredSelectionStorageKeyRef = React.useRef<string | null>(null);
+  const skipNextSelectionPersistRef = React.useRef(false);
   const visibleColumns = columns.filter((column) => !column.hidden);
   const shouldShowFooter = showFooter ?? visibleColumns.some((column) => column.footer !== undefined && column.footer !== null);
   const showSelection = Boolean(selection);
@@ -237,6 +241,64 @@ function TableBase<T>({
 
   const rowKeys = data.map((row, index) => getRowKey(row, index));
   const selectedSet = selection ? new Set(selection.selectedIds) : null;
+  const selectionStorageKey = typeof selection?.storageKey === 'string' ? selection.storageKey.trim() : '';
+
+  React.useEffect(() => {
+    if (!selection || selectionStorageKey === '' || typeof window === 'undefined') {
+      return;
+    }
+
+    if (restoredSelectionStorageKeyRef.current === selectionStorageKey) {
+      return;
+    }
+
+    restoredSelectionStorageKeyRef.current = selectionStorageKey;
+
+    if (typeof selection.onRestore !== 'function') {
+      return;
+    }
+
+    try {
+      const raw = window.localStorage.getItem(selectionStorageKey);
+      if (!raw) {
+        return;
+      }
+
+      const payload = JSON.parse(raw);
+      if (!Array.isArray(payload)) {
+        return;
+      }
+
+      const restored = payload.filter((value): value is React.Key =>
+        typeof value === 'string' || typeof value === 'number',
+      );
+      skipNextSelectionPersistRef.current = true;
+      selection.onRestore(restored);
+    } catch {
+      // noop: broken localStorage payload should not break table rendering
+    }
+  }, [selection, selectionStorageKey]);
+
+  React.useEffect(() => {
+    if (!selection || selectionStorageKey === '' || typeof window === 'undefined') {
+      return;
+    }
+
+    if (skipNextSelectionPersistRef.current) {
+      skipNextSelectionPersistRef.current = false;
+      return;
+    }
+
+    try {
+      const payload = selection.selectedIds.filter((value) =>
+        typeof value === 'string' || typeof value === 'number',
+      );
+      window.localStorage.setItem(selectionStorageKey, JSON.stringify(payload));
+    } catch {
+      // noop: unavailable storage should not break table behavior
+    }
+  }, [selection, selectionStorageKey, selection?.selectedIds]);
+
   const allSelected = selection
     ? selection.allSelected ?? (rowKeys.length > 0 && rowKeys.every((key) => selectedSet?.has(key)))
     : false;
