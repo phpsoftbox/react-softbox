@@ -53,6 +53,7 @@ export type {
   WizardStepContentProps,
   WizardStepRenderProps,
   WizardStepStatus,
+  WizardUrlSyncMode,
   WizardTemplateProps,
   WizardWindowSizeMap,
   WizardStepVisibilityContext,

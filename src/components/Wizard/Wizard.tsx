@@ -5,6 +5,7 @@ import Progress from '../Progress/Progress';
 
 export type WizardDirection = 'next' | 'prev' | 'jump';
 export type WizardStepStatus = 'completed' | 'active' | 'upcoming';
+export type WizardUrlSyncMode = 'hash';
 
 export type WizardStepVisibilityContext<TState> = {
   state: TState;
@@ -120,6 +121,7 @@ type Props<TState> = Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   children?: React.ReactNode;
   activeStepId?: string;
   defaultStepId?: string;
+  urlSync?: WizardUrlSyncMode | boolean;
   onStepChange?: (nextStepId: string, context: {
     previousStepId: string;
     previousIndex: number;
@@ -193,6 +195,34 @@ const getStatusByIndex = (activeIndex: number, index: number): WizardStepStatus 
   return 'upcoming';
 };
 
+const normalizeHashValue = (hash: string): string => (
+  hash.startsWith('#') ? hash.slice(1) : hash
+);
+
+const decodeHashStepId = (hash: string): string | undefined => {
+  const normalized = normalizeHashValue(hash).trim();
+  if (normalized === '') {
+    return undefined;
+  }
+
+  try {
+    return decodeURIComponent(normalized);
+  } catch {
+    return normalized;
+  }
+};
+
+const encodeHashStepId = (stepId: string): string => encodeURIComponent(stepId);
+
+const resolveStepIdFromHash = <TState,>(steps: WizardStep<TState>[], hash: string): string | undefined => {
+  const decoded = decodeHashStepId(hash);
+  if (!decoded) {
+    return undefined;
+  }
+
+  return steps.some((step) => step.id === decoded) ? decoded : undefined;
+};
+
 function WizardStepNode<TState>(_props: WizardStepProps<TState>) {
   return null;
 }
@@ -244,6 +274,7 @@ function WizardBase<TState>({
   state,
   activeStepId,
   defaultStepId,
+  urlSync = false,
   onStepChange,
   onStepStateChange,
   onBlockedTransition,
@@ -278,6 +309,7 @@ function WizardBase<TState>({
   );
 
   const isControlled = activeStepId !== undefined;
+  const isHashSyncEnabled = urlSync === true || urlSync === 'hash';
   const [viewportWidth, setViewportWidth] = React.useState<number>(() => (
     typeof window !== 'undefined' ? window.innerWidth : 1440
   ));
@@ -314,7 +346,16 @@ function WizardBase<TState>({
   }, [computeNavigableIndexes]);
   const fallbackId = fallbackIndex >= 0 ? resolvedSteps[fallbackIndex]?.id : undefined;
 
-  const [internalStepId, setInternalStepId] = React.useState<string | undefined>(defaultStepId ?? fallbackId);
+  const [internalStepId, setInternalStepId] = React.useState<string | undefined>(() => {
+    if (isHashSyncEnabled && typeof window !== 'undefined') {
+      const hashStepId = resolveStepIdFromHash(resolvedSteps, window.location.hash);
+      if (hashStepId !== undefined) {
+        return hashStepId;
+      }
+    }
+
+    return defaultStepId ?? fallbackId;
+  });
 
   React.useEffect(() => {
     if (isControlled) {
@@ -645,6 +686,52 @@ function WizardBase<TState>({
     const direction: WizardDirection = targetIndex > activeIndex ? 'next' : 'prev';
     return attemptTransition(targetIndex, direction);
   }, [activeIndex, attemptTransition, resolvedSteps]);
+
+  const replaceHashWithStep = React.useCallback((stepId: string) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const nextHash = `#${encodeHashStepId(stepId)}`;
+    if (window.location.hash === nextHash) {
+      return;
+    }
+
+    const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
+    window.history.replaceState(window.history.state, '', nextUrl);
+  }, []);
+
+  React.useEffect(() => {
+    if (!isHashSyncEnabled || !activeStep) {
+      return;
+    }
+
+    replaceHashWithStep(activeStep.id);
+  }, [activeStep, isHashSyncEnabled, replaceHashWithStep]);
+
+  React.useEffect(() => {
+    if (!isHashSyncEnabled || !activeStep || typeof window === 'undefined') {
+      return;
+    }
+
+    const handleHashChange = () => {
+      const targetStepId = resolveStepIdFromHash(resolvedSteps, window.location.hash);
+      if (!targetStepId || targetStepId === activeStep.id) {
+        return;
+      }
+
+      const isMoved = goTo(targetStepId);
+      if (!isMoved) {
+        replaceHashWithStep(activeStep.id);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [activeStep, goTo, isHashSyncEnabled, replaceHashWithStep, resolvedSteps]);
 
   if (!activeStep || activeIndex < 0) {
     return (

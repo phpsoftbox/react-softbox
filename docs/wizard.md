@@ -55,4 +55,5 @@ const [state, setState] = useState<FormState>({ email: '', agreed: false });
 - кастомный рендер шага: `stepTemplate` у `Wizard` или `template` у `Wizard.Step`
 - кнопка `Назад` на первом шаге: `showPrevOnFirstStep`
 - встроенный `Progress`: `showProgress` + `progressProps`
+- синхронизация текущего шага с URL hash: `urlSync="hash"` (инициализация шага из `#hash`, обновление hash при переходах, поддержка `hashchange`)
 - кастомный layout (в т.ч. вертикальный wizard): `template`, где можно разместить `stepsNode`, `progressNode`, `contentNode`, `actionsNode` в любом порядке

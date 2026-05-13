@@ -1,12 +1,26 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
-import { screen } from '@testing-library/dom';
+import { act, render } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import Wizard from '../components/Wizard/Wizard';
 import type { WizardStepContentProps } from '../components/Wizard/Wizard';
 
+const setHash = (hash: string) => {
+  const normalizedHash = hash === '' || hash.startsWith('#') ? hash : `#${hash}`;
+  const nextUrl = `${window.location.pathname}${window.location.search}${normalizedHash}`;
+  window.history.replaceState(window.history.state, '', nextUrl);
+};
+
 describe('Wizard', () => {
+  beforeEach(() => {
+    setHash('');
+  });
+
+  afterEach(() => {
+    setHash('');
+  });
+
   it('switches to the next step', async () => {
     const user = userEvent.setup();
     const onStepChange = vi.fn();
@@ -98,5 +112,87 @@ describe('Wizard', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Назад' })).toBeDisabled();
+  });
+
+  it('initializes active step from hash when hash sync is enabled', async () => {
+    setHash('#step-2');
+
+    render(
+      <Wizard
+        state={{}}
+        urlSync="hash"
+      >
+        <Wizard.Step id="step-1" title="Шаг 1" content="Контент 1" />
+        <Wizard.Step id="step-2" title="Шаг 2" content="Контент 2" />
+      </Wizard>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Контент 2')).toBeInTheDocument();
+    });
+  });
+
+  it('updates hash when active step changes', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Wizard
+        state={{ canContinue: true }}
+        urlSync="hash"
+      >
+        <Wizard.Step id="step-1" title="Шаг 1" content="Контент 1" />
+        <Wizard.Step id="step-2" title="Шаг 2" content="Контент 2" canEnter={({ state }) => state.canContinue} />
+      </Wizard>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Далее' }));
+    await waitFor(() => {
+      expect(window.location.hash).toBe('#step-2');
+    });
+  });
+
+  it('handles step change by hashchange event', async () => {
+    render(
+      <Wizard
+        state={{ canContinue: true }}
+        urlSync="hash"
+      >
+        <Wizard.Step id="step-1" title="Шаг 1" content="Контент 1" />
+        <Wizard.Step id="step-2" title="Шаг 2" content="Контент 2" canEnter={({ state }) => state.canContinue} />
+      </Wizard>,
+    );
+
+    expect(screen.getByText('Контент 1')).toBeInTheDocument();
+
+    act(() => {
+      setHash('#step-2');
+      window.dispatchEvent(new Event('hashchange'));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Контент 2')).toBeInTheDocument();
+    });
+  });
+
+  it('reverts hash when transition by hashchange is blocked', async () => {
+    render(
+      <Wizard
+        state={{ canContinue: false }}
+        urlSync="hash"
+      >
+        <Wizard.Step id="step-1" title="Шаг 1" content="Контент 1" />
+        <Wizard.Step id="step-2" title="Шаг 2" content="Контент 2" canEnter={({ state }) => state.canContinue} />
+      </Wizard>,
+    );
+
+    act(() => {
+      setHash('#step-2');
+      window.dispatchEvent(new Event('hashchange'));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Контент 1')).toBeInTheDocument();
+      expect(window.location.hash).toBe('#step-1');
+    });
   });
 });
