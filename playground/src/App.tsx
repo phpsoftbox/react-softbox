@@ -211,7 +211,7 @@ export default function App() {
     project: 'API migration',
   });
   const [markdownValue, setMarkdownValue] = React.useState(
-    '# Документация\n\n**ReactSoftBox** — быстрый старт.\n\n- Пункты списка\n- Поддержка `inline` кода\n\n```ts\nconst ready = true;\nconst title = \"ReactSoftBox\";\nconsole.log(title, ready);\n```\n\n[Открыть сайт](https://phpsoftbox.com)\n'
+    '# Документация\n\n**ReactSoftBox** — быстрый старт.\n\n- Пункты списка\n- Поддержка `inline` кода\n\n> Важная заметка: не забудьте подключить базовые стили.\n\n```ts\nconst ready = true;\nconst title = \"ReactSoftBox\";\nconsole.log(title, ready);\n```\n\n[Открыть сайт](https://phpsoftbox.com)\n'
   );
 
   const pushToast = (variant: 'info' | 'success' | 'warning' | 'danger') => {

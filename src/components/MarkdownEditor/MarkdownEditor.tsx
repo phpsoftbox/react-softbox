@@ -323,7 +323,7 @@ const renderMarkdown = (value: string, options: RenderMarkdownOptions) => {
       return;
     }
 
-    const quoteMatch = /^\s*>\s?(.*)$/.exec(normalized);
+    const quoteMatch = /^\s*(?:>|&gt;)\s?(.*)$/.exec(normalized);
     if (quoteMatch) {
       closeAllLists();
       if (!inQuote) {
