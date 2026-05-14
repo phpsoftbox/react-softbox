@@ -14,10 +14,19 @@ import 'prismjs/components/prism-markdown';
 import 'prismjs/components/prism-php';
 import Textarea from '../Input/Textarea/Textarea';
 import Hint from '../Input/Hint/Hint';
-import type { TooltipPlacement } from '../Tooltip/Tooltip';
+import Tooltip, { type TooltipPlacement } from '../Tooltip/Tooltip';
 import Dropdown from '../Menu/Dropdown';
 import type { MenuItem } from '../Menu/Menu';
 import styles from './MarkdownEditor.module.css';
+
+export type MarkdownToolbarItem =
+  | 'heading'
+  | 'format'
+  | 'link'
+  | 'image-url'
+  | 'image-file';
+
+export type MarkdownToolbarTemplate = Array<MarkdownToolbarItem | MarkdownToolbarItem[]>;
 
 export type MarkdownEditorProps = {
   value: string;
@@ -34,6 +43,11 @@ export type MarkdownEditorProps = {
   className?: string;
   editorClassName?: string;
   previewClassName?: string;
+  allowLinks?: boolean;
+  allowImages?: boolean;
+  toolbarTemplate?: MarkdownToolbarTemplate;
+  onImageFileUpload?: (file: File) => Promise<string | null | undefined> | string | null | undefined;
+  insertImageFileAsBase64?: boolean;
 };
 
 export type MarkdownEditorSlotProps = {
@@ -48,6 +62,20 @@ const MarkdownEditorPreviewSlot: React.FC<MarkdownEditorSlotProps> = () => null;
 
 MarkdownEditorTextareaSlot.displayName = 'MarkdownEditor.Textarea';
 MarkdownEditorPreviewSlot.displayName = 'MarkdownEditor.Preview';
+
+const ALL_TOOLBAR_ITEMS: MarkdownToolbarItem[] = [
+  'heading',
+  'format',
+  'link',
+  'image-url',
+  'image-file',
+];
+
+const DEFAULT_TOOLBAR_TEMPLATE: MarkdownToolbarTemplate = [
+  'heading',
+  'format',
+  ['link', 'image-url', 'image-file'],
+];
 
 const escapeHtml = (value: string) =>
   value
@@ -84,7 +112,87 @@ const resolvePrismLanguage = (language: string) => {
   return Prism.languages[resolved] ? resolved : 'markup';
 };
 
-const renderMarkdown = (value: string) => {
+type RenderMarkdownOptions = {
+  allowLinks: boolean;
+  allowImages: boolean;
+};
+
+const isToolbarItem = (value: unknown): value is MarkdownToolbarItem => (
+  typeof value === 'string' && ALL_TOOLBAR_ITEMS.includes(value as MarkdownToolbarItem)
+);
+
+const normalizeToolbarTemplate = (
+  template: MarkdownToolbarTemplate | undefined,
+): MarkdownToolbarItem[][] => {
+  const source = template ?? DEFAULT_TOOLBAR_TEMPLATE;
+  const normalized = source
+    .map((entry) => {
+      if (Array.isArray(entry)) {
+        const groupItems = entry.filter(isToolbarItem);
+        return groupItems;
+      }
+      if (isToolbarItem(entry)) {
+        return [entry];
+      }
+      return [];
+    })
+    .filter((group) => group.length > 0);
+
+  if (normalized.length > 0) {
+    return normalized;
+  }
+
+  return DEFAULT_TOOLBAR_TEMPLATE.map((entry) => (
+    Array.isArray(entry) ? [...entry] : [entry]
+  ));
+};
+
+const readFileAsDataUrl = (file: File): Promise<string> => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (typeof reader.result !== 'string') {
+      reject(new Error('Не удалось прочитать файл.'));
+      return;
+    }
+    resolve(reader.result);
+  };
+  reader.onerror = () => reject(reader.error ?? new Error('Не удалось прочитать файл.'));
+  reader.readAsDataURL(file);
+});
+
+const LinkIcon = () => (
+  <svg viewBox="0 0 24 24" className={styles.toolIcon} aria-hidden="true">
+    <path
+      d="M10.59 13.41a1 1 0 0 1 0-1.41l3-3a3 3 0 1 1 4.24 4.24l-1.8 1.8a3 3 0 0 1-4.24 0 1 1 0 0 1 1.41-1.41 1 1 0 0 0 1.42 0l1.8-1.8a1 1 0 1 0-1.42-1.42l-3 3a1 1 0 0 1-1.41 0Z"
+      fill="currentColor"
+    />
+    <path
+      d="M13.41 10.59a1 1 0 0 1 0 1.41l-3 3a3 3 0 0 1-4.24-4.24l1.8-1.8a3 3 0 0 1 4.24 0 1 1 0 0 1-1.41 1.41 1 1 0 0 0-1.42 0l-1.8 1.8a1 1 0 1 0 1.42 1.42l3-3a1 1 0 0 1 1.41 0Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+const ImageUrlIcon = () => (
+  <svg viewBox="0 0 24 24" className={styles.toolIcon} aria-hidden="true">
+    <path
+      d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 2v8.17l3.09-3.09a1 1 0 0 1 1.41 0l2.8 2.8 2.2-2.2a1 1 0 0 1 1.42 0L19 14.76V6H5Zm14 12v-.41l-3.79-3.79-2.2 2.2a1 1 0 0 1-1.42 0l-2.8-2.8L5 17.99V18h14Z"
+      fill="currentColor"
+    />
+    <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+  </svg>
+);
+
+const ImageFileIcon = () => (
+  <svg viewBox="0 0 24 24" className={styles.toolIcon} aria-hidden="true">
+    <path
+      d="M6 3h8l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 1.5V9h4.5L13 4.5Zm-6 14h10v-2H7v2Zm0-4h10v-2H7v2Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+const renderMarkdown = (value: string, options: RenderMarkdownOptions) => {
   if (!value) {
     return '';
   }
@@ -137,8 +245,12 @@ const renderMarkdown = (value: string) => {
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
   html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  html = html.replace(/!\[(.*?)\]\(((?:https?:\/\/|blob:|data:image\/)[^\s)]+)\)/g, '<img src="$2" alt="$1" />');
-  html = html.replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  if (options.allowImages) {
+    html = html.replace(/!\[(.*?)\]\(((?:https?:\/\/|blob:|data:image\/)[^\s)]+)\)/g, '<img src="$2" alt="$1" />');
+  }
+  if (options.allowLinks) {
+    html = html.replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  }
 
   const lines = html.split('\n');
   const output: string[] = [];
@@ -211,7 +323,7 @@ const renderMarkdown = (value: string) => {
       return;
     }
 
-    const quoteMatch = /^>\s?(.*)$/.exec(normalized);
+    const quoteMatch = /^\s*>\s?(.*)$/.exec(normalized);
     if (quoteMatch) {
       closeAllLists();
       if (!inQuote) {
@@ -329,8 +441,18 @@ function MarkdownEditorRoot({
   className,
   editorClassName,
   previewClassName,
+  allowLinks = true,
+  allowImages = true,
+  toolbarTemplate,
+  onImageFileUpload,
+  insertImageFileAsBase64 = false,
 }: MarkdownEditorProps) {
-  const html = React.useMemo(() => renderMarkdown(value), [value]);
+  const html = React.useMemo(() => (
+    renderMarkdown(value, {
+      allowLinks,
+      allowImages,
+    })
+  ), [value, allowLinks, allowImages]);
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const objectUrlsRef = React.useRef<string[]>([]);
@@ -354,6 +476,34 @@ function MarkdownEditorRoot({
     heading: null,
   });
   const textareaFallbackId = React.useId();
+  const toolbarGroups = React.useMemo(
+    () => normalizeToolbarTemplate(toolbarTemplate),
+    [toolbarTemplate],
+  );
+  const toolbarEnabledSet = React.useMemo(() => {
+    const enabled = new Set<MarkdownToolbarItem>();
+    toolbarGroups.forEach((group) => {
+      group.forEach((item) => enabled.add(item));
+    });
+    return enabled;
+  }, [toolbarGroups]);
+  const canUseLink = allowLinks && toolbarEnabledSet.has('link');
+  const canUseImageUrl = allowImages && toolbarEnabledSet.has('image-url');
+  const canUseImageFile = allowImages
+    && toolbarEnabledSet.has('image-file')
+    && (typeof onImageFileUpload === 'function' || insertImageFileAsBase64);
+
+  React.useEffect(() => {
+    if (activePanel === 'link' && !canUseLink) {
+      setActivePanel(null);
+      setPanelError('');
+      return;
+    }
+    if (activePanel === 'image-url' && !canUseImageUrl) {
+      setActivePanel(null);
+      setPanelError('');
+    }
+  }, [activePanel, canUseLink, canUseImageUrl]);
 
   React.useEffect(() => () => {
     if (typeof URL === 'undefined') {
@@ -396,7 +546,7 @@ function MarkdownEditorRoot({
 
     const headingMatch = /^(\s*)(#{1,6})\s+/.exec(line);
     const heading = headingMatch ? headingMatch[2].length : null;
-    const quote = /^>\s?/.test(line);
+    const quote = /^\s*>\s?/.test(line);
     const list = /^(\s*)\d+\.\s+/.test(line) ? 'ol' : /^(\s*)[-*]\s+/.test(line) ? 'ul' : null;
 
     const isWrapped = (marker: string, forbidAdjacent = false) => {
@@ -749,13 +899,13 @@ function MarkdownEditorRoot({
     const { start, end } = getSelectionRange();
     const { lineStart, lineEnd, line } = getLineRange(start, end);
     const lines = line.split('\n');
-    const allQuoted = lines.every((lineItem) => lineItem.trim() === '' || /^>\s?/.test(lineItem));
+    const allQuoted = lines.every((lineItem) => lineItem.trim() === '' || /^\s*>\s?/.test(lineItem));
     const replacement = lines
       .map((lineItem) => {
         if (lineItem.trim() === '') {
           return lineItem;
         }
-        const cleaned = lineItem.replace(/^>\s?/, '');
+        const cleaned = lineItem.replace(/^\s*>\s?/, '');
         return allQuoted ? cleaned : `> ${cleaned}`;
       })
       .join('\n');
@@ -788,8 +938,12 @@ function MarkdownEditorRoot({
 
   const isValidHttpUrl = (next: string) => /^https?:\/\/\S+/i.test(next.trim());
   const isValidImageUrl = (next: string) => /^(https?:\/\/|blob:|data:image\/)\S+/i.test(next.trim());
+  const isInsertableImageSource = (next: string) => /^(https?:\/\/|blob:|data:image\/|\/|\.\/|\.\.\/)\S+/i.test(next.trim());
 
   const insertLink = () => {
+    if (!canUseLink) {
+      return;
+    }
     const trimmed = linkUrl.trim();
     if (!trimmed) {
       setPanelError('Введите URL ссылки.');
@@ -810,6 +964,9 @@ function MarkdownEditorRoot({
   };
 
   const insertImageByUrl = () => {
+    if (!canUseImageUrl) {
+      return;
+    }
     const trimmed = imageUrl.trim();
     if (!trimmed) {
       setPanelError('Введите URL изображения.');
@@ -829,21 +986,55 @@ function MarkdownEditorRoot({
     setPanelError('');
   };
 
-  const handleFileInsert = (file: File | null) => {
-    if (!file || typeof URL === 'undefined') {
+  const handleFileInsert = async (file: File | null) => {
+    if (!canUseImageFile || !file) {
       return;
     }
-    const url = URL.createObjectURL(file);
-    objectUrlsRef.current.push(url);
+
+    let imageSource: string | null = null;
+    if (typeof onImageFileUpload === 'function') {
+      try {
+        const resolved = await onImageFileUpload(file);
+        if (typeof resolved === 'string' && resolved.trim() !== '') {
+          imageSource = resolved.trim();
+        }
+      } catch {
+        setPanelError('Не удалось загрузить изображение.');
+        return;
+      }
+    }
+
+    if (imageSource === null && insertImageFileAsBase64) {
+      try {
+        imageSource = await readFileAsDataUrl(file);
+      } catch {
+        setPanelError('Не удалось прочитать изображение.');
+        return;
+      }
+    }
+
+    if (imageSource === null || !isInsertableImageSource(imageSource)) {
+      setPanelError('Не удалось получить URL изображения.');
+      return;
+    }
+
+    if (imageSource.startsWith('blob:') && typeof URL !== 'undefined') {
+      objectUrlsRef.current.push(imageSource);
+    }
+
     const baseName = file.name.replace(/\.[^.]+$/, '');
-    const replacement = `![${baseName || 'Изображение'}](${url})`;
+    const replacement = `![${baseName || 'Изображение'}](${imageSource})`;
     const { start } = getSelectionRange();
     const selectionStart = start + 2;
     const selectionEnd = selectionStart + (baseName || 'Изображение').length;
     replaceSelection(replacement, selectionStart, selectionEnd);
+    setPanelError('');
   };
 
   const handleOpenLinkPanel = () => {
+    if (!canUseLink) {
+      return;
+    }
     const { text } = getSelectionRange();
     setLinkText(text || 'Ссылка');
     setLinkUrl('https://');
@@ -852,6 +1043,9 @@ function MarkdownEditorRoot({
   };
 
   const handleOpenImagePanel = () => {
+    if (!canUseImageUrl) {
+      return;
+    }
     const { text } = getSelectionRange();
     setImageAlt(text || 'Изображение');
     setImageUrl('https://');
@@ -860,15 +1054,16 @@ function MarkdownEditorRoot({
   };
 
   const handleFileButtonClick = () => {
-    if (readOnly) {
+    if (readOnly || !canUseImageFile) {
       return;
     }
+    setPanelError('');
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
-    handleFileInsert(file);
+    await handleFileInsert(file);
     event.target.value = '';
   };
 
@@ -1041,8 +1236,10 @@ function MarkdownEditorRoot({
           applyQuote();
           return;
         case 'KeyK':
-          consume();
-          handleOpenImagePanel();
+          if (canUseImageUrl) {
+            consume();
+            handleOpenImagePanel();
+          }
           return;
         default:
           break;
@@ -1083,8 +1280,10 @@ function MarkdownEditorRoot({
         toggleWrap('`', 'Код', true);
         return;
       case 'KeyK':
-        consume();
-        handleOpenLinkPanel();
+        if (canUseLink) {
+          consume();
+          handleOpenLinkPanel();
+        }
         return;
       default:
         break;
@@ -1230,93 +1429,173 @@ function MarkdownEditorRoot({
     },
   ];
 
+  const renderHeadingButton = (key: React.Key) => (
+    <React.Fragment key={key}>
+      {readOnly ? (
+        <span
+          className={[
+            styles.toolButton,
+            styles.toolButtonDisabled,
+            headingActive ? styles.toolButtonActive : null,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          Заголовок
+          <span className={styles.toolCaret} aria-hidden="true" />
+        </span>
+      ) : (
+        <Dropdown
+          items={headingItems}
+          align="left"
+          trigger={(
+            <span className={[styles.toolButton, headingActive ? styles.toolButtonActive : null].filter(Boolean).join(' ')}>
+              Заголовок
+              <span className={styles.toolCaret} aria-hidden="true" />
+            </span>
+          )}
+        />
+      )}
+    </React.Fragment>
+  );
+
+  const renderFormatButton = (key: React.Key) => (
+    <React.Fragment key={key}>
+      {readOnly ? (
+        <span
+          className={[
+            styles.toolButton,
+            styles.toolButtonDisabled,
+            formatActive ? styles.toolButtonActive : null,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          Формат
+          <span className={styles.toolCaret} aria-hidden="true" />
+        </span>
+      ) : (
+        <Dropdown
+          items={formatItems}
+          align="left"
+          trigger={(
+            <span className={[styles.toolButton, formatActive ? styles.toolButtonActive : null].filter(Boolean).join(' ')}>
+              Формат
+              <span className={styles.toolCaret} aria-hidden="true" />
+            </span>
+          )}
+        />
+      )}
+    </React.Fragment>
+  );
+
+  const renderIconButton = ({
+    key,
+    active = false,
+    onClick,
+    icon,
+    tooltip,
+    ariaLabel,
+    disabled,
+  }: {
+    key: React.Key;
+    active?: boolean;
+    onClick: () => void;
+    icon: React.ReactNode;
+    tooltip: string;
+    ariaLabel: string;
+    disabled: boolean;
+  }) => (
+    <Tooltip key={key} content={tooltip}>
+      <span className={styles.toolIconButtonWrap}>
+        <button
+          type="button"
+          className={[
+            styles.toolButton,
+            styles.toolIconButton,
+            active ? styles.toolButtonActive : null,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          onClick={onClick}
+          disabled={disabled}
+          aria-label={ariaLabel}
+        >
+          {icon}
+        </button>
+      </span>
+    </Tooltip>
+  );
+
+  const renderToolbarItem = (item: MarkdownToolbarItem, key: React.Key) => {
+    switch (item) {
+      case 'heading':
+        return renderHeadingButton(key);
+      case 'format':
+        return renderFormatButton(key);
+      case 'link':
+        if (!canUseLink) {
+          return null;
+        }
+        return renderIconButton({
+          key,
+          active: activePanel === 'link',
+          onClick: handleOpenLinkPanel,
+          icon: <LinkIcon />,
+          tooltip: 'Вставить ссылку (Ctrl/Meta+K)',
+          ariaLabel: 'Вставить ссылку',
+          disabled: readOnly,
+        });
+      case 'image-url':
+        if (!canUseImageUrl) {
+          return null;
+        }
+        return renderIconButton({
+          key,
+          active: activePanel === 'image-url',
+          onClick: handleOpenImagePanel,
+          icon: <ImageUrlIcon />,
+          tooltip: 'Вставить изображение по URL (Ctrl/Meta+Shift+K)',
+          ariaLabel: 'Вставить изображение по URL',
+          disabled: readOnly,
+        });
+      case 'image-file':
+        if (!canUseImageFile) {
+          return null;
+        }
+        return renderIconButton({
+          key,
+          onClick: handleFileButtonClick,
+          icon: <ImageFileIcon />,
+          tooltip: 'Загрузить изображение',
+          ariaLabel: 'Загрузить изображение',
+          disabled: readOnly,
+        });
+      default:
+        return null;
+    }
+  };
+
   const renderEditorPanel = (slotProps?: MarkdownEditorSlotProps, slotKey?: React.Key) => {
     return (
       <div key={slotKey} className={[styles.panel, editorClassName, slotProps?.className].filter(Boolean).join(' ')}>
         <div className={styles.panelHeader}>{slotProps?.label ?? editorLabel}</div>
         <div className={styles.toolbar}>
-          <div className={styles.toolbarGroup}>
-            {readOnly ? (
-              <span
-                className={[
-                  styles.toolButton,
-                  styles.toolButtonDisabled,
-                  headingActive ? styles.toolButtonActive : null,
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                Заголовок
-                <span className={styles.toolCaret} aria-hidden="true" />
-              </span>
-            ) : (
-              <Dropdown
-                items={headingItems}
-                align="left"
-                trigger={
-                  <span className={[styles.toolButton, headingActive ? styles.toolButtonActive : null].filter(Boolean).join(' ')}>
-                    Заголовок
-                    <span className={styles.toolCaret} aria-hidden="true" />
-                  </span>
-                }
-              />
-            )}
-          </div>
-          <div className={styles.toolbarGroup}>
-            {readOnly ? (
-              <span
-                className={[
-                  styles.toolButton,
-                  styles.toolButtonDisabled,
-                  formatActive ? styles.toolButtonActive : null,
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                Формат
-                <span className={styles.toolCaret} aria-hidden="true" />
-              </span>
-            ) : (
-              <Dropdown
-                items={formatItems}
-                align="left"
-                trigger={
-                  <span className={[styles.toolButton, formatActive ? styles.toolButtonActive : null].filter(Boolean).join(' ')}>
-                    Формат
-                    <span className={styles.toolCaret} aria-hidden="true" />
-                  </span>
-                }
-              />
-            )}
-          </div>
-          <div className={styles.toolbarGroup}>
-            <button
-              type="button"
-              className={[styles.toolButton, activePanel === 'link' ? styles.toolButtonActive : null].filter(Boolean).join(' ')}
-              onClick={handleOpenLinkPanel}
-              disabled={readOnly}
-              title="Вставить ссылку (Ctrl/Meta+K)"
-            >
-              Link
-            </button>
-            <button
-              type="button"
-              className={[styles.toolButton, activePanel === 'image-url' ? styles.toolButtonActive : null].filter(Boolean).join(' ')}
-              onClick={handleOpenImagePanel}
-              disabled={readOnly}
-              title="Вставить изображение по URL (Ctrl/Meta+Shift+K)"
-            >
-              Image URL
-            </button>
-            <button
-              type="button"
-              className={styles.toolButton}
-              onClick={handleFileButtonClick}
-              disabled={readOnly}
-              title="Загрузить изображение"
-            >
-              Image File
-            </button>
+          {toolbarGroups.map((group, groupIndex) => {
+            const groupNodes = group
+              .map((item, itemIndex) => renderToolbarItem(item, `toolbar-item-${groupIndex}-${itemIndex}`))
+              .filter(Boolean);
+            if (groupNodes.length === 0) {
+              return null;
+            }
+
+            return (
+              <div key={`toolbar-group-${groupIndex}`} className={styles.toolbarGroup}>
+                {groupNodes}
+              </div>
+            );
+          })}
+          {canUseImageFile ? (
             <input
               ref={fileInputRef}
               type="file"
@@ -1325,9 +1604,9 @@ function MarkdownEditorRoot({
               onChange={handleFileChange}
               tabIndex={-1}
             />
-          </div>
+          ) : null}
         </div>
-        {activePanel === 'link' ? (
+        {activePanel === 'link' && canUseLink ? (
           <div className={styles.toolPanel}>
             <input
               type="text"
@@ -1357,7 +1636,7 @@ function MarkdownEditorRoot({
             {panelError ? <div className={styles.toolError}>{panelError}</div> : null}
           </div>
         ) : null}
-        {activePanel === 'image-url' ? (
+        {activePanel === 'image-url' && canUseImageUrl ? (
           <div className={styles.toolPanel}>
             <input
               type="text"
@@ -1386,6 +1665,9 @@ function MarkdownEditorRoot({
             </button>
             {panelError ? <div className={styles.toolError}>{panelError}</div> : null}
           </div>
+        ) : null}
+        {panelError && activePanel === null ? (
+          <div className={styles.toolError}>{panelError}</div>
         ) : null}
         <Textarea
           ref={textareaRef}
