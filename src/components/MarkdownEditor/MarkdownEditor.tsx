@@ -1,23 +1,46 @@
 import React from 'react';
 import Prism from 'prismjs';
-import 'prismjs/components/prism-markup';
-import 'prismjs/components/prism-markup-templating';
-import 'prismjs/components/prism-clike';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-markdown';
-import 'prismjs/components/prism-php';
+import PrismLoader from 'prismjs-components-loader';
+import allPrismComponents from 'prismjs-components-loader/lib/all-components';
 import Textarea from '../Input/Textarea/Textarea';
 import Hint from '../Input/Hint/Hint';
 import Tooltip, { type TooltipPlacement } from '../Tooltip/Tooltip';
 import Dropdown from '../Menu/Dropdown';
 import type { MenuItem } from '../Menu/Menu';
 import styles from './MarkdownEditor.module.css';
+
+const prismLoader = new PrismLoader(allPrismComponents);
+const prismLanguages: string[] = [
+  'markup',
+  'markup-templating',
+  'clike',
+  'javascript',
+  'typescript',
+  'jsx',
+  'tsx',
+  'json',
+  'diff',
+  'css',
+  'bash',
+  'markdown',
+  'php',
+];
+
+let prismInitialized = false;
+
+const initializePrismLanguages = () => {
+  if (prismInitialized) {
+    return;
+  }
+
+  for (const language of prismLanguages) {
+    prismLoader.load(Prism, language);
+  }
+
+  prismInitialized = true;
+};
+
+initializePrismLanguages();
 
 export type MarkdownToolbarItem =
   | 'heading'
