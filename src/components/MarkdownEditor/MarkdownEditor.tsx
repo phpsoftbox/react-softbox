@@ -1,7 +1,6 @@
 import React from 'react';
 import Prism from 'prismjs';
 import PrismLoader from 'prismjs-components-loader';
-import allPrismComponents from 'prismjs-components-loader/lib/all-components';
 import Textarea from '../Input/Textarea/Textarea';
 import Hint from '../Input/Hint/Hint';
 import Tooltip, { type TooltipPlacement } from '../Tooltip/Tooltip';
@@ -9,7 +8,6 @@ import Dropdown from '../Menu/Dropdown';
 import type { MenuItem } from '../Menu/Menu';
 import styles from './MarkdownEditor.module.css';
 
-const prismLoader = new PrismLoader(allPrismComponents);
 const prismLanguages: string[] = [
   'markup',
   'markup-templating',
@@ -34,7 +32,7 @@ const initializePrismLanguages = () => {
   }
 
   for (const language of prismLanguages) {
-    prismLoader.load(Prism, language);
+    PrismLoader.load(Prism, language);
   }
 
   prismInitialized = true;

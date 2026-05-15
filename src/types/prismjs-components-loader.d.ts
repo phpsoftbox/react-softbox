@@ -1,21 +1,21 @@
 declare module 'prismjs-components-loader' {
   import type Prism from 'prismjs';
 
-  type PrismComponentFactory = (prism: typeof Prism) => void;
-  type PrismComponentsIndex = Record<string, PrismComponentFactory>;
+  type PrismComponentMeta = {
+    title?: string;
+    require?: string[];
+    optional?: string[];
+    modify?: string[];
+    alias?: string | string[];
+  };
 
-  export default class PrismLoader {
-    constructor(componentsIndex: PrismComponentsIndex);
+  type PrismLoaderStatic = {
+    MAP: Record<string, PrismComponentMeta>;
+    LIST: string[];
+    getDependencies: (definition: PrismComponentMeta, prism: typeof Prism) => string[];
     load(prism: typeof Prism, componentId: string): void;
-  }
-}
+  };
 
-declare module 'prismjs-components-loader/lib/all-components' {
-  import type Prism from 'prismjs';
-
-  type PrismComponentFactory = (prism: typeof Prism) => void;
-  type PrismComponentsIndex = Record<string, PrismComponentFactory>;
-
-  const components: PrismComponentsIndex;
-  export default components;
+  const PrismLoader: PrismLoaderStatic;
+  export default PrismLoader;
 }
