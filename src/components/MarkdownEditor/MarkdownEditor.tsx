@@ -1,6 +1,5 @@
 import React from 'react';
-import Prism from 'prismjs';
-import PrismLoader from 'prismjs-components-loader';
+import { bundledLanguages, codeToHtml } from 'shiki';
 import Textarea from '../Input/Textarea/Textarea';
 import Hint from '../Input/Hint/Hint';
 import Tooltip, { type TooltipPlacement } from '../Tooltip/Tooltip';
@@ -8,36 +7,10 @@ import Dropdown from '../Menu/Dropdown';
 import type { MenuItem } from '../Menu/Menu';
 import styles from './MarkdownEditor.module.css';
 
-const prismLanguages: string[] = [
-  'markup',
-  'clike',
-  'javascript',
-  'typescript',
-  'jsx',
-  'tsx',
-  'json',
-  'diff',
-  'css',
-  'bash',
-  'markdown',
-  'php',
-];
-
-let prismInitialized = false;
-
-const initializePrismLanguages = () => {
-  if (prismInitialized) {
-    return;
-  }
-
-  for (const language of prismLanguages) {
-    PrismLoader.load(Prism, language);
-  }
-
-  prismInitialized = true;
-};
-
-initializePrismLanguages();
+const SHIKI_THEME = 'vitesse-dark';
+const SHIKI_LANGUAGE_FALLBACK = 'text';
+const SHIKI_CODE_WRAPPER_CLASS = 'md-shiki-code';
+const SHIKI_SUPPORTED_LANGUAGES = new Set(Object.keys(bundledLanguages));
 
 export type MarkdownToolbarItem =
   | 'heading'
@@ -105,11 +78,12 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const resolvePrismLanguage = (language: string) => {
+const resolveShikiLanguage = (language: string) => {
   const normalized = language.trim().toLowerCase();
   if (!normalized) {
-    return 'markup';
+    return SHIKI_LANGUAGE_FALLBACK;
   }
+
   const aliasMap: Record<string, string> = {
     js: 'javascript',
     mjs: 'javascript',
@@ -117,19 +91,48 @@ const resolvePrismLanguage = (language: string) => {
     ts: 'typescript',
     jsx: 'jsx',
     tsx: 'tsx',
-    html: 'markup',
+    html: 'html',
     xml: 'markup',
     svg: 'markup',
     sh: 'bash',
     shell: 'bash',
     zsh: 'bash',
     md: 'markdown',
+    yml: 'yaml',
     php8: 'php',
     php7: 'php',
     phtml: 'php',
+    plaintext: 'text',
+    txt: 'text',
+    plain: 'text',
   };
+
   const resolved = aliasMap[normalized] ?? normalized;
-  return Prism.languages[resolved] ? resolved : 'markup';
+  if (resolved === SHIKI_LANGUAGE_FALLBACK) {
+    return SHIKI_LANGUAGE_FALLBACK;
+  }
+  return SHIKI_SUPPORTED_LANGUAGES.has(resolved)
+    ? resolved
+    : SHIKI_LANGUAGE_FALLBACK;
+};
+
+const renderFallbackCodeHtml = (code: string) => {
+  const safeCode = escapeHtml(code);
+  const lines = (safeCode || '&nbsp;').split('\n');
+  return `
+<pre class="md-code-pre"><code class="md-code">${lines
+    .map((line, index) => (
+      `<span class="md-code-line"><span class="md-code-num">${index + 1}</span><span class="md-code-text">${line || '&nbsp;'}</span></span>`
+    ))
+    .join('')}</code></pre>`;
+};
+
+const highlightWithShiki = async (code: string, language: string) => {
+  const normalizedCode = code || ' ';
+  return codeToHtml(normalizedCode, {
+    lang: resolveShikiLanguage(language),
+    theme: SHIKI_THEME,
+  });
 };
 
 type RenderMarkdownOptions = {
@@ -212,46 +215,16 @@ const ImageFileIcon = () => (
   </svg>
 );
 
-const renderMarkdown = (value: string, options: RenderMarkdownOptions) => {
-  if (!value) {
+const renderMarkdownContent = (
+  markdownWithCodeTokens: string,
+  codeBlocks: Array<{ token: string; html: string }>,
+  options: RenderMarkdownOptions,
+) => {
+  let html = escapeHtml(markdownWithCodeTokens);
+
+  if (!html) {
     return '';
   }
-
-  const codeBlocks: Array<{ token: string; html: string }> = [];
-  let codeIndex = 0;
-
-  const markdownWithCodeTokens = value.replace(/```([^\n`]*)\n?([\s\S]*?)```/g, (_, rawLanguage: string, rawCode: string) => {
-    const language = (rawLanguage ?? '').trim().toLowerCase();
-    const cleanCode = (rawCode ?? '').replace(/^\n+|\n+$/g, '');
-    const prismLanguage = resolvePrismLanguage(language);
-    const grammar = Prism.languages[prismLanguage];
-    const highlighted = cleanCode
-      ? Prism.highlight(cleanCode, grammar, prismLanguage)
-      : '';
-    const lines = (highlighted || '&nbsp;').split('\n');
-    const codeLinesHtml = lines
-      .map((line: string, index: number) => {
-        return `<span class="md-code-line"><span class="md-code-num">${index + 1}</span><span class="md-code-text">${line || '&nbsp;'}</span></span>`;
-      })
-      .join('');
-    const token = `@@CODEBLOCK_${codeIndex}@@`;
-    const encodedCode = escapeHtml(encodeURIComponent(cleanCode));
-    const languageLabel = escapeHtml(language || prismLanguage || 'text');
-    const languageClass = escapeHtml((prismLanguage || 'text').replace(/[^a-z0-9_-]/g, ''));
-    const block = `
-<div class="md-code-wrap" data-code-block="true" data-code="${encodedCode}">
-  <div class="md-code-head">
-    <span class="md-code-lang">${languageLabel}</span>
-    <button type="button" class="md-code-copy" data-code-copy="true">Скопировать</button>
-  </div>
-  <pre class="md-code-pre"><code class="md-code md-lang-${languageClass}">${codeLinesHtml}</code></pre>
-</div>`;
-    codeBlocks.push({ token, html: block });
-    codeIndex += 1;
-    return token;
-  });
-
-  let html = escapeHtml(markdownWithCodeTokens);
 
   html = html.replace(/^######\s(.+)$/gm, '<h6>$1</h6>');
   html = html.replace(/^#####\s(.+)$/gm, '<h5>$1</h5>');
@@ -428,6 +401,91 @@ const renderMarkdown = (value: string, options: RenderMarkdownOptions) => {
   return html;
 };
 
+const renderMarkdown = (value: string, options: RenderMarkdownOptions) => {
+  if (!value) {
+    return '';
+  }
+
+  const codeBlocks: Array<{ token: string; html: string }> = [];
+  let codeIndex = 0;
+
+  const markdownWithCodeTokens = value.replace(/```([^\n`]*)\n?([\s\S]*?)```/g, (_, rawLanguage: string, rawCode: string) => {
+    const language = (rawLanguage ?? '').trim().toLowerCase();
+    const cleanCode = (rawCode ?? '').replace(/^\n+|\n+$/g, '');
+    const token = `@@CODEBLOCK_${codeIndex}@@`;
+    const encodedCode = escapeHtml(encodeURIComponent(cleanCode));
+    const resolvedLanguage = resolveShikiLanguage(language);
+    const languageLabel = escapeHtml(language || resolvedLanguage || SHIKI_LANGUAGE_FALLBACK);
+    const block = `
+<div class="md-code-wrap" data-code-block="true" data-code="${encodedCode}">
+  <div class="md-code-head">
+    <span class="md-code-lang">${languageLabel}</span>
+    <button type="button" class="md-code-copy" data-code-copy="true">Скопировать</button>
+  </div>
+  ${renderFallbackCodeHtml(cleanCode)}
+</div>`;
+    codeBlocks.push({ token, html: block });
+    codeIndex += 1;
+    return token;
+  });
+
+  return renderMarkdownContent(markdownWithCodeTokens, codeBlocks, options);
+};
+
+const renderMarkdownWithShiki = async (value: string, options: RenderMarkdownOptions) => {
+  if (!value) {
+    return '';
+  }
+
+  const codeBlocks: Array<{ token: string; html: string }> = [];
+  let codeIndex = 0;
+  const shikiTasks: Array<Promise<void>> = [];
+
+  const markdownWithCodeTokens = value.replace(/```([^\n`]*)\n?([\s\S]*?)```/g, (_, rawLanguage: string, rawCode: string) => {
+    const token = `@@CODEBLOCK_${codeIndex}@@`;
+    const language = (rawLanguage ?? '').trim().toLowerCase();
+    const cleanCode = (rawCode ?? '').replace(/^\n+|\n+$/g, '');
+    const resolvedLanguage = resolveShikiLanguage(language);
+    const languageLabel = escapeHtml(language || resolvedLanguage || SHIKI_LANGUAGE_FALLBACK);
+    const encodedCode = escapeHtml(encodeURIComponent(cleanCode));
+
+    const task = highlightWithShiki(cleanCode, language)
+      .then((highlightedHtml) => {
+        codeBlocks.push({
+          token,
+          html: `
+<div class="md-code-wrap" data-code-block="true" data-code="${encodedCode}">
+  <div class="md-code-head">
+    <span class="md-code-lang">${languageLabel}</span>
+    <button type="button" class="md-code-copy" data-code-copy="true">Скопировать</button>
+  </div>
+  <div class="${SHIKI_CODE_WRAPPER_CLASS}">${highlightedHtml}</div>
+</div>`,
+        });
+      })
+      .catch(() => {
+        codeBlocks.push({
+          token,
+          html: `
+<div class="md-code-wrap" data-code-block="true" data-code="${encodedCode}">
+  <div class="md-code-head">
+    <span class="md-code-lang">${languageLabel}</span>
+    <button type="button" class="md-code-copy" data-code-copy="true">Скопировать</button>
+  </div>
+  ${renderFallbackCodeHtml(cleanCode)}
+</div>`,
+        });
+      });
+
+    shikiTasks.push(task);
+    codeIndex += 1;
+    return token;
+  });
+
+  await Promise.all(shikiTasks);
+  return renderMarkdownContent(markdownWithCodeTokens, codeBlocks, options);
+};
+
 type ActiveFormats = {
   bold: boolean;
   italic: boolean;
@@ -467,12 +525,12 @@ function MarkdownEditorRoot({
   onImageFileUpload,
   insertImageFileAsBase64 = false,
 }: MarkdownEditorProps) {
-  const html = React.useMemo(() => (
+  const [html, setHtml] = React.useState(() => (
     renderMarkdown(value, {
       allowLinks,
       allowImages,
     })
-  ), [value, allowLinks, allowImages]);
+  ));
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const objectUrlsRef = React.useRef<string[]>([]);
@@ -512,6 +570,36 @@ function MarkdownEditorRoot({
   const canUseImageFile = allowImages
     && toolbarEnabledSet.has('image-file')
     && (typeof onImageFileUpload === 'function' || insertImageFileAsBase64);
+
+  React.useEffect(() => {
+    let isActive = true;
+    const nextOptions: RenderMarkdownOptions = {
+      allowLinks,
+      allowImages,
+    };
+    const fallbackHtml = renderMarkdown(value, nextOptions);
+    setHtml(fallbackHtml);
+
+    if (!value.includes('```')) {
+      return () => {
+        isActive = false;
+      };
+    }
+
+    renderMarkdownWithShiki(value, nextOptions)
+      .then((highlightedHtml) => {
+        if (isActive) {
+          setHtml(highlightedHtml);
+        }
+      })
+      .catch(() => {
+        // keep fallback HTML
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [value, allowLinks, allowImages]);
 
   React.useEffect(() => {
     if (activePanel === 'link' && !canUseLink) {
