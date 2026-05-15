@@ -10,7 +10,6 @@ import styles from './MarkdownEditor.module.css';
 
 const prismLanguages: string[] = [
   'markup',
-  'markup-templating',
   'clike',
   'javascript',
   'typescript',
