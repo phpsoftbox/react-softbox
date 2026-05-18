@@ -3,11 +3,13 @@ import styles from './Alert.module.css';
 import type { UiVariant } from '../../types';
 
 export type AlertVariant = UiVariant;
+export type AlertIconPlacement = 'top' | 'center' | 'bottom';
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
   variant?: AlertVariant;
   title?: React.ReactNode;
   icon?: React.ReactNode;
+  iconPlacement?: AlertIconPlacement;
   actions?: React.ReactNode;
   onClose?: () => void;
 };
@@ -19,6 +21,12 @@ const classMap: Record<AlertVariant, string> = {
   success: styles.success,
   warning: styles.warning,
   danger: styles.danger,
+};
+
+const iconPlacementClassMap: Record<AlertIconPlacement, string> = {
+  top: styles.iconTop,
+  center: styles.iconCenter,
+  bottom: styles.iconBottom,
 };
 
 const defaultIcons: Record<AlertVariant, React.ReactNode> = {
@@ -64,13 +72,28 @@ const defaultIcons: Record<AlertVariant, React.ReactNode> = {
   ),
 };
 
-export default function Alert({ variant = 'info', title, icon, actions, onClose, className, children, ...props }: Props) {
+export default function Alert({
+  variant = 'info',
+  title,
+  icon,
+  iconPlacement = 'top',
+  actions,
+  onClose,
+  className,
+  children,
+  ...props
+}: Props) {
   const classes = [styles.alert, classMap[variant], className].filter(Boolean).join(' ');
+  const iconClasses = [styles.icon, iconPlacementClassMap[iconPlacement]].filter(Boolean).join(' ');
   const resolvedIcon = icon === undefined ? defaultIcons[variant] : icon;
 
   return (
     <div className={classes} role="status" {...props}>
-      {resolvedIcon !== null ? <div className={styles.icon}>{resolvedIcon}</div> : null}
+      {resolvedIcon !== null ? (
+        <div className={iconClasses} data-alert-icon-placement={iconPlacement}>
+          {resolvedIcon}
+        </div>
+      ) : null}
       <div className={styles.main}>
         {title ? <div className={styles.title}>{title}</div> : null}
         {children ? <div className={styles.message}>{children}</div> : null}

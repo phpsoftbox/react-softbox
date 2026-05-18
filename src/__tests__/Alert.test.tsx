@@ -31,8 +31,18 @@ describe('Alert', () => {
     const { rerender, container } = render(<Alert>Сообщение</Alert>);
 
     expect(container.querySelector('svg')).not.toBeNull();
+    expect(container.querySelector('[data-alert-icon-placement="top"]')).not.toBeNull();
 
     rerender(<Alert icon={<span data-testid="custom-alert-icon">!</span>}>Сообщение</Alert>);
     expect(screen.getByTestId('custom-alert-icon')).toBeInTheDocument();
+  });
+
+  it('supports icon placement', () => {
+    const { container, rerender } = render(<Alert iconPlacement="center">Сообщение</Alert>);
+
+    expect(container.querySelector('[data-alert-icon-placement="center"]')).not.toBeNull();
+
+    rerender(<Alert iconPlacement="bottom">Сообщение</Alert>);
+    expect(container.querySelector('[data-alert-icon-placement="bottom"]')).not.toBeNull();
   });
 });

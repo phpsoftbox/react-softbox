@@ -16,8 +16,21 @@
   width: 20px;
   min-width: 20px;
   height: 20px;
-  margin-top: 1px;
+  margin-top: 0;
   color: var(--alert-icon-color, var(--color-muted));
+}
+
+.iconTop {
+  align-self: flex-start;
+  margin-top: 1px;
+}
+
+.iconCenter {
+  align-self: center;
+}
+
+.iconBottom {
+  align-self: flex-end;
 }
 
 .icon svg {
