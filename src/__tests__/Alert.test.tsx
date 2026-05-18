@@ -26,4 +26,13 @@ describe('Alert', () => {
     await user.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('renders default icon and allows overriding', () => {
+    const { rerender, container } = render(<Alert>Сообщение</Alert>);
+
+    expect(container.querySelector('svg')).not.toBeNull();
+
+    rerender(<Alert icon={<span data-testid="custom-alert-icon">!</span>}>Сообщение</Alert>);
+    expect(screen.getByTestId('custom-alert-icon')).toBeInTheDocument();
+  });
 });

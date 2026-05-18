@@ -9,6 +9,23 @@
   color: var(--color-text);
 }
 
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--alert-icon-color, var(--color-muted));
+}
+
+.icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .main {
   display: flex;
   flex-direction: column;
@@ -45,29 +62,35 @@
 .default {
   border-color: rgba(30, 51, 85, 0.6);
   box-shadow: 0 0 0 1px rgba(30, 51, 85, 0.2);
+  --alert-icon-color: #9fb2cc;
 }
 
 .primary {
   border-color: rgba(20, 201, 214, 0.5);
   box-shadow: 0 0 0 1px rgba(20, 201, 214, 0.2);
+  --alert-icon-color: #14c9d6;
 }
 
 .info {
   border-color: rgba(30, 99, 233, 0.4);
   box-shadow: 0 0 0 1px rgba(30, 99, 233, 0.2);
+  --alert-icon-color: #1e63e9;
 }
 
 .success {
   border-color: rgba(79, 230, 163, 0.5);
   box-shadow: 0 0 0 1px rgba(79, 230, 163, 0.2);
+  --alert-icon-color: #4fe6a3;
 }
 
 .warning {
   border-color: rgba(246, 200, 106, 0.5);
   box-shadow: 0 0 0 1px rgba(246, 200, 106, 0.2);
+  --alert-icon-color: #f6c86a;
 }
 
 .danger {
   border-color: rgba(255, 107, 107, 0.5);
   box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.2);
+  --alert-icon-color: #ff6b6b;
 }
