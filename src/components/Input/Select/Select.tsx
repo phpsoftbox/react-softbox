@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { createPortal } from 'react-dom';
 import styles from './Select.module.css';
 import useDropdownPosition from '../../../hooks/useDropdownPosition';
 import { useFormFieldContext } from '../FormField/FormField';
@@ -64,6 +65,7 @@ type SharedProps<T extends string | number, M = unknown> = {
   ) => React.ReactNode;
   renderValue?: (option: SelectItem<T, M>) => React.ReactNode;
   placement?: 'auto' | 'down' | 'up';
+  portal?: boolean;
   disabled?: boolean;
   floatLabel?: boolean;
   endActions?: React.ReactNode;
@@ -149,6 +151,7 @@ export default function Select<T extends string | number = string | number, M = 
   renderOption,
   renderValue,
   placement = 'auto',
+  portal = true,
   disabled = false,
   floatLabel = false,
   endActions,
@@ -166,6 +169,8 @@ export default function Select<T extends string | number = string | number, M = 
   const [creating, setCreating] = React.useState(false);
   const [activeOptionIndex, setActiveOptionIndex] = React.useState(-1);
   const isRemote = Boolean(resolvedLoadOptions || resolvedRequest);
+  const canPortal = typeof document !== 'undefined' && Boolean(document.body);
+  const shouldPortal = portal && canPortal;
   const [items, setItems] = React.useState<SelectOption<T, M>[]>(resolvedOptions);
   const [createdItems, setCreatedItems] = React.useState<SelectOption<T, M>[]>([]);
   const controlRef = React.useRef<HTMLButtonElement>(null);
@@ -175,9 +180,11 @@ export default function Select<T extends string | number = string | number, M = 
     align: 'left',
     placement,
     anchorRef: controlRef,
+    strategy: shouldPortal ? 'fixed' : 'absolute',
   });
   const containerRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
   const generatedId = React.useId();
   const labelId = React.useId();
   const listId = React.useId();
@@ -264,14 +271,17 @@ export default function Select<T extends string | number = string | number, M = 
         return;
       }
 
-      if (!containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const insideControl = containerRef.current.contains(target);
+      const insideDropdown = dropdownRef.current ? dropdownRef.current.contains(target) : false;
+      if (!insideControl && !insideDropdown) {
         setOpen(false);
       }
     };
 
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
-  }, []);
+  }, [dropdownRef]);
 
   React.useEffect(() => {
     context?.registerField(controlId, name, required === true);
@@ -291,7 +301,15 @@ export default function Select<T extends string | number = string | number, M = 
 
   React.useEffect(() => {
     if (open && searchable) {
-      inputRef.current?.focus();
+      const target = inputRef.current;
+      if (!target) {
+        return;
+      }
+      try {
+        target.focus({ preventScroll: true });
+      } catch {
+        target.focus();
+      }
     }
   }, [open, searchable]);
 
@@ -485,7 +503,25 @@ export default function Select<T extends string | number = string | number, M = 
     if (!open || activeOptionIndex < 0) {
       return;
     }
-    optionRefs.current[activeOptionIndex]?.scrollIntoView({ block: 'nearest' });
+    const option = optionRefs.current[activeOptionIndex];
+    const list = listRef.current;
+    if (!option || !list) {
+      return;
+    }
+
+    const optionTop = option.offsetTop;
+    const optionBottom = optionTop + option.offsetHeight;
+    const viewTop = list.scrollTop;
+    const viewBottom = viewTop + list.clientHeight;
+
+    if (optionTop < viewTop) {
+      list.scrollTop = optionTop;
+      return;
+    }
+
+    if (optionBottom > viewBottom) {
+      list.scrollTop = optionBottom - list.clientHeight;
+    }
   }, [open, activeOptionIndex]);
 
   const handleRemove = (valueToRemove: T | null) => {
@@ -612,6 +648,109 @@ export default function Select<T extends string | number = string | number, M = 
     }
   };
 
+  const controlWidth = controlRef.current?.getBoundingClientRect().width;
+  const resolvedDropdownStyle = shouldPortal
+    ? {
+        ...dropdownStyle,
+        width: controlWidth ? `${controlWidth}px` : undefined,
+        minWidth: controlWidth ? `${controlWidth}px` : undefined,
+      }
+    : dropdownStyle;
+
+  const dropdown = open ? (
+    <div
+      className={[styles.dropdown, shouldPortal ? styles.dropdownPortal : null].filter(Boolean).join(' ')}
+      ref={dropdownRef}
+      style={resolvedDropdownStyle}
+    >
+      {searchable ? (
+        <input
+          ref={inputRef}
+          className={styles.search}
+          placeholder="Поиск..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && canCreate) {
+              event.preventDefault();
+              void handleCreateOption();
+            }
+          }}
+        />
+      ) : null}
+      <div className={styles.list} role="listbox" id={listId} ref={listRef}>
+        {loading ? <div className={styles.status}>{loadingText}</div> : null}
+        {!loading && !canCreate && (allowEmpty ? displayedOptions.length <= 1 : displayedOptions.length === 0) ? (
+          <div className={styles.status}>{emptyText}</div>
+        ) : null}
+        {!loading && canCreate ? (
+          <button
+            type="button"
+            className={[styles.option, styles.optionCreate].filter(Boolean).join(' ')}
+            onMouseDown={(event) => {
+              event.preventDefault();
+              void handleCreateOption();
+            }}
+            onClick={(event) => {
+              if (event.detail === 0) {
+                void handleCreateOption();
+              }
+            }}
+            disabled={creating}
+          >
+            <span>{creating ? creatingText : createLabel(trimmedQuery)}</span>
+            <span className={styles.createMark}>+</span>
+          </button>
+        ) : null}
+        {!loading
+          ? displayedOptions.map((option, index) => {
+              const selected = multiple
+                ? option.value !== null && (selectedValues as T[]).includes(option.value as T)
+                : selectedValues === option.value;
+              const active = index === activeOptionIndex;
+
+              return (
+                <button
+                  key={option.value ?? '__empty'}
+                  type="button"
+                  className={[
+                    styles.option,
+                    selected ? styles.optionSelected : null,
+                    active ? styles.optionActive : null,
+                    option.disabled ? styles.optionDisabled : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  ref={(node) => {
+                    optionRefs.current[index] = node;
+                  }}
+                  role="option"
+                  aria-selected={selected}
+                  aria-label={option.label}
+                  onMouseEnter={() => setActiveOptionIndex(index)}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    handleSelect(option);
+                  }}
+                  onClick={(event) => {
+                    if (event.detail === 0) {
+                      handleSelect(option);
+                    }
+                  }}
+                  disabled={option.disabled}
+                >
+                  {renderOption
+                    ? renderOption(option, { selected, active, multiple })
+                    : <span className={styles.optionLabel}>{option.label}</span>}
+                  {selected ? <span className={styles.check}>✓</span> : null}
+                </button>
+              );
+            })
+          : null}
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div
       className={[styles.wrapper, className].filter(Boolean).join(' ')}
@@ -703,96 +842,7 @@ export default function Select<T extends string | number = string | number, M = 
         ) : null}
         <span className={styles.chevron} aria-hidden="true" />
       </ActionStack>
-
-      {open ? (
-        <div className={styles.dropdown} ref={dropdownRef} style={dropdownStyle}>
-          {searchable ? (
-            <input
-              ref={inputRef}
-              className={styles.search}
-              placeholder="Поиск..."
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && canCreate) {
-                  event.preventDefault();
-                  void handleCreateOption();
-                }
-              }}
-            />
-          ) : null}
-          <div className={styles.list} role="listbox" id={listId}>
-            {loading ? <div className={styles.status}>{loadingText}</div> : null}
-            {!loading && !canCreate && (allowEmpty ? displayedOptions.length <= 1 : displayedOptions.length === 0) ? (
-              <div className={styles.status}>{emptyText}</div>
-            ) : null}
-            {!loading && canCreate ? (
-              <button
-                type="button"
-                className={[styles.option, styles.optionCreate].filter(Boolean).join(' ')}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  void handleCreateOption();
-                }}
-                onClick={(event) => {
-                  if (event.detail === 0) {
-                    void handleCreateOption();
-                  }
-                }}
-                disabled={creating}
-              >
-                <span>{creating ? creatingText : createLabel(trimmedQuery)}</span>
-                <span className={styles.createMark}>+</span>
-              </button>
-            ) : null}
-            {!loading
-              ? displayedOptions.map((option, index) => {
-                  const selected = multiple
-                    ? option.value !== null && (selectedValues as T[]).includes(option.value as T)
-                    : selectedValues === option.value;
-                  const active = index === activeOptionIndex;
-
-                  return (
-                    <button
-                      key={option.value ?? '__empty'}
-                      type="button"
-                      className={[
-                        styles.option,
-                        selected ? styles.optionSelected : null,
-                        active ? styles.optionActive : null,
-                        option.disabled ? styles.optionDisabled : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' ')}
-                      ref={(node) => {
-                        optionRefs.current[index] = node;
-                      }}
-                      role="option"
-                      aria-selected={selected}
-                      aria-label={option.label}
-                      onMouseEnter={() => setActiveOptionIndex(index)}
-                      onMouseDown={(event) => {
-                        event.preventDefault();
-                        handleSelect(option);
-                      }}
-                      onClick={(event) => {
-                        if (event.detail === 0) {
-                          handleSelect(option);
-                        }
-                      }}
-                      disabled={option.disabled}
-                    >
-                      {renderOption
-                        ? renderOption(option, { selected, active, multiple })
-                        : <span className={styles.optionLabel}>{option.label}</span>}
-                      {selected ? <span className={styles.check}>✓</span> : null}
-                    </button>
-                  );
-                })
-              : null}
-          </div>
-        </div>
-      ) : null}
+      {dropdown ? (shouldPortal ? createPortal(dropdown, document.body) : dropdown) : null}
     </div>
   );
 }

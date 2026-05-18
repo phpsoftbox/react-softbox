@@ -10,6 +10,7 @@ type Props = React.HTMLAttributes<HTMLDivElement> & {
   title?: React.ReactNode;
   icon?: React.ReactNode;
   iconPlacement?: AlertIconPlacement;
+  iconBgFilled?: boolean;
   actions?: React.ReactNode;
   onClose?: () => void;
 };
@@ -77,14 +78,23 @@ export default function Alert({
   title,
   icon,
   iconPlacement = 'top',
+  iconBgFilled = false,
   actions,
   onClose,
   className,
   children,
   ...props
 }: Props) {
-  const classes = [styles.alert, classMap[variant], className].filter(Boolean).join(' ');
-  const iconClasses = [styles.icon, iconPlacementClassMap[iconPlacement]].filter(Boolean).join(' ');
+  const classes = [
+    styles.alert,
+    classMap[variant],
+    iconBgFilled ? styles.alertIconBgFilled : null,
+    className,
+  ].filter(Boolean).join(' ');
+  const iconClasses = [
+    styles.icon,
+    iconPlacementClassMap[iconPlacement],
+  ].filter(Boolean).join(' ');
   const resolvedIcon = icon === undefined ? defaultIcons[variant] : icon;
 
   return (

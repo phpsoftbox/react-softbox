@@ -202,6 +202,11 @@
   z-index: 15;
 }
 
+.dropdownPortal {
+  min-width: 0;
+  z-index: 60;
+}
+
 .search {
   width: 100%;
   border-radius: var(--radius-sm);

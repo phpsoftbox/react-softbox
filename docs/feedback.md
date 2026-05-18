@@ -21,11 +21,16 @@
 ```tsx
 <Alert title="Info">Синхронизация завершится через 3 минуты.</Alert>
 <Alert variant="success" title="Success">Релиз опубликован успешно.</Alert>
+<Alert variant="success" title="Success" iconBgFilled>Релиз опубликован успешно.</Alert>
 <Alert variant="warning" title="Warning">Лимит запросов близок к максимуму.</Alert>
 <Alert variant="danger" title="Danger" onClose={() => {}}>
   Ошибка доступа к сервису хранения.
 </Alert>
 ```
+
+`iconBgFilled` включает подложку у иконки. Цвета подложки задаются CSS-переменными:
+- `--alert-icon-bg`
+- `--alert-icon-bg-border`
 
 ## Notifier
 

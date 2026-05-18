@@ -5,6 +5,7 @@ import {
   Breadcrumbs,
   Button,
   Card,
+  Details,
   Dropdown,
   Grid,
   Heading,
@@ -30,7 +31,7 @@ import {
   getStoredThemeMode,
   setThemeMode,
 } from '@phpsoftbox/react-softbox';
-import type { SelectOption, ThemeMode, TableColumn, WizardProgressState } from '@phpsoftbox/react-softbox';
+import type { DetailsItem, SelectOption, ThemeMode, TableColumn, WizardProgressState } from '@phpsoftbox/react-softbox';
 import avatarImage from '../avatar.png';
 
 const paletteRow: Array<Parameters<typeof Button>[0]> = [
@@ -124,6 +125,15 @@ const tableRows = [
   { id: 'INV-1047', client: 'SkyLog', project: 'Интеграции', status: 'В ожидании', manager: 'Сергей', amount: 68000, due: '25.02.2026' },
 ];
 
+const profileDetails: DetailsItem[] = [
+  { label: 'ID', value: 'USR-2037' },
+  { label: 'Имя', value: 'Anna Schmidt' },
+  { label: 'Email', value: 'anna.schmidt@email.ltd' },
+  { label: 'Телефон', value: '+49 152 2345 6789', priority: 'secondary' },
+  { label: 'Роль', value: 'Product manager', priority: 'secondary' },
+  { label: 'Комментарий', value: null, fullWidth: true, priority: 'secondary' },
+];
+
 const formatCurrency = (value: number) => new Intl.NumberFormat('ru-RU').format(value);
 
 const getStatusVariant = (status: string) => {
@@ -165,6 +175,7 @@ export default function App() {
   >([]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [modalAssignee, setModalAssignee] = React.useState<string>('qa');
   const [collapseOpen, setCollapseOpen] = React.useState(false);
   const [multiValue, setMultiValue] = React.useState<string[]>(['cache']);
   const [asyncValue, setAsyncValue] = React.useState<string>('alpha');
@@ -917,14 +928,34 @@ export default function App() {
             <Card.Header title="Alerts" />
             <Card.Body>
               <Stack gap="10px">
-                <Alert variant="info" title="Информация">
-                  Вариант для информирования.
+                <Alert variant="info" title="Информация" iconPlacement="top">
+                  Вариант для информирования. Иконка выровнена по верхнему краю.
                 </Alert>
-                <Alert variant="success" title="Готово">
-                  Успешное действие.
+                <Alert variant="success" title="Готово" iconPlacement="center" iconBgFilled>
+                  Успешное действие. Иконка выровнена по центру.
                 </Alert>
-                <Alert variant="warning" title="Внимание">
-                  Обратите внимание на состояние.
+                <Alert variant="warning" title="Внимание" iconPlacement="bottom">
+                  Обратите внимание на состояние. Иконка выровнена по нижнему краю.
+                </Alert>
+                <Alert
+                  variant="danger"
+                  title="Ошибка публикации"
+                  icon={
+                    <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1 }}>
+                      ⛔
+                    </span>
+                  }
+                  actions={(
+                    <Row gap="8px" wrap="wrap">
+                      <Button size="sm" appearance="outline">Логи</Button>
+                      <Button size="sm" variant="danger">Повторить</Button>
+                    </Row>
+                  )}
+                >
+                  Кастомная иконка и блок действий.
+                </Alert>
+                <Alert variant="default" title="Без иконки" icon={null}>
+                  Пример с отключенной иконкой.
                 </Alert>
               </Stack>
             </Card.Body>
@@ -1326,6 +1357,18 @@ export default function App() {
             </Card.Body>
           </Card>
 
+          <Card className="gridCard">
+            <Card.Header title="Details" subtitle="Secondary-поля скрыты и раскрываются по кнопке." />
+            <Card.Body>
+              <Details
+                columns={1}
+                items={profileDetails}
+                showSecondaryLabel="Показать дополнительные поля"
+                hideSecondaryLabel="Скрыть дополнительные поля"
+              />
+            </Card.Body>
+          </Card>
+
           <Card className="gridCard gridCardWide">
             <Card.Header title="FileUploader" />
             <Card.Body>
@@ -1426,7 +1469,35 @@ export default function App() {
           </Row>
         }
       >
-        <Text>Здесь можно разместить содержимое модального окна.</Text>
+        <Stack gap="12px">
+          <Text>Проверка поведения выпадающих меню внутри модалки.</Text>
+          <Input>
+            <Input.Label>Ответственный</Input.Label>
+            <Input.Select
+              name="modal-assignee"
+              searchable
+              value={modalAssignee}
+              onChange={(next) => setModalAssignee(next as string)}
+              options={[
+                { value: 'pm', label: 'Project manager' },
+                { value: 'qa', label: 'QA engineer' },
+                { value: 'dev', label: 'Frontend developer' },
+                { value: 'ops', label: 'DevOps engineer' },
+                { value: 'support', label: 'Support specialist' },
+              ]}
+              placeholder="Выберите сотрудника"
+            />
+          </Input>
+          <Text muted size="sm">
+            Если экран маленький и body модалки скроллится, список должен открываться поверх modal-body и не ломать скролл.
+          </Text>
+          <Text size="sm" muted>
+            Дополнительный контент для проверки переполнения и прокрутки на мобильных устройствах.
+          </Text>
+          <Text size="sm" muted>
+            При открытом списке прокрутка должна оставаться у модалки, а не у внутреннего контейнера селекта.
+          </Text>
+        </Stack>
       </Modal>
 
       <Drawer

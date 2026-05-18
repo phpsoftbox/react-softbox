@@ -34,6 +34,7 @@ import { Button, Card, Menu } from '@phpsoftbox/react-softbox';
 - `tooltip.md` — Tooltip и варианты
 - `overlays.md` — Modal, Drawer
 - `feedback.md` — Badge, Alert, Notifier
+- `details.md` — Details
 - `card.md` — Card и его секции
 - `typography.md` — Тексты и заголовки
 - `media.md` — Image и медиа‑элементы

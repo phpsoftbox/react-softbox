@@ -92,4 +92,40 @@ describe('Select', () => {
     expect(screen.getByText('email@email.ltd')).toBeInTheDocument();
     expect(screen.getByText('9998887766')).toBeInTheDocument();
   });
+
+  it('renders dropdown in portal by default', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Select
+        label="Окружение"
+        options={[
+          { value: 'dev', label: 'Development' },
+          { value: 'prod', label: 'Production' },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button'));
+
+    expect(container.querySelector('[role="listbox"]')).toBeNull();
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+
+  it('supports rendering dropdown without portal', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Select
+        label="Окружение"
+        portal={false}
+        options={[
+          { value: 'dev', label: 'Development' },
+          { value: 'prod', label: 'Production' },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button'));
+
+    expect(container.querySelector('[role="listbox"]')).toBeInTheDocument();
+  });
 });
