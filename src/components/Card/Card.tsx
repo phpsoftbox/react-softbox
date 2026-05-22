@@ -8,6 +8,8 @@ type CardHeaderProps = React.HTMLAttributes<HTMLDivElement> & {
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   right?: React.ReactNode;
+  titleAs?: React.ElementType;
+  subtitleAs?: React.ElementType;
 };
 type CardHeaderTextOwnProps = {
   className?: string;
@@ -16,7 +18,7 @@ type CardHeaderTextProps<TElement extends React.ElementType> =
   CardHeaderTextOwnProps
   & { as?: TElement }
   & Omit<React.ComponentPropsWithoutRef<TElement>, keyof CardHeaderTextOwnProps | 'as'>;
-type CardHeaderTitleComponent = <TElement extends React.ElementType = 'h3'>(
+type CardHeaderTitleComponent = <TElement extends React.ElementType = 'h1'>(
   props: CardHeaderTextProps<TElement>
 ) => React.ReactElement | null;
 type CardHeaderSubtitleComponent = <TElement extends React.ElementType = 'p'>(
@@ -64,12 +66,21 @@ function CardBase({ className, ...props }: CardProps) {
   return <section className={classes} {...props} />;
 }
 
-function CardHeader({ title, subtitle, right, className, children, ...props }: CardHeaderProps) {
+function CardHeader({
+  title,
+  subtitle,
+  right,
+  titleAs: TitleComponent = 'h1',
+  subtitleAs: SubtitleComponent = 'p',
+  className,
+  children,
+  ...props
+}: CardHeaderProps) {
   const classes = [styles.header, className].filter(Boolean).join(' ');
   const left = children ?? (
     <>
-      {title ? <h3 className={styles.title}>{title}</h3> : null}
-      {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
+      {title ? <TitleComponent className={styles.title}>{title}</TitleComponent> : null}
+      {subtitle ? <SubtitleComponent className={styles.subtitle}>{subtitle}</SubtitleComponent> : null}
     </>
   );
 
@@ -82,7 +93,7 @@ function CardHeader({ title, subtitle, right, className, children, ...props }: C
 }
 
 const CardHeaderTitle: CardHeaderTitleComponent = ({
-  as: Component = 'h3',
+  as: Component = 'h1',
   className,
   ...props
 }) => {

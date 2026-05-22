@@ -22,6 +22,22 @@ describe('Card', () => {
     expect(screen.getByText('Сохранить')).toBeInTheDocument();
   });
 
+  it('supports titleAs and subtitleAs props', () => {
+    render(
+      <Card>
+        <Card.Header
+          title="Заголовок"
+          subtitle="Подзаголовок"
+          titleAs="h2"
+          subtitleAs="div"
+        />
+      </Card>,
+    );
+
+    expect(screen.getByText('Заголовок').tagName).toBe('H2');
+    expect(screen.getByText('Подзаголовок').tagName).toBe('DIV');
+  });
+
   it('renders toolbar button with icon and label', () => {
     render(
       <Card>
