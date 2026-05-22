@@ -16,6 +16,18 @@
 `Card.Header` умеет принимать:
 - `title` и `subtitle`
 - `right` для иконок/кнопок
+- `children` для полного кастомного содержимого
+
+Также доступны подкомпоненты:
+
+```tsx
+<Card.Header right={<Button appearance="ghost">...</Button>}>
+  <Card.Header.Title>Заголовок</Card.Header.Title>
+  <Card.Header.Subtitle>Подзаголовок</Card.Header.Subtitle>
+</Card.Header>
+```
+
+`Card.Header.Title` и `Card.Header.Subtitle` поддерживают `as` с любым `React.ElementType` (включая кастомный компонент).
 
 ## Toolbar
 

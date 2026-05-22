@@ -297,6 +297,15 @@ const collapsible = [
     <Button>Сохранить</Button>
   </Card.Footer>
 </Card>
+
+<Card>
+  <Card.Header>
+    <Card.Header.Title>Заголовок</Card.Header.Title>
+    <Card.Header.Subtitle>Подзаголовок</Card.Header.Subtitle>
+  </Card.Header>
+</Card>
+
+<Card.Header.Title as="h2">Заголовок секции</Card.Header.Title>
 ```
 
 ### CollapseButton

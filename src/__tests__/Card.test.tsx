@@ -38,4 +38,55 @@ describe('Card', () => {
 
     expect(screen.getByRole('button', { name: 'Добавить' })).toBeInTheDocument();
   });
+
+  it('renders custom header children node', () => {
+    render(
+      <Card>
+        <Card.Header right={<Button appearance="ghost">...</Button>}>
+          <div>
+            <strong>Кастомный заголовок</strong>
+          </div>
+        </Card.Header>
+      </Card>,
+    );
+
+    expect(screen.getByText('Кастомный заголовок')).toBeInTheDocument();
+  });
+
+  it('renders header title/subtitle subcomponents', () => {
+    render(
+      <Card>
+        <Card.Header>
+          <Card.Header.Title>Заголовок через subcomponent</Card.Header.Title>
+          <Card.Header.Subtitle>Подзаголовок через subcomponent</Card.Header.Subtitle>
+        </Card.Header>
+      </Card>,
+    );
+
+    expect(screen.getByText('Заголовок через subcomponent')).toBeInTheDocument();
+    expect(screen.getByText('Подзаголовок через subcomponent')).toBeInTheDocument();
+  });
+
+  it('supports polymorphic `as` for header title', () => {
+    const CustomTitle = ({
+      children,
+      ...props
+    }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div data-testid="custom-header-title" {...props}>
+        {children}
+      </div>
+    );
+
+    render(
+      <Card>
+        <Card.Header>
+          <Card.Header.Title as="h2">Заголовок h2</Card.Header.Title>
+          <Card.Header.Title as={CustomTitle}>Заголовок custom</Card.Header.Title>
+        </Card.Header>
+      </Card>,
+    );
+
+    expect(screen.getByText('Заголовок h2').tagName).toBe('H2');
+    expect(screen.getByTestId('custom-header-title')).toHaveTextContent('Заголовок custom');
+  });
 });

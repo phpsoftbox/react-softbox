@@ -9,6 +9,19 @@ type CardHeaderProps = React.HTMLAttributes<HTMLDivElement> & {
   subtitle?: React.ReactNode;
   right?: React.ReactNode;
 };
+type CardHeaderTextOwnProps = {
+  className?: string;
+};
+type CardHeaderTextProps<TElement extends React.ElementType> =
+  CardHeaderTextOwnProps
+  & { as?: TElement }
+  & Omit<React.ComponentPropsWithoutRef<TElement>, keyof CardHeaderTextOwnProps | 'as'>;
+type CardHeaderTitleComponent = <TElement extends React.ElementType = 'h3'>(
+  props: CardHeaderTextProps<TElement>
+) => React.ReactElement | null;
+type CardHeaderSubtitleComponent = <TElement extends React.ElementType = 'p'>(
+  props: CardHeaderTextProps<TElement>
+) => React.ReactElement | null;
 
 type CardSectionProps = React.HTMLAttributes<HTMLDivElement>;
 type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -34,9 +47,13 @@ type CardToolbarComponent = React.FC<CardToolbarProps> & {
   Group: React.FC<CardToolbarGroupProps>;
   Button: React.FC<CardToolbarButtonProps>;
 };
+type CardHeaderComponent = React.FC<CardHeaderProps> & {
+  Title: CardHeaderTitleComponent;
+  Subtitle: CardHeaderSubtitleComponent;
+};
 
 type CardComponent = React.FC<CardProps> & {
-  Header: React.FC<CardHeaderProps>;
+  Header: CardHeaderComponent;
   Toolbar: CardToolbarComponent;
   Body: React.FC<CardSectionProps>;
   Footer: React.FC<CardSectionProps>;
@@ -63,6 +80,24 @@ function CardHeader({ title, subtitle, right, className, children, ...props }: C
     </div>
   );
 }
+
+const CardHeaderTitle: CardHeaderTitleComponent = ({
+  as: Component = 'h3',
+  className,
+  ...props
+}) => {
+  const classes = [styles.title, className].filter(Boolean).join(' ');
+  return <Component className={classes} {...props} />;
+};
+
+const CardHeaderSubtitle: CardHeaderSubtitleComponent = ({
+  as: Component = 'p',
+  className,
+  ...props
+}) => {
+  const classes = [styles.subtitle, className].filter(Boolean).join(' ');
+  return <Component className={classes} {...props} />;
+};
 
 function CardBody({ className, ...props }: CardSectionProps) {
   const classes = [styles.body, className].filter(Boolean).join(' ');
@@ -268,8 +303,13 @@ const CardToolbar = Object.assign(CardToolbarBase, {
   Button: CardToolbarButton,
 }) as CardToolbarComponent;
 
+const CardHeaderComponent = Object.assign(CardHeader, {
+  Title: CardHeaderTitle,
+  Subtitle: CardHeaderSubtitle,
+}) as CardHeaderComponent;
+
 const Card = Object.assign(CardBase, {
-  Header: CardHeader,
+  Header: CardHeaderComponent,
   Toolbar: CardToolbar,
   Body: CardBody,
   Footer: CardFooter,

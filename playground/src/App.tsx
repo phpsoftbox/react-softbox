@@ -507,7 +507,10 @@ export default function App() {
 
         <Grid columns={12} columnsMd={6} columnsSm={12} gap="24px">
           <Card className="gridCard">
-            <Card.Header title="Buttons" right={<Button variant="primary">Создать</Button>} />
+            <Card.Header right={<Button variant="primary">Создать</Button>}>
+              <Card.Header.Title>Buttons</Card.Header.Title>
+              <Card.Header.Subtitle>Пример использования Header subcomponents.</Card.Header.Subtitle>
+            </Card.Header>
             <Card.Body>
               <Stack gap="14px">
                 <Row gap="12px" wrap="wrap">
