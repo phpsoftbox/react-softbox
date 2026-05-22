@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './Wizard.module.css';
 import Button from '../Button/Button';
 import Progress from '../Progress/Progress';
+import type { UiVariant } from '../../types';
 
 export type WizardDirection = 'next' | 'prev' | 'jump';
 export type WizardStepStatus = 'completed' | 'active' | 'upcoming';
@@ -37,6 +38,14 @@ export type WizardWindowSizeMap = {
   lg?: number;
   xl?: number;
   default?: number;
+};
+
+export type WizardSummaryData = Record<string, string[]>;
+export type WizardSummaryVariant = UiVariant;
+export type WizardSummaryProps = React.HTMLAttributes<HTMLDivElement> & {
+  data: WizardSummaryData;
+  variant?: WizardSummaryVariant;
+  title?: React.ReactNode;
 };
 
 type WizardGuard<TState> = boolean | ((context: WizardTransitionContext<TState>) => boolean);
@@ -222,6 +231,60 @@ const resolveStepIdFromHash = <TState,>(steps: WizardStep<TState>[], hash: strin
 
   return steps.some((step) => step.id === decoded) ? decoded : undefined;
 };
+
+const summaryVariantClassMap: Record<WizardSummaryVariant, string> = {
+  default: styles.summaryDefault,
+  primary: styles.summaryPrimary,
+  info: styles.summaryInfo,
+  success: styles.summarySuccess,
+  warning: styles.summaryWarning,
+  danger: styles.summaryDanger,
+};
+
+function WizardSummary({
+  data,
+  variant = 'danger',
+  title = 'Проверьте ошибки по шагам',
+  className,
+  ...props
+}: WizardSummaryProps) {
+  const entries = React.useMemo(() => (
+    Object.entries(data)
+      .map(([stepName, errors]) => ({
+        stepName,
+        errors: errors.filter((error) => Boolean(error)),
+      }))
+      .filter((entry) => entry.errors.length > 0)
+  ), [data]);
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  const classes = [
+    styles.summary,
+    summaryVariantClassMap[variant],
+    className,
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div className={classes} role="alert" {...props}>
+      {title ? <div className={styles.summaryTitle}>{title}</div> : null}
+      <ul className={styles.summarySteps}>
+        {entries.map(({ stepName, errors }) => (
+          <li key={stepName} className={styles.summaryStep}>
+            <div className={styles.summaryStepTitle}>{stepName}</div>
+            <ul className={styles.summaryErrors}>
+              {errors.map((error, index) => (
+                <li key={`${stepName}-${index}`}>{error}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function WizardStepNode<TState>(_props: WizardStepProps<TState>) {
   return null;
@@ -925,10 +988,12 @@ function WizardBase<TState>({
 
 type WizardCompoundComponent = (<TState>(props: Props<TState>) => React.ReactElement) & {
   Step: <TState>(props: WizardStepProps<TState>) => React.ReactElement | null;
+  Summary: (props: WizardSummaryProps) => React.ReactElement | null;
 };
 
 const Wizard = Object.assign(WizardBase, {
   Step: WizardStepNode,
+  Summary: WizardSummary,
 }) as WizardCompoundComponent;
 
 export default Wizard;

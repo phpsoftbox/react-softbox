@@ -195,4 +195,36 @@ describe('Wizard', () => {
       expect(window.location.hash).toBe('#step-1');
     });
   });
+
+  it('renders summary grouped by step', () => {
+    render(
+      <Wizard.Summary
+        title="Ошибки"
+        data={{
+          Профиль: ['Введите email', 'Email должен содержать @'],
+          Тариф: ['Выберите тариф'],
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Ошибки')).toBeInTheDocument();
+    expect(screen.getByText('Профиль')).toBeInTheDocument();
+    expect(screen.getByText('Введите email')).toBeInTheDocument();
+    expect(screen.getByText('Email должен содержать @')).toBeInTheDocument();
+    expect(screen.getByText('Тариф')).toBeInTheDocument();
+    expect(screen.getByText('Выберите тариф')).toBeInTheDocument();
+  });
+
+  it('does not render summary when there are no errors', () => {
+    const { container } = render(
+      <Wizard.Summary
+        data={{
+          Профиль: [],
+          Тариф: [],
+        }}
+      />,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
 });

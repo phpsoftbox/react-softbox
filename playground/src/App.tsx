@@ -31,7 +31,7 @@ import {
   getStoredThemeMode,
   setThemeMode,
 } from '@phpsoftbox/react-softbox';
-import type { DetailsItem, SelectOption, ThemeMode, TableColumn, WizardProgressState } from '@phpsoftbox/react-softbox';
+import type { DetailsItem, SelectOption, ThemeMode, TableColumn, WizardProgressState, WizardSummaryData } from '@phpsoftbox/react-softbox';
 import avatarImage from '../avatar.png';
 
 const paletteRow: Array<Parameters<typeof Button>[0]> = [
@@ -221,6 +221,39 @@ export default function App() {
   const [wizardWindowState] = React.useState<WizardWindowState>({
     project: 'API migration',
   });
+  const wizardGuardedSummaryData = React.useMemo<WizardSummaryData>(() => {
+    const summary: WizardSummaryData = {};
+    const profileErrors: string[] = [];
+    const planErrors: string[] = [];
+    const confirmErrors: string[] = [];
+
+    const email = wizardGuardedState.email.trim();
+    if (!email) {
+      profileErrors.push('Введите email.');
+    } else if (!email.includes('@')) {
+      profileErrors.push('Email должен содержать символ @.');
+    }
+
+    if (!wizardGuardedState.plan) {
+      planErrors.push('Выберите тариф.');
+    }
+
+    if (!wizardGuardedState.approved) {
+      confirmErrors.push('Подтвердите данные чекбоксом.');
+    }
+
+    if (profileErrors.length > 0) {
+      summary.Профиль = profileErrors;
+    }
+    if (planErrors.length > 0) {
+      summary.Тариф = planErrors;
+    }
+    if (confirmErrors.length > 0) {
+      summary.Подтверждение = confirmErrors;
+    }
+
+    return summary;
+  }, [wizardGuardedState]);
   const [markdownValue, setMarkdownValue] = React.useState(
     '# Документация\n\n**ReactSoftBox** — быстрый старт.\n\n- Пункты списка\n- Поддержка `inline` кода\n\n> Важная заметка: не забудьте подключить базовые стили.\n\n```ts\nconst ready = true;\nconst title = \"ReactSoftBox\";\nconsole.log(title, ready);\n```\n\n[Открыть сайт](https://phpsoftbox.com)\n'
   );
@@ -1110,103 +1143,110 @@ export default function App() {
           <Card className="gridCard gridCardWide">
             <Card.Header title="Wizard · С условиями" subtitle="Три шага с canEnter/canExit." />
             <Card.Body>
-              <Wizard<WizardGuardedState>
-                state={wizardGuardedState}
-                showFutureSteps={wizardShowFutureSteps}
-                showPrevOnFirstStep={wizardShowPrevOnFirstStep}
-                showProgress
-                progressProps={{
-                  label: `Шаг ${wizardGuardedProgress.current} из ${wizardGuardedProgress.total || 0}`,
-                  showValue: true,
-                  variant: 'info',
-                  size: 'sm',
-                }}
-                stepsOrientation="vertical"
-                template={({ stepsNode, progressNode, contentNode, actionsNode }) => (
-                  <Stack gap="14px">
-                    <div className="wizardSplit">
-                      <div className="wizardSplitSteps">
-                        {stepsNode}
+              <Stack gap="12px">
+                <Wizard.Summary
+                  variant="warning"
+                  title="Ошибки по шагам"
+                  data={wizardGuardedSummaryData}
+                />
+                <Wizard<WizardGuardedState>
+                  state={wizardGuardedState}
+                  showFutureSteps={wizardShowFutureSteps}
+                  showPrevOnFirstStep={wizardShowPrevOnFirstStep}
+                  showProgress
+                  progressProps={{
+                    label: `Шаг ${wizardGuardedProgress.current} из ${wizardGuardedProgress.total || 0}`,
+                    showValue: true,
+                    variant: 'info',
+                    size: 'sm',
+                  }}
+                  stepsOrientation="vertical"
+                  template={({ stepsNode, progressNode, contentNode, actionsNode }) => (
+                    <Stack gap="14px">
+                      <div className="wizardSplit">
+                        <div className="wizardSplitSteps">
+                          {stepsNode}
+                        </div>
+                        <div className="wizardSplitContent">
+                          {contentNode}
+                        </div>
                       </div>
-                      <div className="wizardSplitContent">
-                        {contentNode}
-                      </div>
-                    </div>
-                    {progressNode}
-                    {actionsNode}
-                  </Stack>
-                )}
-                onStepStateChange={({ progress }) => setWizardGuardedProgress(progress)}
-                onComplete={() => pushToast('success')}
-              >
-                <Wizard.Step<WizardGuardedState>
-                  id="profile"
-                  title="Профиль"
-                  description="Email"
-                  canExit={({ state }) => state.email.trim().includes('@')}
+                      {progressNode}
+                      {actionsNode}
+                    </Stack>
+                  )}
+                  onStepStateChange={({ progress }) => setWizardGuardedProgress(progress)}
+                  onComplete={() => pushToast('success')}
                 >
-                  <Input>
-                    <Input.Label>Email</Input.Label>
-                    <Input.Field
-                      name="wizard-profile-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={wizardGuardedState.email}
-                      onChange={(event) => setWizardGuardedState((prev) => ({
-                        ...prev,
-                        email: event.target.value,
-                      }))}
-                    />
-                  </Input>
-                </Wizard.Step>
-                <Wizard.Step<WizardGuardedState>
-                  id="plan"
-                  title="Тариф"
-                  description="Выбор"
-                  canEnter={({ state }) => state.email.trim().includes('@')}
-                  canExit={({ state }) => state.plan !== ''}
-                >
-                  <Row gap="12px" wrap="wrap">
-                    <Input.Radio
-                      name="wizard-plan"
-                      label="Basic"
-                      checked={wizardGuardedState.plan === 'basic'}
-                      onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'basic' }))}
-                    />
-                    <Input.Radio
-                      name="wizard-plan"
-                      label="Pro"
-                      checked={wizardGuardedState.plan === 'pro'}
-                      onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'pro' }))}
-                    />
-                    <Input.Radio
-                      name="wizard-plan"
-                      label="Enterprise"
-                      checked={wizardGuardedState.plan === 'enterprise'}
-                      onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'enterprise' }))}
-                    />
-                  </Row>
-                </Wizard.Step>
-                <Wizard.Step<WizardGuardedState>
-                  id="confirm"
-                  title="Подтверждение"
-                  description="Проверка"
-                  canEnter={({ state }) => state.plan !== ''}
-                >
-                  <Stack gap="12px">
-                    <Text size="sm">Email: {wizardGuardedState.email || '—'}</Text>
-                    <Text size="sm">Тариф: {wizardGuardedState.plan || '—'}</Text>
-                    <Input.Checkbox
-                      label="Данные подтверждены"
-                      checked={wizardGuardedState.approved}
-                      onChange={(event) => setWizardGuardedState((prev) => ({
-                        ...prev,
-                        approved: event.target.checked,
-                      }))}
-                    />
-                  </Stack>
-                </Wizard.Step>
-              </Wizard>
+                  <Wizard.Step<WizardGuardedState>
+                    id="profile"
+                    title="Профиль"
+                    description="Email"
+                    canExit={({ state }) => state.email.trim().includes('@')}
+                  >
+                    <Input>
+                      <Input.Label>Email</Input.Label>
+                      <Input.Field
+                        name="wizard-profile-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={wizardGuardedState.email}
+                        onChange={(event) => setWizardGuardedState((prev) => ({
+                          ...prev,
+                          email: event.target.value,
+                        }))}
+                      />
+                    </Input>
+                  </Wizard.Step>
+                  <Wizard.Step<WizardGuardedState>
+                    id="plan"
+                    title="Тариф"
+                    description="Выбор"
+                    canEnter={({ state }) => state.email.trim().includes('@')}
+                    canExit={({ state }) => state.plan !== ''}
+                  >
+                    <Row gap="12px" wrap="wrap">
+                      <Input.Radio
+                        name="wizard-plan"
+                        label="Basic"
+                        checked={wizardGuardedState.plan === 'basic'}
+                        onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'basic' }))}
+                      />
+                      <Input.Radio
+                        name="wizard-plan"
+                        label="Pro"
+                        checked={wizardGuardedState.plan === 'pro'}
+                        onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'pro' }))}
+                      />
+                      <Input.Radio
+                        name="wizard-plan"
+                        label="Enterprise"
+                        checked={wizardGuardedState.plan === 'enterprise'}
+                        onChange={() => setWizardGuardedState((prev) => ({ ...prev, plan: 'enterprise' }))}
+                      />
+                    </Row>
+                  </Wizard.Step>
+                  <Wizard.Step<WizardGuardedState>
+                    id="confirm"
+                    title="Подтверждение"
+                    description="Проверка"
+                    canEnter={({ state }) => state.plan !== ''}
+                  >
+                    <Stack gap="12px">
+                      <Text size="sm">Email: {wizardGuardedState.email || '—'}</Text>
+                      <Text size="sm">Тариф: {wizardGuardedState.plan || '—'}</Text>
+                      <Input.Checkbox
+                        label="Данные подтверждены"
+                        checked={wizardGuardedState.approved}
+                        onChange={(event) => setWizardGuardedState((prev) => ({
+                          ...prev,
+                          approved: event.target.checked,
+                        }))}
+                      />
+                    </Stack>
+                  </Wizard.Step>
+                </Wizard>
+              </Stack>
             </Card.Body>
           </Card>
 

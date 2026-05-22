@@ -57,6 +57,8 @@
 
 .secondaryCollapse {
   width: 100%;
+  --collapse-padding-y: 0;
+  --collapse-padding-x: 0;
 }
 
 .secondaryGrid {
