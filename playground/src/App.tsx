@@ -134,6 +134,16 @@ const profileDetails: DetailsItem[] = [
   { label: 'Комментарий', value: null, fullWidth: true, priority: 'secondary' },
 ];
 
+const breadcrumbsLongItems = [
+  { label: 'Главная', href: '#' },
+  { label: 'Склады', href: '#' },
+  { label: 'Центральный склад', href: '#' },
+  { label: 'Товары', href: '#' },
+  { label: 'Шампуни', href: '#' },
+  { label: 'SKU-001245', href: '#' },
+  { label: 'Транзакции', current: true },
+];
+
 const formatCurrency = (value: number) => new Intl.NumberFormat('ru-RU').format(value);
 
 const getStatusVariant = (status: string) => {
@@ -1007,6 +1017,13 @@ export default function App() {
                     { label: 'Компоненты', href: '#' },
                     { label: 'ReactSoftBox', current: true },
                   ]}
+                />
+                <Breadcrumbs items={breadcrumbsLongItems} />
+                <Breadcrumbs
+                  items={breadcrumbsLongItems}
+                  maxVisibleItems={5}
+                  overflowTailCount={3}
+                  overflowAriaLabel="Показать скрытые крошки"
                 />
                 <Pagination
                   meta={paginationMeta}

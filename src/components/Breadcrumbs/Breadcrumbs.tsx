@@ -1,4 +1,5 @@
 import React from 'react';
+import Dropdown from '../Menu/Dropdown';
 import styles from './Breadcrumbs.module.css';
 
 type LinkComponent = React.ElementType<{
@@ -23,18 +24,113 @@ type Props = {
   separator?: React.ReactNode;
   className?: string;
   as?: LinkComponent;
+  maxVisibleItems?: number;
+  overflowTailCount?: number;
+  overflowLabel?: React.ReactNode;
+  overflowAriaLabel?: string;
 };
 
-export default function Breadcrumbs({ items, separator = '›', className, as }: Props) {
+type RenderNode =
+  | { type: 'item'; item: BreadcrumbItem; index: number }
+  | { type: 'overflow'; items: Array<{ item: BreadcrumbItem; index: number }> };
+
+function resolveRenderNodes(
+  items: BreadcrumbItem[],
+  maxVisibleItems: number,
+  overflowTailCount: number,
+): RenderNode[] {
+  if (maxVisibleItems < 3 || items.length <= maxVisibleItems) {
+    return items.map((item, index) => ({ type: 'item', item, index }));
+  }
+
+  const safeTailCount = Math.max(1, Math.min(overflowTailCount, maxVisibleItems - 2));
+  const tailStart = Math.max(1, items.length - safeTailCount);
+  const hidden = items.slice(1, tailStart).map((item, hiddenIndex) => ({
+    item,
+    index: hiddenIndex + 1,
+  }));
+
+  if (hidden.length === 0) {
+    return items.map((item, index) => ({ type: 'item', item, index }));
+  }
+
+  const tail = items.slice(tailStart).map((item, tailIndex) => ({
+    type: 'item' as const,
+    item,
+    index: tailStart + tailIndex,
+  }));
+
+  return [{ type: 'item', item: items[0], index: 0 }, { type: 'overflow', items: hidden }, ...tail];
+}
+
+export default function Breadcrumbs({
+  items,
+  separator = '›',
+  className,
+  as,
+  maxVisibleItems = 4,
+  overflowTailCount = 2,
+  overflowLabel = '...',
+  overflowAriaLabel = 'Show hidden breadcrumbs',
+}: Props) {
   const hasExplicitCurrent = items.some((item) => item.current);
+  const renderNodes = resolveRenderNodes(items, maxVisibleItems, overflowTailCount);
 
   return (
     <nav className={[styles.breadcrumbs, className].filter(Boolean).join(' ')} aria-label="Breadcrumbs">
       <ol className={styles.list}>
-        {items.map((item, index) => {
-          const key = item.id ?? `${index}-${typeof item.label === 'string' ? item.label : 'item'}`;
-          const isLast = index === items.length - 1;
-          const isCurrent = item.current ?? (!hasExplicitCurrent && isLast);
+        {renderNodes.map((node, index) => {
+          const isLastNode = index === renderNodes.length - 1;
+
+          if (node.type === 'overflow') {
+            return (
+              <li key={`overflow-${node.items[0]?.index ?? index}`} className={[styles.item, styles.overflowItem].join(' ')}>
+                <Dropdown
+                  align="left"
+                  placement="auto"
+                  className={styles.overflowDropdown}
+                  trigger={(
+                    <span className={styles.overflowTrigger}>
+                      {overflowLabel}
+                      <span className={styles.visuallyHidden}>{overflowAriaLabel}</span>
+                    </span>
+                  )}
+                >
+                  <Dropdown.Nav className={styles.overflowMenu}>
+                    {node.items.map(({ item, index: originalIndex }) => {
+                      const isCurrent = item.current ?? (!hasExplicitCurrent && originalIndex === items.length - 1);
+                      const isDisabled = item.disabled ?? false;
+                      const canFollowLink = Boolean(item.href && !isDisabled && !isCurrent);
+                      const itemKey = item.id ?? `hidden-${originalIndex}`;
+
+                      return (
+                        <Dropdown.Item
+                          key={itemKey}
+                          className={styles.overflowMenuItem}
+                          href={canFollowLink ? item.href : undefined}
+                          onClick={!isDisabled ? item.onClick : undefined}
+                          as={canFollowLink ? (item.as ?? as) : undefined}
+                          disabled={isDisabled}
+                          static={!canFollowLink}
+                        >
+                          {item.label}
+                        </Dropdown.Item>
+                      );
+                    })}
+                  </Dropdown.Nav>
+                </Dropdown>
+                {!isLastNode ? (
+                  <span className={styles.separator} aria-hidden="true">
+                    {separator}
+                  </span>
+                ) : null}
+              </li>
+            );
+          }
+
+          const item = node.item;
+          const key = item.id ?? `${node.index}-${typeof item.label === 'string' ? item.label : 'item'}`;
+          const isCurrent = item.current ?? (!hasExplicitCurrent && node.index === items.length - 1);
           const isDisabled = item.disabled ?? false;
           const LinkTag = item.as ?? as ?? 'a';
 
@@ -59,7 +155,11 @@ export default function Breadcrumbs({ items, separator = '›', className, as }:
                   {content}
                 </span>
               )}
-              {!isLast ? <span className={styles.separator} aria-hidden="true">{separator}</span> : null}
+              {!isLastNode ? (
+                <span className={styles.separator} aria-hidden="true">
+                  {separator}
+                </span>
+              ) : null}
             </li>
           );
         })}
