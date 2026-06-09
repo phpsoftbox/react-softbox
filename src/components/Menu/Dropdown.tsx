@@ -14,6 +14,8 @@ type Props = {
   fullWidth?: boolean;
   portal?: boolean;
   className?: string;
+  triggerClassName?: string;
+  triggerAriaLabel?: string;
 };
 
 type DropdownItemProps = {
@@ -71,6 +73,17 @@ const isDropdownNav = (node: React.ReactNode): node is React.ReactElement<Dropdo
   React.isValidElement<DropdownNavProps>(node) && node.type === DropdownNav;
 
 const combine = (...values: Array<string | undefined | null>) => values.filter(Boolean).join(' ');
+
+const assignRef = <T,>(ref: React.Ref<T> | undefined, value: T | null) => {
+  if (!ref) {
+    return;
+  }
+  if (typeof ref === 'function') {
+    ref(value);
+    return;
+  }
+  (ref as React.MutableRefObject<T | null>).current = value;
+};
 
 type DropdownNavMeta = {
   className?: string;
@@ -154,6 +167,8 @@ function Dropdown({
   fullWidth = false,
   portal = true,
   className,
+  triggerClassName,
+  triggerAriaLabel,
 }: Props) {
   const [open, setOpen] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -230,6 +245,43 @@ function Dropdown({
     }
   };
 
+  const renderElementTrigger = () => {
+    const triggerElement = trigger as React.ReactElement<{
+      className?: string;
+      onClick?: React.MouseEventHandler<HTMLElement>;
+      onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
+      ref?: React.Ref<HTMLElement>;
+      'aria-label'?: string;
+      'aria-expanded'?: boolean;
+      'aria-haspopup'?: React.AriaAttributes['aria-haspopup'];
+    }>;
+    const triggerProps = triggerElement.props;
+    const originalRef = (triggerElement as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref ?? triggerProps.ref;
+
+    return React.cloneElement(triggerElement, {
+      className: combine(triggerProps.className, fullWidth ? styles.dropdownTriggerFull : null, triggerClassName),
+      onClick: (event: React.MouseEvent<HTMLElement>) => {
+        triggerProps.onClick?.(event);
+        if (!event.defaultPrevented) {
+          setOpen((prev) => !prev);
+        }
+      },
+      onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
+        triggerProps.onKeyDown?.(event);
+        if (!event.defaultPrevented) {
+          handleTriggerKeyDown(event);
+        }
+      },
+      'aria-expanded': open,
+      'aria-haspopup': 'menu',
+      'aria-label': triggerProps['aria-label'] ?? triggerAriaLabel,
+      ref: (node: HTMLElement | null) => {
+        triggerRef.current = node;
+        assignRef(originalRef, node);
+      },
+    });
+  };
+
   const menu = open ? (
     <div
       ref={menuRef}
@@ -253,26 +305,15 @@ function Dropdown({
       ref={containerRef}
       onKeyDown={handleKeyDown}
     >
-      {isElementTrigger ? (
-        <span
-          className={[styles.dropdownAnchor, fullWidth ? styles.dropdownAnchorFull : null].filter(Boolean).join(' ')}
+      {isElementTrigger ? renderElementTrigger() : (
+        <button
+          type="button"
+          className={[styles.dropdownTrigger, fullWidth ? styles.dropdownTriggerFull : null, triggerClassName].filter(Boolean).join(' ')}
           onClick={() => setOpen((prev) => !prev)}
           onKeyDown={handleTriggerKeyDown}
           aria-expanded={open}
           aria-haspopup="menu"
-          ref={(node) => {
-            triggerRef.current = node;
-          }}
-        >
-          {trigger}
-        </span>
-      ) : (
-        <button
-          type="button"
-          className={[styles.dropdownTrigger, fullWidth ? styles.dropdownTriggerFull : null].filter(Boolean).join(' ')}
-          onClick={() => setOpen((prev) => !prev)}
-          onKeyDown={handleTriggerKeyDown}
-          aria-expanded={open}
+          aria-label={triggerAriaLabel}
           ref={(node) => {
             triggerRef.current = node;
           }}

@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
-import { screen } from '@testing-library/dom';
+import { fireEvent, screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import Select from '../components/Input/Select/Select';
 
@@ -127,5 +127,32 @@ describe('Select', () => {
     await user.click(screen.getByRole('button'));
 
     expect(container.querySelector('[role="listbox"]')).toBeInTheDocument();
+  });
+
+  it('does not scroll the list when option is activated by hover', async () => {
+    const user = userEvent.setup();
+    render(
+      <Select
+        label="Окружение"
+        options={[
+          { value: 'dev', label: 'Development' },
+          { value: 'stage', label: 'Staging' },
+          { value: 'prod', label: 'Production' },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button'));
+
+    const list = screen.getByRole('listbox');
+    const production = screen.getByRole('option', { name: 'Production' });
+    Object.defineProperty(list, 'clientHeight', { value: 40, configurable: true });
+    Object.defineProperty(production, 'offsetTop', { value: 96, configurable: true });
+    Object.defineProperty(production, 'offsetHeight', { value: 32, configurable: true });
+    list.scrollTop = 0;
+
+    fireEvent.mouseEnter(production);
+
+    expect(list.scrollTop).toBe(0);
   });
 });

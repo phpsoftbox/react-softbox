@@ -1024,6 +1024,11 @@ export default function App() {
                   maxVisibleItems={5}
                   overflowTailCount={3}
                   overflowAriaLabel="Показать скрытые крошки"
+                  renderOverflowTrigger={(hiddenItems) => (
+                    <button type="button" className="btn btn-default btn-ghost btn-sm">
+                      Еще {hiddenItems.length}
+                    </button>
+                  )}
                 />
                 <Pagination
                   meta={paginationMeta}

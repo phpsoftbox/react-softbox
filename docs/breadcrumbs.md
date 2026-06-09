@@ -45,3 +45,26 @@ import { Link } from '@inertiajs/react';
 ```
 
 Если `current` явно не указан, активным считается последний элемент.
+
+## Overflow
+
+Длинная цепочка сворачивает средние элементы в dropdown. Триггер можно настроить как содержимым, так и полностью своим React-элементом:
+
+```tsx
+<Breadcrumbs
+  overflowTrigger="Еще"
+  overflowTriggerClassName="btn btn-default btn-ghost btn-sm"
+  overflowDropdownClassName="breadcrumbsDropdown"
+  overflowAriaLabel="Скрытые хлебные крошки"
+  items={items}
+/>
+
+<Breadcrumbs
+  renderOverflowTrigger={(hiddenItems) => (
+    <button type="button" className="btn btn-default btn-ghost btn-sm">
+      Еще {hiddenItems.length}
+    </button>
+  )}
+  items={items}
+/>
+```

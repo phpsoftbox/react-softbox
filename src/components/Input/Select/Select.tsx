@@ -175,6 +175,7 @@ export default function Select<T extends string | number = string | number, M = 
   const [createdItems, setCreatedItems] = React.useState<SelectOption<T, M>[]>([]);
   const controlRef = React.useRef<HTMLButtonElement>(null);
   const optionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const activeOptionSourceRef = React.useRef<'sync' | 'keyboard' | 'mouse'>('sync');
   const { ref: dropdownRef, style: dropdownStyle } = useDropdownPosition(open, {
     gap: 6,
     align: 'left',
@@ -472,10 +473,12 @@ export default function Select<T extends string | number = string | number, M = 
 
   React.useEffect(() => {
     if (!open) {
+      activeOptionSourceRef.current = 'sync';
       setActiveOptionIndex(-1);
       return;
     }
 
+    activeOptionSourceRef.current = 'sync';
     setActiveOptionIndex((prev) => {
       if (prev >= 0 && prev < displayedOptions.length && !displayedOptions[prev]?.disabled) {
         return prev;
@@ -501,6 +504,9 @@ export default function Select<T extends string | number = string | number, M = 
 
   React.useEffect(() => {
     if (!open || activeOptionIndex < 0) {
+      return;
+    }
+    if (activeOptionSourceRef.current === 'mouse') {
       return;
     }
     const option = optionRefs.current[activeOptionIndex];
@@ -559,6 +565,7 @@ export default function Select<T extends string | number = string | number, M = 
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       const direction = event.key === 'ArrowDown' ? 1 : -1;
+      activeOptionSourceRef.current = 'keyboard';
 
       if (!open) {
         setOpen(true);
@@ -727,7 +734,10 @@ export default function Select<T extends string | number = string | number, M = 
                   role="option"
                   aria-selected={selected}
                   aria-label={option.label}
-                  onMouseEnter={() => setActiveOptionIndex(index)}
+                  onMouseEnter={() => {
+                    activeOptionSourceRef.current = 'mouse';
+                    setActiveOptionIndex(index);
+                  }}
                   onMouseDown={(event) => {
                     event.preventDefault();
                     handleSelect(option);

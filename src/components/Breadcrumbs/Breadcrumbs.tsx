@@ -27,7 +27,11 @@ type Props = {
   maxVisibleItems?: number;
   overflowTailCount?: number;
   overflowLabel?: React.ReactNode;
+  overflowTrigger?: React.ReactNode;
+  overflowTriggerClassName?: string;
+  overflowDropdownClassName?: string;
   overflowAriaLabel?: string;
+  renderOverflowTrigger?: (hiddenItems: BreadcrumbItem[]) => React.ReactNode;
 };
 
 type RenderNode =
@@ -71,7 +75,11 @@ export default function Breadcrumbs({
   maxVisibleItems = 4,
   overflowTailCount = 2,
   overflowLabel = '...',
+  overflowTrigger,
+  overflowTriggerClassName,
+  overflowDropdownClassName,
   overflowAriaLabel = 'Show hidden breadcrumbs',
+  renderOverflowTrigger,
 }: Props) {
   const hasExplicitCurrent = items.some((item) => item.current);
   const renderNodes = resolveRenderNodes(items, maxVisibleItems, overflowTailCount);
@@ -83,20 +91,22 @@ export default function Breadcrumbs({
           const isLastNode = index === renderNodes.length - 1;
 
           if (node.type === 'overflow') {
+            const hiddenItems = node.items.map(({ item }) => item);
+            const resolvedOverflowTrigger = renderOverflowTrigger
+              ? renderOverflowTrigger(hiddenItems)
+              : (overflowTrigger ?? overflowLabel);
+
             return (
               <li key={`overflow-${node.items[0]?.index ?? index}`} className={[styles.item, styles.overflowItem].join(' ')}>
                 <Dropdown
                   align="left"
                   placement="auto"
                   className={styles.overflowDropdown}
-                  trigger={(
-                    <span className={styles.overflowTrigger}>
-                      {overflowLabel}
-                      <span className={styles.visuallyHidden}>{overflowAriaLabel}</span>
-                    </span>
-                  )}
+                  trigger={resolvedOverflowTrigger}
+                  triggerClassName={[styles.overflowTrigger, overflowTriggerClassName].filter(Boolean).join(' ')}
+                  triggerAriaLabel={overflowAriaLabel}
                 >
-                  <Dropdown.Nav className={styles.overflowMenu}>
+                  <Dropdown.Nav className={[styles.overflowMenu, overflowDropdownClassName].filter(Boolean).join(' ')}>
                     {node.items.map(({ item, index: originalIndex }) => {
                       const isCurrent = item.current ?? (!hasExplicitCurrent && originalIndex === items.length - 1);
                       const isDisabled = item.disabled ?? false;
