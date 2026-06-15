@@ -47,6 +47,8 @@ export type TableSelection<T> = {
   selectedIds: React.Key[];
   onToggle: (id: React.Key, row: T, index: number) => void;
   onToggleAll?: (currentIds: React.Key[]) => void;
+  position?: 'left' | 'right';
+  showFooterToggle?: boolean;
   allSelected?: boolean;
   someSelected?: boolean;
   storageKey?: string;
@@ -203,12 +205,20 @@ function TableBase<T>({
   const restoredSelectionStorageKeyRef = React.useRef<string | null>(null);
   const skipNextSelectionPersistRef = React.useRef(false);
   const visibleColumns = columns.filter((column) => !column.hidden);
-  const shouldShowFooter = showFooter ?? visibleColumns.some((column) => column.footer !== undefined && column.footer !== null);
   const showSelection = Boolean(selection);
+  const selectionPosition = selection?.position ?? 'left';
+  const showSelectionLeft = showSelection && selectionPosition !== 'right';
+  const showSelectionRight = showSelection && selectionPosition === 'right';
+  const hasFooterContent = visibleColumns.some((column) => column.footer !== undefined && column.footer !== null);
+  const shouldShowFooter = Boolean(selection?.showFooterToggle) || (showFooter ?? hasFooterContent);
   const colSpan = Math.max(visibleColumns.length + (showSelection ? 1 : 0), 1);
   const currentSortKey = sort?.key ?? null;
   const currentSortDirection = sort?.direction ?? null;
   const defaultDirection = sort?.defaultDirection ?? 'asc';
+  const placement = renderBulkAction ? bulkActionPlacement ?? 'both' : bulkActions?.placement ?? 'both';
+  const hasBulkRenderer = Boolean(renderBulkAction || bulkActions);
+  const shouldRenderBulkTop = Boolean(hasBulkRenderer && (placement === 'top' || placement === 'both'));
+  const shouldRenderBulkBottom = Boolean(hasBulkRenderer && (placement === 'bottom' || placement === 'both'));
 
   const wrapperClasses = [
     styles.wrapper,
@@ -217,6 +227,8 @@ function TableBase<T>({
     variant === 'ghost' ? styles.ghost : null,
     size === 'sm' ? styles.sizeSm : null,
     stickyHeader ? styles.stickyHead : null,
+    shouldRenderBulkTop ? styles.withBulkTop : null,
+    shouldRenderBulkBottom ? styles.withBulkBottom : null,
     className,
   ]
     .filter(Boolean)
@@ -306,10 +318,6 @@ function TableBase<T>({
     ? selection.someSelected ?? rowKeys.some((key) => selectedSet?.has(key))
     : false;
 
-  const placement = renderBulkAction ? bulkActionPlacement ?? 'both' : bulkActions?.placement ?? 'both';
-  const hasBulkRenderer = Boolean(renderBulkAction || bulkActions);
-  const shouldRenderBulkTop = Boolean(hasBulkRenderer && (placement === 'top' || placement === 'both'));
-  const shouldRenderBulkBottom = Boolean(hasBulkRenderer && (placement === 'bottom' || placement === 'both'));
   const selectedIds = selection?.selectedIds ?? [];
   const selectedRows = selection
     ? data.filter((row, index) => selectedIds.includes(getRowKey(row, index)))
@@ -392,6 +400,40 @@ function TableBase<T>({
     }
   };
 
+  const renderSelectionHeaderCell = () => (
+    <th className={[styles.headCell, styles.selectionCell].filter(Boolean).join(' ')}>
+      <Checkbox
+        checked={allSelected}
+        indeterminate={!allSelected && someSelected}
+        onChange={handleToggleAll}
+        aria-label="Выбрать все строки"
+      />
+    </th>
+  );
+
+  const renderSelectionCell = (row: T, rowIndex: number, resolvedKey: React.Key) => (
+    <td className={[styles.cell, styles.selectionCell].filter(Boolean).join(' ')}>
+      <Checkbox
+        checked={Boolean(selectedSet?.has(resolvedKey))}
+        onChange={() => selection?.onToggle(resolvedKey, row, rowIndex)}
+        aria-label={`Выбрать строку ${rowIndex + 1}`}
+      />
+    </td>
+  );
+
+  const renderSelectionFooterCell = () => (
+    <td className={[styles.footerCell, styles.selectionCell].filter(Boolean).join(' ')}>
+      {selection?.showFooterToggle ? (
+        <Checkbox
+          checked={allSelected}
+          indeterminate={!allSelected && someSelected}
+          onChange={handleToggleAll}
+          aria-label="Выбрать все строки"
+        />
+      ) : null}
+    </td>
+  );
+
   return (
     <div className={wrapperClasses} {...props}>
       {shouldRenderBulkTop ? renderBulkActions('top') : null}
@@ -400,16 +442,7 @@ function TableBase<T>({
           {caption ? <caption className={styles.caption}>{caption}</caption> : null}
           <thead className={[styles.head, headClassName].filter(Boolean).join(' ')}>
             <tr>
-              {showSelection ? (
-                <th className={[styles.headCell, styles.selectionCell].filter(Boolean).join(' ')}>
-                  <Checkbox
-                    checked={allSelected}
-                    indeterminate={!allSelected && someSelected}
-                    onChange={handleToggleAll}
-                    aria-label="Выбрать все строки"
-                  />
-                </th>
-              ) : null}
+              {showSelectionLeft ? renderSelectionHeaderCell() : null}
               {visibleColumns.map((column, columnIndex) => {
                 const header = resolveHeaderContent(column);
                 const sortKey = resolveSortKey(column);
@@ -472,6 +505,7 @@ function TableBase<T>({
                   </th>
                 );
               })}
+              {showSelectionRight ? renderSelectionHeaderCell() : null}
             </tr>
           </thead>
           <tbody className={[styles.body, bodyClassName].filter(Boolean).join(' ')}>
@@ -487,15 +521,7 @@ function TableBase<T>({
                 const resolvedKey = getRowKey(row, rowIndex);
                 return (
                   <tr key={resolvedKey} className={[styles.row, resolvedRowClassName].filter(Boolean).join(' ')}>
-                    {showSelection ? (
-                      <td className={[styles.cell, styles.selectionCell].filter(Boolean).join(' ')}>
-                        <Checkbox
-                          checked={Boolean(selectedSet?.has(resolvedKey))}
-                          onChange={() => selection?.onToggle(resolvedKey, row, rowIndex)}
-                          aria-label={`Выбрать строку ${rowIndex + 1}`}
-                        />
-                      </td>
-                    ) : null}
+                    {showSelectionLeft ? renderSelectionCell(row, rowIndex, resolvedKey) : null}
                     {visibleColumns.map((column, columnIndex) => {
                       const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
                       const hideClass = getHideClass(column.hideOn);
@@ -524,6 +550,7 @@ function TableBase<T>({
                         </td>
                       );
                     })}
+                    {showSelectionRight ? renderSelectionCell(row, rowIndex, resolvedKey) : null}
                   </tr>
                 );
               })
@@ -532,7 +559,7 @@ function TableBase<T>({
           {shouldShowFooter ? (
             <tfoot className={[styles.footer, footerClassName].filter(Boolean).join(' ')}>
               <tr className={styles.footerRow}>
-                {showSelection ? <td className={[styles.footerCell, styles.selectionCell].filter(Boolean).join(' ')} /> : null}
+                {showSelectionLeft ? renderSelectionFooterCell() : null}
                 {visibleColumns.map((column, columnIndex) => {
                   const alignClass = column.align === 'center' ? styles.alignCenter : column.align === 'right' ? styles.alignRight : null;
                   const hideClass = getHideClass(column.hideOn);
@@ -561,6 +588,7 @@ function TableBase<T>({
                     </td>
                   );
                 })}
+                {showSelectionRight ? renderSelectionFooterCell() : null}
               </tr>
             </tfoot>
           ) : null}

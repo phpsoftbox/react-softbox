@@ -1348,6 +1348,8 @@ export default function App() {
                       selectedIds,
                       onToggle: (id) => handleToggleRow(id),
                       onToggleAll: (ids) => handleToggleAll(ids),
+                      position: 'left',
+                      showFooterToggle: true,
                     }}
                     renderBulkAction={(ids) => (
                       <Row align="center" justify="space-between" wrap="wrap" gap="12px">

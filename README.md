@@ -162,6 +162,8 @@ const columns = [
 />;
 ```
 
+`selection.showFooterToggle: true` дублирует чекбокс выбора всех строк в `tfoot`.
+
 ### FileUploader
 
 ```tsx

@@ -128,6 +128,8 @@ const [selected, setSelected] = useState<React.Key[]>([]);
 
 По умолчанию `placement` = `both`.
 
+Чтобы продублировать чекбокс выбора всех строк в `tfoot`, передайте `selection.showFooterToggle: true`.
+
 ## Полезные поля колонки
 
 - `field` / `accessor` / `cell` — источник данных
