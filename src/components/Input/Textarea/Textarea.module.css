@@ -4,7 +4,7 @@
   padding: 14px 16px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(30, 99, 233, 0.25);
-  background: var(--surface-input);
+  background: var(--surface-input-solid);
   color: var(--color-text);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   resize: vertical;

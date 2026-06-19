@@ -13,7 +13,6 @@ import {
   Input,
   Menu,
   Modal,
-  MarkdownEditor,
   Notifier,
   Pagination,
   Progress,
@@ -33,6 +32,8 @@ import {
 } from '@phpsoftbox/react-softbox';
 import type { DetailsItem, SelectOption, ThemeMode, TableColumn, WizardProgressState, WizardSummaryData } from '@phpsoftbox/react-softbox';
 import avatarImage from '../avatar.png';
+
+const MarkdownEditorDemo = React.lazy(() => import('./MarkdownEditorDemo'));
 
 const paletteRow: Array<Parameters<typeof Button>[0]> = [
   { variant: 'default' },
@@ -189,6 +190,7 @@ export default function App() {
   const [collapseOpen, setCollapseOpen] = React.useState(false);
   const [multiValue, setMultiValue] = React.useState<string[]>(['cache']);
   const [asyncValue, setAsyncValue] = React.useState<string>('alpha');
+  const [searchableValue, setSearchableValue] = React.useState<string | undefined>('cache');
   const [userValue, setUserValue] = React.useState<number | undefined>(1);
   const [creatableOptions, setCreatableOptions] = React.useState([
     { value: 'feature-a', label: 'Feature A' },
@@ -264,10 +266,6 @@ export default function App() {
 
     return summary;
   }, [wizardGuardedState]);
-  const [markdownValue, setMarkdownValue] = React.useState(
-    '# Документация\n\n**ReactSoftBox** — быстрый старт.\n\n- Пункты списка\n- Поддержка `inline` кода\n\n> Важная заметка: не забудьте подключить базовые стили.\n\n```ts\nconst ready = true;\nconst title = \"ReactSoftBox\";\nconsole.log(title, ready);\n```\n\n[Открыть сайт](https://phpsoftbox.com)\n'
-  );
-
   const pushToast = (variant: 'info' | 'success' | 'warning' | 'danger') => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     setNotifierItems((prev) => [
@@ -859,6 +857,25 @@ export default function App() {
                   </Input.FloatLabel>
                 </Input>
                 <Input>
+                  <Input.FloatLabel label="Searchable select" hint="Фильтрация локального списка без async-запроса.">
+                    <Input.Select
+                        required
+                        name="searchable-static"
+                        searchable
+                        clearable
+                        value={searchableValue}
+                        onChange={(next) => setSearchableValue(next as string | undefined)}
+                        options={[
+                          { value: 'cache', label: 'Cache' },
+                          { value: 'queue', label: 'Queue' },
+                          { value: 'db', label: 'Database' },
+                          { value: 'search', label: 'Search' },
+                          { value: 'analytics', label: 'Analytics' },
+                        ]}
+                    />
+                  </Input.FloatLabel>
+                </Input>
+                <Input>
                   <Input.FloatLabel label="Async select" hint="Статический вариант без загрузки.">
                     <Input.Select
                         required
@@ -929,33 +946,18 @@ export default function App() {
             </Card.Body>
           </Card>
 
-          <Card className="gridCard gridCardWide">
-            <Card.Header title="MarkdownEditor" />
-            <Card.Body>
-              <MarkdownEditor
-                label="Описание релиза"
-                value={markdownValue}
-                onChange={setMarkdownValue}
-                placeholder="Введите markdown..."
-              >
-                <Tabs
-                  items={[
-                    {
-                      id: 'markdown-editor-tab',
-                      label: 'Редактор',
-                      content: <MarkdownEditor.Textarea label="Редактор" />,
-                    },
-                    {
-                      id: 'markdown-preview-tab',
-                      label: 'Просмотр',
-                      content: <MarkdownEditor.Preview label="Предпросмотр" />,
-                    },
-                  ]}
-                  defaultActiveId="markdown-editor-tab"
-                />
-              </MarkdownEditor>
-            </Card.Body>
-          </Card>
+          <React.Suspense
+            fallback={(
+              <Card className="gridCard gridCardWide">
+                <Card.Header title="MarkdownEditor" />
+                <Card.Body>
+                  <Text muted>Загрузка редактора...</Text>
+                </Card.Body>
+              </Card>
+            )}
+          >
+            <MarkdownEditorDemo />
+          </React.Suspense>
 
           <Card className="gridCard">
             <Card.Header title="Progress" />

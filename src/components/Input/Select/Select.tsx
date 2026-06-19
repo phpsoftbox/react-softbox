@@ -173,6 +173,7 @@ export default function Select<T extends string | number = string | number, M = 
   const shouldPortal = portal && canPortal;
   const [items, setItems] = React.useState<SelectOption<T, M>[]>(resolvedOptions);
   const [createdItems, setCreatedItems] = React.useState<SelectOption<T, M>[]>([]);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const controlRef = React.useRef<HTMLButtonElement>(null);
   const optionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const activeOptionSourceRef = React.useRef<'sync' | 'keyboard' | 'mouse'>('sync');
@@ -180,10 +181,9 @@ export default function Select<T extends string | number = string | number, M = 
     gap: 6,
     align: 'left',
     placement,
-    anchorRef: controlRef,
+    anchorRef: containerRef,
     strategy: shouldPortal ? 'fixed' : 'absolute',
   });
-  const containerRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
   const generatedId = React.useId();
@@ -273,7 +273,8 @@ export default function Select<T extends string | number = string | number, M = 
       }
 
       const target = event.target as Node;
-      const insideControl = containerRef.current.contains(target);
+      const eventPath = typeof event.composedPath === 'function' ? event.composedPath() : [];
+      const insideControl = containerRef.current.contains(target) || eventPath.includes(containerRef.current);
       const insideDropdown = dropdownRef.current ? dropdownRef.current.contains(target) : false;
       if (!insideControl && !insideDropdown) {
         setOpen(false);
@@ -313,6 +314,12 @@ export default function Select<T extends string | number = string | number, M = 
       }
     }
   }, [open, searchable]);
+
+  React.useEffect(() => {
+    if (!open && query !== '') {
+      setQuery('');
+    }
+  }, [open, query]);
 
   const allOptions = React.useMemo<SelectItem<T, M>[]>(
     () => (emptyOption ? [emptyOption, ...mergedItems] : mergedItems),
@@ -368,6 +375,14 @@ export default function Select<T extends string | number = string | number, M = 
   const hasValue = multiple ? (selectedValues as T[]).length > 0 : selectedValues !== undefined;
   const isEmptySelection = !multiple && allowEmpty && selectedValues === resolvedEmptyValue;
   const floatActive = floatLabel && (open || hasValue);
+  const showInlineSearch = searchable && open;
+  const searchPlaceholder = React.useMemo(() => {
+    if (!hasValue) {
+      return placeholder;
+    }
+    const selectedLabel = selectedList.map((item) => item.label).filter(Boolean).join(', ');
+    return selectedLabel || placeholder;
+  }, [hasValue, selectedList, placeholder]);
 
   const displayedOptions = React.useMemo(() => {
     if (isRemote) {
@@ -655,7 +670,7 @@ export default function Select<T extends string | number = string | number, M = 
     }
   };
 
-  const controlWidth = controlRef.current?.getBoundingClientRect().width;
+  const controlWidth = containerRef.current?.getBoundingClientRect().width;
   const resolvedDropdownStyle = shouldPortal
     ? {
         ...dropdownStyle,
@@ -670,21 +685,6 @@ export default function Select<T extends string | number = string | number, M = 
       ref={dropdownRef}
       style={resolvedDropdownStyle}
     >
-      {searchable ? (
-        <input
-          ref={inputRef}
-          className={styles.search}
-          placeholder="Поиск..."
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && canCreate) {
-              event.preventDefault();
-              void handleCreateOption();
-            }
-          }}
-        />
-      ) : null}
       <div className={styles.list} role="listbox" id={listId} ref={listRef}>
         {loading ? <div className={styles.status}>{loadingText}</div> : null}
         {!loading && !canCreate && (allowEmpty ? displayedOptions.length <= 1 : displayedOptions.length === 0) ? (
@@ -773,6 +773,7 @@ export default function Select<T extends string | number = string | number, M = 
       data-float-active={floatActive ? 'true' : undefined}
       data-has-clear={showClear ? 'true' : undefined}
       ref={containerRef}
+      style={controlStyle}
       onKeyDown={handleKeyDown}
     >
       {label ? (
@@ -780,56 +781,82 @@ export default function Select<T extends string | number = string | number, M = 
           {label}
         </span>
       ) : null}
-      <button
-        type="button"
-        className={styles.control}
-        style={controlStyle}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={listId}
-        aria-labelledby={label ? labelId : undefined}
-        id={controlId}
-        onClick={() => !disabled && setOpen((prev) => !prev)}
-        disabled={disabled}
-        ref={controlRef}
-      >
-        <div className={styles.value}>
-          {hasValue ? (
-            multiple ? (
-              selectedList.map((item) => (
-                <div key={String(item.value)} className={styles.tag}>
-                  {renderValue ? renderValue(item) : item.label}
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className={styles.remove}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleRemove(item.value);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
+      {showInlineSearch ? (
+        <input
+          ref={inputRef}
+          id={controlId}
+          className={styles.controlSearch}
+          style={controlStyle}
+          value={query}
+          placeholder={searchPlaceholder}
+          autoComplete="off"
+          spellCheck={false}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls={listId}
+          aria-labelledby={label ? labelId : undefined}
+          disabled={disabled}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && canCreate) {
+              event.preventDefault();
+              void handleCreateOption();
+            }
+          }}
+        />
+      ) : (
+        <button
+          type="button"
+          className={styles.control}
+          style={controlStyle}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={listId}
+          aria-labelledby={label ? labelId : undefined}
+          id={controlId}
+          onClick={() => !disabled && setOpen((prev) => !prev)}
+          disabled={disabled}
+          ref={controlRef}
+        >
+          <div className={styles.value}>
+            {hasValue ? (
+              multiple ? (
+                selectedList.map((item) => (
+                  <div key={String(item.value)} className={styles.tag}>
+                    {renderValue ? renderValue(item) : item.label}
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className={styles.remove}
+                      onClick={(event) => {
                         event.stopPropagation();
                         handleRemove(item.value);
-                      }
-                    }}
-                    aria-label={`Удалить ${item.label}`}
-                  >
-                    ×
-                  </span>
-                </div>
-              ))
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleRemove(item.value);
+                        }
+                      }}
+                      aria-label={`Удалить ${item.label}`}
+                    >
+                      ×
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <span className={styles.singleValue}>
+                  {selectedList[0] ? (renderValue ? renderValue(selectedList[0]) : selectedList[0].label) : null}
+                </span>
+              )
             ) : (
-              <span className={styles.singleValue}>
-                {selectedList[0] ? (renderValue ? renderValue(selectedList[0]) : selectedList[0].label) : null}
-              </span>
-            )
-          ) : (
-            <span className={[styles.placeholder, styles.singleValue].join(' ')}>{placeholder}</span>
-          )}
-        </div>
-      </button>
+              <span className={[styles.placeholder, styles.singleValue].join(' ')}>{placeholder}</span>
+            )}
+          </div>
+        </button>
+      )}
       <ActionStack className={styles.controls}>
         {endActions}
         {showClear ? (

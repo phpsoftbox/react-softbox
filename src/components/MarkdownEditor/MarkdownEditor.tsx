@@ -1,5 +1,5 @@
 import React from 'react';
-import { bundledLanguages, codeToHtml } from 'shiki';
+import type { HighlighterCore } from 'shiki/core';
 import Textarea from '../Input/Textarea/Textarea';
 import Hint from '../Input/Hint/Hint';
 import Tooltip, { type TooltipPlacement } from '../Tooltip/Tooltip';
@@ -10,7 +10,24 @@ import styles from './MarkdownEditor.module.css';
 const SHIKI_THEME = 'vitesse-dark';
 const SHIKI_LANGUAGE_FALLBACK = 'text';
 const SHIKI_CODE_WRAPPER_CLASS = 'md-shiki-code';
-const SHIKI_SUPPORTED_LANGUAGES = new Set(Object.keys(bundledLanguages));
+const SHIKI_LANGUAGE_LOADERS = {
+  bash: () => import('shiki/langs/bash.mjs').then((module) => module.default),
+  css: () => import('shiki/langs/css.mjs').then((module) => module.default),
+  html: () => import('shiki/langs/html.mjs').then((module) => module.default),
+  javascript: () => import('shiki/langs/javascript.mjs').then((module) => module.default),
+  json: () => import('shiki/langs/json.mjs').then((module) => module.default),
+  jsx: () => import('shiki/langs/jsx.mjs').then((module) => module.default),
+  markdown: () => import('shiki/langs/markdown.mjs').then((module) => module.default),
+  php: () => import('shiki/langs/php.mjs').then((module) => module.default),
+  shellscript: () => import('shiki/langs/shellscript.mjs').then((module) => module.default),
+  tsx: () => import('shiki/langs/tsx.mjs').then((module) => module.default),
+  typescript: () => import('shiki/langs/typescript.mjs').then((module) => module.default),
+  yaml: () => import('shiki/langs/yaml.mjs').then((module) => module.default),
+};
+const SHIKI_SUPPORTED_LANGUAGES = new Set(Object.keys(SHIKI_LANGUAGE_LOADERS));
+let shikiHighlighterPromise: Promise<HighlighterCore> | null = null;
+const loadedShikiLanguages = new Set<string>();
+const pendingShikiLanguages = new Map<string, Promise<void>>();
 
 export type MarkdownToolbarItem =
   | 'heading'
@@ -127,10 +144,55 @@ const renderFallbackCodeHtml = (code: string) => {
     .join('')}</code></pre>`;
 };
 
+const getShikiHighlighter = () => {
+  shikiHighlighterPromise ??= Promise.all([
+    import('shiki/core'),
+    import('shiki/engine/javascript'),
+    import('shiki/themes/vitesse-dark.mjs'),
+  ]).then(([core, engine, theme]) => core.createHighlighterCore({
+    engine: engine.createJavaScriptRegexEngine(),
+    langs: [],
+    themes: [theme.default],
+  }));
+
+  return shikiHighlighterPromise;
+};
+
+const ensureShikiLanguage = (highlighter: HighlighterCore, language: string) => {
+  if (language === SHIKI_LANGUAGE_FALLBACK || loadedShikiLanguages.has(language)) {
+    return Promise.resolve();
+  }
+
+  const loader = SHIKI_LANGUAGE_LOADERS[language as keyof typeof SHIKI_LANGUAGE_LOADERS];
+  if (!loader) {
+    return Promise.resolve();
+  }
+
+  const pendingLanguage = pendingShikiLanguages.get(language);
+  if (pendingLanguage) {
+    return pendingLanguage;
+  }
+
+  const nextPendingLanguage = loader()
+    .then((languageDefinition) => highlighter.loadLanguage(languageDefinition))
+    .then(() => {
+      loadedShikiLanguages.add(language);
+    })
+    .finally(() => {
+      pendingShikiLanguages.delete(language);
+    });
+
+  pendingShikiLanguages.set(language, nextPendingLanguage);
+  return nextPendingLanguage;
+};
+
 const highlightWithShiki = async (code: string, language: string) => {
   const normalizedCode = code || ' ';
-  return codeToHtml(normalizedCode, {
-    lang: resolveShikiLanguage(language),
+  const resolvedLanguage = resolveShikiLanguage(language);
+  const highlighter = await getShikiHighlighter();
+  await ensureShikiLanguage(highlighter, resolvedLanguage);
+  return highlighter.codeToHtml(normalizedCode, {
+    lang: resolvedLanguage,
     theme: SHIKI_THEME,
   });
 };

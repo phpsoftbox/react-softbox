@@ -1,4 +1,5 @@
 .wrapper {
+  --ui-float-label-background: var(--surface-input);
   position: relative;
   display: block;
 }
@@ -10,9 +11,10 @@
 
 .label {
   position: absolute;
-  left: 16px;
-  right: 16px;
+  left: 12px;
+  max-width: calc(100% - 24px);
   top: 16px;
+  box-sizing: border-box;
   color: var(--color-muted-2);
   font-size: var(--ui-control-font-size, var(--font-size-3));
   line-height: 1.2;
@@ -20,8 +22,8 @@
   transition: transform 0.2s ease, color 0.2s ease, opacity 0.2s ease;
   pointer-events: none;
   z-index: 1;
-  background: var(--surface-input);
-  padding: 0;
+  background: var(--ui-float-label-background);
+  padding: 0 4px;
   border-radius: 4px;
   white-space: nowrap;
   overflow: hidden;
@@ -29,7 +31,16 @@
 }
 
 .wrapperWithHint .label {
-  right: 52px;
+  max-width: calc(100% - 64px);
+}
+
+.wrapper > textarea + .label {
+  background: var(--surface-input-solid);
+}
+
+.wrapper > input:disabled + .label,
+.wrapper > textarea:disabled + .label {
+  background: var(--surface-input-disabled);
 }
 
 .requiredMark {

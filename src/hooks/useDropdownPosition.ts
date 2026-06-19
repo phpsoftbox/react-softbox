@@ -19,6 +19,7 @@ const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayou
 export default function useDropdownPosition(open: boolean, options: Options = {}): Result {
   const { gap = 8, align = 'right', placement: requestedPlacement = 'auto', anchorRef, strategy = 'absolute' } = options;
   const ref = React.useRef<HTMLDivElement>(null);
+  const lockedPlacementRef = React.useRef<'up' | 'down' | null>(null);
   const [style, setStyle] = React.useState<React.CSSProperties>({});
   const [currentPlacement, setCurrentPlacement] = React.useState<'up' | 'down'>('down');
 
@@ -38,7 +39,9 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
     let offset = 0;
     let maxWidth: number | undefined;
     let maxHeight: number | undefined;
-    let nextPlacement: 'up' | 'down' = requestedPlacement === 'auto' ? 'down' : requestedPlacement;
+    let nextPlacement: 'up' | 'down' = requestedPlacement === 'auto'
+      ? lockedPlacementRef.current ?? 'down'
+      : requestedPlacement;
 
     if (rect.right > window.innerWidth - padding) {
       offset = window.innerWidth - padding - rect.right;
@@ -52,10 +55,16 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
       maxWidth = availableWidth;
     }
 
-    if (requestedPlacement === 'auto') {
+    if (requestedPlacement === 'auto' && !lockedPlacementRef.current) {
       if (rect.height > availableBelow && availableAbove > availableBelow) {
         nextPlacement = 'up';
       }
+    }
+
+    if (requestedPlacement !== 'auto') {
+      lockedPlacementRef.current = nextPlacement;
+    } else if (!lockedPlacementRef.current) {
+      lockedPlacementRef.current = nextPlacement;
     }
 
     const availableSpace = nextPlacement === 'up' ? availableAbove : availableBelow;
@@ -100,6 +109,7 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
 
   useIsomorphicLayoutEffect(() => {
     if (!open) {
+      lockedPlacementRef.current = null;
       setStyle({});
       setCurrentPlacement('down');
       return;
@@ -117,6 +127,31 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
       window.removeEventListener('scroll', handler, true);
     };
   }, [open, compute, strategy]);
+
+  useIsomorphicLayoutEffect(() => {
+    if (!open || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    let frame = 0;
+    const scheduleCompute = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(compute);
+    };
+    const observer = new ResizeObserver(scheduleCompute);
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    if (anchorRef?.current) {
+      observer.observe(anchorRef.current);
+    }
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [open, compute, anchorRef]);
 
   return { ref, style, placement: currentPlacement };
 }

@@ -25,6 +25,12 @@ import '@phpsoftbox/react-softbox/foundations/index.css';
 import { Button, Card, Menu } from '@phpsoftbox/react-softbox';
 ```
 
+```ts
+import { MarkdownEditor } from '@phpsoftbox/react-softbox/markdown';
+```
+
+`MarkdownEditor` живет в отдельном entrypoint, чтобы обычные компоненты не подтягивали `shiki`.
+
 ## Разделы
 
 - `layout.md` — Grid, Flex, утилиты, Collapse

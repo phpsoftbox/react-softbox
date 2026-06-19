@@ -46,6 +46,12 @@ import {
 } from '@phpsoftbox/react-softbox';
 ```
 
+```ts
+import { MarkdownEditor } from '@phpsoftbox/react-softbox/markdown';
+```
+
+`MarkdownEditor` вынесен в отдельный entrypoint, чтобы основной пакет не подтягивал `shiki`.
+
 ## Тема
 
 ```ts
