@@ -97,8 +97,21 @@
   min-height: var(--ui-control-height, 48px);
 }
 
-.wrapper:global(.rsb-group-item) .control {
+.wrapper:global(.rsb-group-item) .control,
+.wrapper:global(.rsb-group-item) .controlSearch {
   border-radius: 0;
+}
+
+.wrapper:global(.rsb-group-item):first-child .control,
+.wrapper:global(.rsb-group-item):first-child .controlSearch {
+  border-top-left-radius: var(--radius-sm);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.wrapper:global(.rsb-group-item):last-child .control,
+.wrapper:global(.rsb-group-item):last-child .controlSearch {
+  border-top-right-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
 }
 
 .control:focus-visible {

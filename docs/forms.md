@@ -237,9 +237,35 @@ const statusOptions = [
 <Input>
   <Input.Label>Цена</Input.Label>
   <Input.Group stretch>
-    <Input.Addon>₽</Input.Addon>
+    <Input.Group.Label>₽</Input.Group.Label>
     <Input.Number placeholder="0.00" />
-    <Button appearance="outline">OK</Button>
+    <Input.Group.Text>без НДС</Input.Group.Text>
+  </Input.Group>
+</Input>
+
+<Input>
+  <Input.Label>Телефон</Input.Label>
+  <Input.Group stretch>
+    <Input.Select
+      value={country}
+      options={countryOptions}
+      style={{ flex: '0 0 150px' }}
+      onChange={(next) => {
+        setCountry(next);
+        setPhone('');
+      }}
+    />
+    <Input.MaskedInput mask={phoneMasks[country]} value={phone} onChange={setPhone} />
+  </Input.Group>
+</Input>
+
+<Input>
+  <Input.Label>Скидка</Input.Label>
+  <Input.Group stretch>
+    <Input.Group.Choice>
+      <Input.Radio name="discount" label="%" />
+    </Input.Group.Choice>
+    <Input.Number placeholder="10" />
   </Input.Group>
 </Input>
 ```

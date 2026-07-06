@@ -3,7 +3,7 @@ import InputField from './Field';
 import Textarea from './Textarea/Textarea';
 import Select from './Select/Select';
 import FloatLabel from './FloatLabel/FloatLabel';
-import { InputGroup, InputAddon } from './InputGroup';
+import { InputGroup, InputAddon, InputGroupChoice, InputGroupLabel, InputGroupText } from './InputGroup';
 import MaskedInput from './MaskedInput';
 import NumberInput from './NumberInput';
 import DatePicker from './DatePicker';
@@ -25,6 +25,9 @@ const Input = Object.assign(FormField, {
   FloatLabel,
   Group: InputGroup,
   Addon: InputAddon,
+  GroupLabel: InputGroupLabel,
+  GroupText: InputGroupText,
+  GroupChoice: InputGroupChoice,
   MaskedInput,
   Number: NumberInput,
   DatePicker,

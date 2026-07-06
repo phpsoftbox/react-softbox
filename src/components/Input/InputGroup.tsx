@@ -10,11 +10,16 @@ type GroupProps = React.HTMLAttributes<HTMLDivElement> & {
   stretch?: boolean;
 };
 
-type AddonProps = React.HTMLAttributes<HTMLDivElement> & {
+type AddonVariant = 'default' | 'label' | 'muted' | 'choice';
+
+type AddonProps = React.HTMLAttributes<HTMLElement> & {
   as?: React.ElementType;
+  variant?: AddonVariant;
 };
 
-export function InputGroup({ stretch = false, className, children, ...props }: GroupProps) {
+const mergeClassNames = (...classes: Array<string | undefined | null | false>) => classes.filter(Boolean).join(' ');
+
+function InputGroupRoot({ stretch = false, className, children, ...props }: GroupProps) {
   const classes = [GROUP_CLASS, stretch ? GROUP_STRETCH_CLASS : null, className].filter(Boolean).join(' ');
 
   const items = React.Children.map(children, (child) => {
@@ -22,7 +27,7 @@ export function InputGroup({ stretch = false, className, children, ...props }: G
       return child;
     }
     const element = child as React.ReactElement<{ className?: string }>;
-    const childClassName = [element.props.className, ITEM_CLASS].filter(Boolean).join(' ');
+    const childClassName = mergeClassNames(element.props.className, ITEM_CLASS);
     return React.cloneElement(element, { className: childClassName });
   });
 
@@ -33,8 +38,34 @@ export function InputGroup({ stretch = false, className, children, ...props }: G
   );
 }
 
-export function InputAddon({ as = 'div', className, ...props }: AddonProps) {
+export function InputAddon({ as = 'div', variant = 'default', className, ...props }: AddonProps) {
   const Component = as as React.ElementType;
-  const classes = [ADDON_CLASS, ITEM_CLASS, className].filter(Boolean).join(' ');
+  const classes = [
+    ADDON_CLASS,
+    `${ADDON_CLASS}--${variant}`,
+    ITEM_CLASS,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
   return <Component className={classes} {...props} />;
 }
+
+export function InputGroupLabel(props: Omit<AddonProps, 'variant'>) {
+  return <InputAddon as="span" {...props} variant="label" />;
+}
+
+export function InputGroupText(props: Omit<AddonProps, 'variant'>) {
+  return <InputAddon as="span" {...props} variant="muted" />;
+}
+
+export function InputGroupChoice(props: Omit<AddonProps, 'variant'>) {
+  return <InputAddon as="span" {...props} variant="choice" />;
+}
+
+export const InputGroup = Object.assign(InputGroupRoot, {
+  Addon: InputAddon,
+  Label: InputGroupLabel,
+  Text: InputGroupText,
+  Choice: InputGroupChoice,
+});

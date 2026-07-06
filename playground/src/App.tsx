@@ -66,6 +66,8 @@ type UserMeta = {
   countryIcon: string;
 };
 
+type DiscountKind = 'percent' | 'amount';
+
 type WizardSimpleState = {
   company: string;
   owner: string;
@@ -165,6 +167,20 @@ const getSortValue = (row: (typeof tableRows)[number], key: string) => {
   return value === null || value === undefined ? '' : String(value);
 };
 
+const phoneMasks = {
+  ru: '+7 (999) 999-99-99',
+  us: '+1 (999) 999-9999',
+  kz: '+7 (999) 999-99-99',
+} as const;
+
+type PhoneCountry = keyof typeof phoneMasks;
+
+const phoneCountryOptions: SelectOption<PhoneCountry>[] = [
+  { value: 'ru', label: 'Россия' },
+  { value: 'us', label: 'США' },
+  { value: 'kz', label: 'Казахстан' },
+];
+
 export default function App() {
   const [themeMode, setThemeModeState] = React.useState<ThemeMode>(() => {
     if (typeof document !== 'undefined') {
@@ -191,6 +207,10 @@ export default function App() {
   const [multiValue, setMultiValue] = React.useState<string[]>(['cache']);
   const [asyncValue, setAsyncValue] = React.useState<string>('alpha');
   const [searchableValue, setSearchableValue] = React.useState<string | undefined>('cache');
+  const [phoneCountry, setPhoneCountry] = React.useState<PhoneCountry>('ru');
+  const [groupPhone, setGroupPhone] = React.useState('');
+  const [discountKind, setDiscountKind] = React.useState<DiscountKind>('percent');
+  const [discountValue, setDiscountValue] = React.useState('');
   const [userValue, setUserValue] = React.useState<number | undefined>(1);
   const [creatableOptions, setCreatableOptions] = React.useState([
     { value: 'feature-a', label: 'Feature A' },
@@ -916,9 +936,84 @@ export default function App() {
                 <Input>
                   <Input.Label>Сумма</Input.Label>
                   <Input.Group stretch>
-                    <Input.Addon>₽</Input.Addon>
+                    <Input.Group.Label>₽</Input.Group.Label>
                     <Input.Number name="amount" placeholder="0.00" required />
-                    <Button appearance="outline">OK</Button>
+                    <Input.Group.Text>без НДС</Input.Group.Text>
+                  </Input.Group>
+                </Input>
+                <Input>
+                  <Input.Label hint="Select меняет маску соседнего поля через onChange.">Телефон с кодом страны</Input.Label>
+                  <Input.Group stretch>
+                    <Input.Select<PhoneCountry>
+                      name="phone-country"
+                      value={phoneCountry}
+                      options={phoneCountryOptions}
+                      style={{ flex: '0 0 150px' }}
+                      onChange={(next) => {
+                        setPhoneCountry(next as PhoneCountry);
+                        setGroupPhone('');
+                      }}
+                    />
+                    <Input.MaskedInput
+                      name="group-phone"
+                      mask={phoneMasks[phoneCountry]}
+                      value={groupPhone}
+                      onChange={setGroupPhone}
+                      placeholder={phoneMasks[phoneCountry].replace(/9/g, '_')}
+                      required
+                    />
+                  </Input.Group>
+                </Input>
+                <Input>
+                  <Input.Label>Диапазон значений</Input.Label>
+                  <Input.Group stretch>
+                    <Input.Group.Label>от</Input.Group.Label>
+                    <Input.Number name="range-from" placeholder="0" />
+                    <Input.Group.Label>до</Input.Group.Label>
+                    <Input.Number name="range-to" placeholder="100" />
+                  </Input.Group>
+                </Input>
+                <Input>
+                  <Input.Label>Поиск по заказу</Input.Label>
+                  <Input.Group stretch>
+                    <Button appearance="outline">Найти</Button>
+                    <Input.Field name="group-order" placeholder="Номер заказа" />
+                    <Button variant="primary">Открыть</Button>
+                  </Input.Group>
+                </Input>
+                <Input>
+                  <Input.Label>Скидка</Input.Label>
+                  <Input.Group stretch>
+                    <Input.Group.Choice>
+                      <Input.Radio
+                        name="discount-mode"
+                        label="%"
+                        checked={discountKind === 'percent'}
+                        onChange={() => {
+                          setDiscountKind('percent');
+                          setDiscountValue('');
+                        }}
+                      />
+                    </Input.Group.Choice>
+                    <Input.Number
+                      name="discount-value"
+                      placeholder={discountKind === 'percent' ? '10' : '500'}
+                      value={discountValue}
+                      onChange={setDiscountValue}
+                      max={discountKind === 'percent' ? 100 : undefined}
+                      decimalScale={discountKind === 'percent' ? 0 : 2}
+                    />
+                    <Input.Group.Choice>
+                      <Input.Radio
+                        name="discount-mode"
+                        label="₽"
+                        checked={discountKind === 'amount'}
+                        onChange={() => {
+                          setDiscountKind('amount');
+                          setDiscountValue('');
+                        }}
+                      />
+                    </Input.Group.Choice>
                   </Input.Group>
                 </Input>
                 <Input>

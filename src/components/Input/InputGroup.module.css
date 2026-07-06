@@ -2,14 +2,37 @@
   display: flex;
   align-items: stretch;
   gap: 0;
-}
-
-:global(.rsb-input-group--stretch) > :global(.rsb-group-item) {
-  flex: 1;
+  width: 100%;
   min-width: 0;
 }
 
+:global(.rsb-input-group--stretch) > :global(.rsb-group-item) {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+:global(.rsb-input-group--stretch > .rsb-group-item:not(.rsb-input-addon):not(.btn):not(.rsb-radio)) {
+  flex: 1 1 0;
+}
+
 :global(.rsb-input-group) > :global(.rsb-group-item) {
+  position: relative;
+  border-radius: 0 !important;
+  min-height: var(--ui-control-height, 48px);
+}
+
+:global(.rsb-input-group) > :global(.rsb-group-item):focus,
+:global(.rsb-input-group) > :global(.rsb-group-item):focus-within {
+  z-index: 2;
+}
+
+:global(.rsb-input-group) > :global(.rsb-group-item.btn) {
+  min-height: var(--ui-control-height, 48px);
+  box-shadow: none;
+  flex: 0 0 auto;
+}
+
+:global(.rsb-input-group) > :global(.rsb-group-item) > :where(input, button, textarea) {
   border-radius: 0 !important;
 }
 
@@ -18,7 +41,17 @@
   border-bottom-left-radius: var(--radius-sm) !important;
 }
 
+:global(.rsb-input-group) > :global(.rsb-group-item):first-child > :where(input, button, textarea) {
+  border-top-left-radius: var(--radius-sm) !important;
+  border-bottom-left-radius: var(--radius-sm) !important;
+}
+
 :global(.rsb-input-group) > :global(.rsb-group-item):last-child {
+  border-top-right-radius: var(--radius-sm) !important;
+  border-bottom-right-radius: var(--radius-sm) !important;
+}
+
+:global(.rsb-input-group) > :global(.rsb-group-item):last-child > :where(input, button, textarea) {
   border-top-right-radius: var(--radius-sm) !important;
   border-bottom-right-radius: var(--radius-sm) !important;
 }
@@ -30,9 +63,52 @@
 :global(.rsb-input-addon) {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-height: var(--ui-control-height, 48px);
   padding: 0 12px;
-  border: 1px solid rgba(30, 99, 233, 0.25);
-  background: var(--surface-input);
+  border: 1px solid var(--color-line);
+  background: var(--surface-input-muted);
   color: var(--color-muted);
+  font-size: var(--ui-control-font-size, var(--font-size-3));
+  font-weight: 600;
+  line-height: var(--ui-control-line-height, 1.2);
+  white-space: nowrap;
+}
+
+:global(.rsb-input-addon--label),
+:global(.rsb-input-addon--muted) {
+  background: var(--surface-input-muted);
+  color: var(--color-muted);
+  border-color: var(--color-line);
+}
+
+:global(.rsb-input-addon--label) {
+  color: var(--color-muted-2);
+  font-size: var(--font-size-2);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+:global(.rsb-input-addon--muted) {
+  font-weight: 500;
+}
+
+:global(.rsb-input-addon--choice) {
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--surface-input-muted);
+  border-color: var(--color-line);
+}
+
+:global(.rsb-input-addon--choice) > :global(.rsb-radio) {
+  align-items: center;
+}
+
+:global(.rsb-input-group) > :global(.rsb-radio.rsb-group-item) {
+  align-items: center;
+  min-height: var(--ui-control-height, 48px);
+  padding: 0 14px;
+  border: 1px solid var(--color-line);
+  background: var(--surface-input-muted);
   white-space: nowrap;
 }

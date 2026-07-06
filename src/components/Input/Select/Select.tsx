@@ -70,6 +70,7 @@ type SharedProps<T extends string | number, M = unknown> = {
   floatLabel?: boolean;
   endActions?: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 type SingleProps<T extends string | number, M = unknown> = SharedProps<T, M> & {
@@ -156,6 +157,7 @@ export default function Select<T extends string | number = string | number, M = 
   floatLabel = false,
   endActions,
   className,
+  style,
   onChange,
 }: Props<T, M>) {
   const resolvedOptions = options as SelectOption<T, M>[];
@@ -773,7 +775,7 @@ export default function Select<T extends string | number = string | number, M = 
       data-float-active={floatActive ? 'true' : undefined}
       data-has-clear={showClear ? 'true' : undefined}
       ref={containerRef}
-      style={controlStyle}
+      style={{ ...style, ...controlStyle }}
       onKeyDown={handleKeyDown}
     >
       {label ? (

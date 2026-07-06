@@ -12,7 +12,7 @@ type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> & {
 
 export default function Radio({ id, label, description, hint, hintPlacement = 'auto', className, ...props }: Props) {
   const inputId = id ?? React.useId();
-  const classes = [styles.radio, className].filter(Boolean).join(' ');
+  const classes = [styles.radio, 'rsb-radio', className].filter(Boolean).join(' ');
 
   return (
     <label className={classes} htmlFor={inputId}>
