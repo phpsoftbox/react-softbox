@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Card.module.css';
 import Button from '../Button/Button';
-import type { ButtonProps } from '../Button/Button';
+import type { ButtonAppearance, ButtonProps, ButtonSize } from '../Button/Button';
 
 type CardProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -27,11 +27,11 @@ type CardHeaderSubtitleComponent = <TElement extends React.ElementType = 'p'>(
 ) => React.ReactElement | null;
 
 type CardSectionProps = React.HTMLAttributes<HTMLDivElement>;
-type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
+export type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
   align?: 'left' | 'right' | 'between';
   buttonHideLabelOn?: 'never' | 'md';
 };
-type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement> & {
+export type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   attached?: boolean;
 };
 type CardToolbarButtonBaseProps<TElement extends React.ElementType = 'button'> = Omit<ButtonProps<TElement>, 'children'> & {
@@ -39,8 +39,9 @@ type CardToolbarButtonBaseProps<TElement extends React.ElementType = 'button'> =
   label?: React.ReactNode;
   hideLabelOn?: 'never' | 'md';
 };
-type CardToolbarButtonProps<TElement extends React.ElementType = 'button'> =
-  | (CardToolbarButtonBaseProps<TElement> & { icon: React.ReactNode; label?: React.ReactNode })
+export type CardToolbarButtonProps<TElement extends React.ElementType = 'button'> =
+  | (CardToolbarButtonBaseProps<TElement> & { icon: React.ReactNode; label?: undefined; 'aria-label': string })
+  | (CardToolbarButtonBaseProps<TElement> & { icon: React.ReactNode; label: React.ReactNode })
   | (CardToolbarButtonBaseProps<TElement> & { icon?: React.ReactNode; label: React.ReactNode });
 type CardToolbarButtonComponent = <TElement extends React.ElementType = 'button'>(
   props: CardToolbarButtonProps<TElement>
@@ -164,6 +165,12 @@ const isSameRows = (left: ToolbarRowMeta[], right: ToolbarRowMeta[]) => {
   return true;
 };
 
+const toolbarButtonSizeClass: Record<ButtonSize, string> = {
+  sm: styles.toolbarButtonSizeSm,
+  md: styles.toolbarButtonSizeMd,
+  lg: styles.toolbarButtonSizeLg,
+};
+
 function CardToolbarBase({
   align = 'left',
   buttonHideLabelOn = 'md',
@@ -274,11 +281,15 @@ function CardToolbarButton<TElement extends React.ElementType = 'button'>({
   icon,
   label,
   hideLabelOn,
+  size,
+  appearance,
   className,
   ...props
 }: CardToolbarButtonProps<TElement>) {
   const toolbarConfig = React.useContext(CardToolbarContext);
   const resolvedHideLabelOn = hideLabelOn ?? toolbarConfig.hideLabelOn;
+  const resolvedSize = (size ?? 'md') as ButtonSize;
+  const resolvedAppearance = (appearance ?? 'outline') as ButtonAppearance;
   const hasIcon = icon !== undefined && icon !== null;
   const hasLabel = label !== undefined && label !== null;
 
@@ -287,8 +298,11 @@ function CardToolbarButton<TElement extends React.ElementType = 'button'>({
   }
 
   const hasBoth = hasIcon && hasLabel;
+  const isIconOnly = hasIcon && !hasLabel;
   const classes = [
     styles.toolbarButton,
+    toolbarButtonSizeClass[resolvedSize],
+    isIconOnly ? styles.toolbarButtonIconOnly : null,
     hasBoth ? styles.toolbarButtonHasBoth : null,
     hasBoth && resolvedHideLabelOn === 'md' ? styles.toolbarButtonHideLabelMd : null,
     className,
@@ -299,11 +313,27 @@ function CardToolbarButton<TElement extends React.ElementType = 'button'>({
   const ToolbarButtonComponent = Button as React.ElementType;
 
   return (
-    <ToolbarButtonComponent size="sm" appearance="outline" className={classes} {...props}>
-      {hasIcon ? <span className={styles.toolbarButtonIcon}>{icon}</span> : null}
-      {hasBoth ? <span className={styles.toolbarButtonSeparator} aria-hidden="true" /> : null}
+    <ToolbarButtonComponent
+      size={resolvedSize}
+      appearance={resolvedAppearance}
+      className={classes}
+      data-card-toolbar-button-icon-only={isIconOnly ? 'true' : undefined}
+      {...props}
+    >
+      {hasIcon ? (
+        <span className={styles.toolbarButtonIcon} data-card-toolbar-button-slot="icon">
+          {icon}
+        </span>
+      ) : null}
+      {hasBoth ? (
+        <span
+          className={styles.toolbarButtonSeparator}
+          data-card-toolbar-button-slot="separator"
+          aria-hidden="true"
+        />
+      ) : null}
       {hasLabel ? (
-        <span className={styles.toolbarButtonLabel}>
+        <span className={styles.toolbarButtonLabel} data-card-toolbar-button-slot="label">
           {label}
         </span>
       ) : null}

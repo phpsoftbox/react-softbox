@@ -13,7 +13,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 export type ButtonGroupOrientation = 'horizontal' | 'vertical';
 
 type ButtonOwnProps<TElement extends React.ElementType> = {
-  component?: TElement;
+  as?: TElement;
   variant?: ButtonVariant | 'ghost' | 'outline';
   appearance?: ButtonAppearance;
   size?: ButtonSize;
@@ -84,7 +84,7 @@ const normalizeVariant = (
 };
 
 function ButtonBase<TElement extends React.ElementType = 'button'>({
-  component,
+  as,
   variant,
   appearance,
   size = 'md',
@@ -97,8 +97,8 @@ function ButtonBase<TElement extends React.ElementType = 'button'>({
 }: ButtonProps<TElement>) {
   const resolved = normalizeVariant(variant, appearance);
   const variantStyle = isBuiltinUiVariant(resolved.variant) ? undefined : buildButtonVariantStyle(resolved.variant);
-  const Component = (component ?? 'button') as React.ElementType;
-  const isNativeButton = component === undefined || component === 'button';
+  const Component = (as ?? 'button') as React.ElementType;
+  const isNativeButton = as === undefined || as === 'button';
   const classes = [
     'btn',
     getBuiltinUiVariantClass(variantClass, resolved.variant),

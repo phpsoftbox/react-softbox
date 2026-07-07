@@ -225,6 +225,18 @@
   --badge-circle-border-radius: var(--radius-circle);
   --card-border-radius: var(--radius-default);
   --card-toolbar-border-radius: var(--radius-default);
+  --card-toolbar-button-height-sm: 2rem;
+  --card-toolbar-button-height-md: 2.125rem;
+  --card-toolbar-button-height-lg: 2.5rem;
+  --card-toolbar-button-padding-x-sm: 0.625rem;
+  --card-toolbar-button-padding-x-md: 0.75rem;
+  --card-toolbar-button-padding-x-lg: 0.875rem;
+  --card-toolbar-button-icon-size-sm: 0.875rem;
+  --card-toolbar-button-icon-size-md: 1rem;
+  --card-toolbar-button-icon-size-lg: 1.125rem;
+  --card-toolbar-button-font-size-sm: var(--font-size-2);
+  --card-toolbar-button-font-size-md: var(--font-size-3);
+  --card-toolbar-button-font-size-lg: var(--font-size-4);
   --alert-border-radius: var(--radius-default);
   --table-border-radius: var(--radius-default);
   --input-border-radius: var(--radius-default);

@@ -106,7 +106,10 @@ yarn build
 <Button variant="info" appearance="outline">Info</Button>
 <Button variant="danger" appearance="ghost">Danger</Button>
 <Button variant="primary" size="sm">Small</Button>
-<Button component="a" href="/settings">Link button</Button>
+<Button as="a" href="/settings">Link button</Button>
+<Button as="a" href="/reports.csv" download>
+  Download
+</Button>
 
 <Button.Group aria-label="Режим просмотра">
   <Button appearance="outline">День</Button>
@@ -115,15 +118,40 @@ yarn build
 </Button.Group>
 ```
 
-Для Inertia/Router-ссылок передайте компонент через `component`. Проп `as` остается свободным для самого link-компонента:
+Основной polymorphic prop для `Button` — `as`.
+Для Inertia/Router-ссылок передайте link-компонент через `as`:
 
 ```tsx
 import { Link } from '@inertiajs/react';
 
-<Button component={Link} href="/logout" method="post" as="button">
+<Button as={Link} href="/orders">
+  Заказы
+</Button>
+
+<Button as={Link} href="/orders" method="post" preserveScroll>
+  Создать
+</Button>
+
+<Button as={Link} href="/orders" disabled>
+  Недоступно
+</Button>
+```
+
+Если нужно передать Inertia `Link` собственный `as="button"`, используйте тонкий adapter:
+
+```tsx
+import { Link } from '@inertiajs/react';
+
+const InertiaButtonLink = (props) => (
+  <Link as="button" {...props} />
+);
+
+<Button as={InertiaButtonLink} href="/logout" method="post">
   Выйти
 </Button>
 ```
+
+Для `as="a"` и внешних link-компонентов `disabled` добавляет `aria-disabled`, убирает элемент из tab order и блокирует click handler.
 
 Custom variants задаются через `--variant-{name}-*` токены:
 

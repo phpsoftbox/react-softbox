@@ -56,7 +56,7 @@ describe('Card', () => {
   });
 
   it('renders toolbar button with icon and label', () => {
-    render(
+    const { container } = render(
       <Card>
         <Card.Toolbar>
           <Card.Toolbar.Group attached aria-label="Toolbar actions">
@@ -69,8 +69,37 @@ describe('Card', () => {
       </Card>,
     );
 
-    expect(screen.getByRole('group', { name: 'Toolbar actions' })).toHaveClass('btn-group');
-    expect(screen.getByRole('button', { name: 'Добавить' })).toBeInTheDocument();
+    const group = screen.getByRole('group', { name: 'Toolbar actions' });
+    const button = screen.getByRole('button', { name: 'Добавить' });
+
+    expect(group).toHaveClass('btn-group', 'btn-group-horizontal');
+    expect(button).toBeInTheDocument();
+    expect(container.querySelector('[data-card-toolbar-button-slot="icon"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-card-toolbar-button-slot="label"]')).toHaveTextContent('Добавить');
+    expect(container.querySelector('[data-card-toolbar-button-slot="separator"]')).toBeInTheDocument();
+  });
+
+  it('renders native toolbar links', () => {
+    render(
+      <Card>
+        <Card.Toolbar>
+          <Card.Toolbar.Group attached aria-label="Native links">
+            <Card.Toolbar.Button
+              as="a"
+              href="/reports.csv"
+              download
+              icon={<span aria-hidden="true">↓</span>}
+              label="Скачать"
+            />
+          </Card.Toolbar.Group>
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Скачать' });
+    expect(link).toHaveClass('btn', 'btn-outline');
+    expect(link).toHaveAttribute('href', '/reports.csv');
+    expect(link).toHaveAttribute('download');
   });
 
   it('renders toolbar button through a custom link component', () => {
@@ -79,7 +108,7 @@ describe('Card', () => {
         <Card.Toolbar>
           <Card.Toolbar.Group attached aria-label="Toolbar links">
             <Card.Toolbar.Button
-              component={ToolbarLink}
+              as={ToolbarLink}
               href="/exports"
               method="post"
               preserveScroll
@@ -96,6 +125,51 @@ describe('Card', () => {
     expect(link).toHaveAttribute('href', '/exports');
     expect(link).toHaveAttribute('data-method', 'post');
     expect(link).toHaveAttribute('data-preserve-scroll', 'true');
+  });
+
+  it('marks icon-only toolbar buttons as stable square controls', () => {
+    const { container } = render(
+      <Card>
+        <Card.Toolbar>
+          <Card.Toolbar.Group attached aria-label="Icon actions">
+            <Card.Toolbar.Button
+              aria-label="Назад"
+              icon={(
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M10 3 5 8l5 5" />
+                </svg>
+              )}
+            />
+          </Card.Toolbar.Group>
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    const button = screen.getByRole('button', { name: 'Назад' });
+    const iconSlot = container.querySelector('[data-card-toolbar-button-slot="icon"]');
+
+    expect(button).toHaveAttribute('data-card-toolbar-button-icon-only', 'true');
+    expect(button.className).toContain('toolbarButtonIconOnly');
+    expect(iconSlot?.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('renders toolbar button content through framework slots', () => {
+    const { container } = render(
+      <Card>
+        <Card.Toolbar>
+          <Card.Toolbar.Button
+            icon={<span aria-hidden="true">✓</span>}
+            label="Готово"
+            {...({ children: 'Ignored children' } as unknown as Record<string, React.ReactNode>)}
+          />
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Готово' })).toBeInTheDocument();
+    expect(screen.queryByText('Ignored children')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-card-toolbar-button-slot="icon"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-card-toolbar-button-slot="label"]')).toHaveTextContent('Готово');
   });
 
   it('renders custom header children node', () => {
