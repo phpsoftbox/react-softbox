@@ -1,4 +1,4 @@
-:global(.rsb-input-group) {
+.rsb-input-group {
   display: flex;
   align-items: stretch;
   gap: 0;
@@ -6,61 +6,61 @@
   min-width: 0;
 }
 
-:global(.rsb-input-group--stretch) > :global(.rsb-group-item) {
+.rsb-input-group--stretch > .rsb-group-item {
   flex: 0 0 auto;
   min-width: 0;
 }
 
-:global(.rsb-input-group--stretch > .rsb-group-item:not(.rsb-input-addon):not(.btn):not(.rsb-radio)) {
+.rsb-input-group--stretch > .rsb-group-item:not(.rsb-input-addon):not(.btn):not(.rsb-radio) {
   flex: 1 1 0;
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item) {
+.rsb-input-group > .rsb-group-item {
   position: relative;
   border-radius: 0 !important;
   min-height: var(--ui-control-height, 48px);
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item):focus,
-:global(.rsb-input-group) > :global(.rsb-group-item):focus-within {
+.rsb-input-group > .rsb-group-item:focus,
+.rsb-input-group > .rsb-group-item:focus-within {
   z-index: 2;
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item.btn) {
+.rsb-input-group > .rsb-group-item.btn {
   min-height: var(--ui-control-height, 48px);
   box-shadow: none;
   flex: 0 0 auto;
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item) > :where(input, button, textarea) {
+.rsb-input-group > .rsb-group-item > :where(input, button, textarea) {
   border-radius: 0 !important;
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item):first-child {
+.rsb-input-group > .rsb-group-item:first-child {
   border-top-left-radius: var(--input-border-radius, var(--radius-default)) !important;
   border-bottom-left-radius: var(--input-border-radius, var(--radius-default)) !important;
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item):first-child > :where(input, button, textarea) {
+.rsb-input-group > .rsb-group-item:first-child > :where(input, button, textarea) {
   border-top-left-radius: var(--input-border-radius, var(--radius-default)) !important;
   border-bottom-left-radius: var(--input-border-radius, var(--radius-default)) !important;
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item):last-child {
+.rsb-input-group > .rsb-group-item:last-child {
   border-top-right-radius: var(--input-border-radius, var(--radius-default)) !important;
   border-bottom-right-radius: var(--input-border-radius, var(--radius-default)) !important;
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item):last-child > :where(input, button, textarea) {
+.rsb-input-group > .rsb-group-item:last-child > :where(input, button, textarea) {
   border-top-right-radius: var(--input-border-radius, var(--radius-default)) !important;
   border-bottom-right-radius: var(--input-border-radius, var(--radius-default)) !important;
 }
 
-:global(.rsb-input-group) > :global(.rsb-group-item) + :global(.rsb-group-item) {
+.rsb-input-group > .rsb-group-item + .rsb-group-item {
   margin-left: -1px;
 }
 
-:global(.rsb-input-addon) {
+.rsb-input-addon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -75,36 +75,36 @@
   white-space: nowrap;
 }
 
-:global(.rsb-input-addon--label),
-:global(.rsb-input-addon--muted) {
+.rsb-input-addon--label,
+.rsb-input-addon--muted {
   background: var(--surface-input-muted);
   color: var(--color-muted);
   border-color: var(--color-line);
 }
 
-:global(.rsb-input-addon--label) {
+.rsb-input-addon--label {
   color: var(--color-muted-2);
   font-size: var(--font-size-2);
   text-transform: none;
   letter-spacing: 0;
 }
 
-:global(.rsb-input-addon--muted) {
+.rsb-input-addon--muted {
   font-weight: 500;
 }
 
-:global(.rsb-input-addon--choice) {
+.rsb-input-addon--choice {
   gap: 10px;
   padding: 0 14px;
   background: var(--surface-input-muted);
   border-color: var(--color-line);
 }
 
-:global(.rsb-input-addon--choice) > :global(.rsb-radio) {
+.rsb-input-addon--choice > .rsb-radio {
   align-items: center;
 }
 
-:global(.rsb-input-group) > :global(.rsb-radio.rsb-group-item) {
+.rsb-input-group > .rsb-radio.rsb-group-item {
   align-items: center;
   min-height: var(--ui-control-height, 48px);
   padding: 0 14px;
