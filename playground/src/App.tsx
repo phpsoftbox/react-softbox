@@ -635,6 +635,72 @@ export default function App() {
                   <Button variant="primary">Опубликовать</Button>
                   <Button variant="danger" appearance="outline">Удалить</Button>
                 </Button.Group>
+                <Row gap="12px" wrap="wrap" align="flex-start">
+                  <Button.Split
+                    variant="primary"
+                    main={{
+                      label: 'Импорт Ozon',
+                      icon: <span aria-hidden="true">↑</span>,
+                      onClick: () => pushToast('info'),
+                    }}
+                    menu={{
+                      ariaLabel: 'Действия импорта Ozon',
+                      items: [
+                        {
+                          key: 'reset-cache',
+                          label: 'Сбросить кеш',
+                          icon: <span aria-hidden="true">↻</span>,
+                          onSelect: () => pushToast('success'),
+                        },
+                      ],
+                    }}
+                  />
+                  <Button.Split
+                    variant="info"
+                    appearance="outline"
+                    main={{
+                      as: DemoInertiaButtonLink,
+                      href: '#buttons',
+                      method: 'post',
+                      preserveScroll: true,
+                      label: 'Link import',
+                    }}
+                    menu={{
+                      ariaLabel: 'Link import actions',
+                      items: [
+                        { key: 'open-log', label: 'Открыть лог', href: '#buttons', as: DemoInertiaButtonLink },
+                      ],
+                    }}
+                  />
+                  <Button.Split
+                    variant="secondary"
+                    main={{
+                      label: 'Disabled main',
+                      disabled: true,
+                    }}
+                    menu={{
+                      ariaLabel: 'Disabled main actions',
+                      items: [
+                        { key: 'retry', label: 'Повторить', onSelect: () => pushToast('warning') },
+                      ],
+                    }}
+                  />
+                  <Button.Split
+                    variant="danger"
+                    appearance="outline"
+                    main={{
+                      label: 'Удаление',
+                      onClick: () => pushToast('danger'),
+                    }}
+                    menu={{
+                      ariaLabel: 'Danger actions',
+                      items: [
+                        { key: 'archive', label: 'Архивировать' },
+                        { key: 'drop', label: 'Удалить безвозвратно', danger: true, onSelect: () => pushToast('danger') },
+                      ],
+                    }}
+                  />
+                </Row>
               </Stack>
             </Card.Body>
           </Card>
@@ -1325,6 +1391,44 @@ export default function App() {
                       label="Link"
                     />
                   </Card.Toolbar.Group>
+                </Card.Toolbar>
+                <Card.Toolbar>
+                  <Card.Toolbar.Section align="left">
+                    <Card.Toolbar.Group attached aria-label="Toolbar status">
+                      <Card.Toolbar.Button label="Все" />
+                      <Card.Toolbar.Button label="Открытые" />
+                      <Card.Toolbar.Button label="Закрытые" />
+                    </Card.Toolbar.Group>
+                  </Card.Toolbar.Section>
+                  <Card.Toolbar.Section align="center">
+                    <Card.Toolbar.Group attached aria-label="Toolbar density">
+                      <Card.Toolbar.Button label="Compact" />
+                      <Card.Toolbar.Button label="Comfort" />
+                    </Card.Toolbar.Group>
+                  </Card.Toolbar.Section>
+                  <Card.Toolbar.Section align="right">
+                    <Card.Toolbar.Group attached aria-label="Toolbar import actions">
+                      <Card.Toolbar.Button
+                        aria-label="Обновить"
+                        icon={<span aria-hidden="true">↻</span>}
+                      />
+                      <Button.Split
+                        variant="primary"
+                        main={{
+                          label: 'Импорт',
+                          icon: <span aria-hidden="true">↑</span>,
+                          onClick: () => pushToast('info'),
+                        }}
+                        menu={{
+                          ariaLabel: 'Действия импорта',
+                          items: [
+                            { key: 'ozon', label: 'Импорт Ozon', onSelect: () => pushToast('success') },
+                            { key: 'reset', label: 'Сбросить кеш', danger: true, onSelect: () => pushToast('danger') },
+                          ],
+                        }}
+                      />
+                    </Card.Toolbar.Group>
+                  </Card.Toolbar.Section>
                 </Card.Toolbar>
               </Stack>
             </Card.Body>

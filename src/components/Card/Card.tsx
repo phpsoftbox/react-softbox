@@ -27,10 +27,14 @@ type CardHeaderSubtitleComponent = <TElement extends React.ElementType = 'p'>(
 ) => React.ReactElement | null;
 
 type CardSectionProps = React.HTMLAttributes<HTMLDivElement>;
+export type CardToolbarSectionAlign = 'left' | 'center' | 'right';
 export type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
   align?: 'left' | 'right' | 'between';
   buttonHideLabelOn?: 'never' | 'md';
   dividers?: boolean;
+};
+export type CardToolbarSectionProps = React.HTMLAttributes<HTMLDivElement> & {
+  align?: CardToolbarSectionAlign;
 };
 export type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   attached?: boolean;
@@ -54,6 +58,7 @@ type ToolbarRowMeta = {
 };
 
 type CardToolbarComponent = React.FC<CardToolbarProps> & {
+  Section: React.FC<CardToolbarSectionProps>;
   Group: React.FC<CardToolbarGroupProps>;
   Button: CardToolbarButtonComponent;
 };
@@ -172,6 +177,14 @@ const toolbarButtonSizeClass: Record<ButtonSize, string> = {
   lg: styles.toolbarButtonSizeLg,
 };
 
+const getToolbarSectionAlign = (child: React.ReactNode): CardToolbarSectionAlign | undefined => {
+  if (!React.isValidElement<CardToolbarSectionProps>(child) || child.type !== CardToolbarSection) {
+    return undefined;
+  }
+
+  return child.props.align ?? 'left';
+};
+
 function CardToolbarBase({
   align = 'left',
   buttonHideLabelOn = 'md',
@@ -185,10 +198,13 @@ function CardToolbarBase({
     : align === 'between'
       ? styles.toolbarAlignBetween
       : styles.toolbarAlignLeft;
-  const classes = [styles.toolbar, alignClass, className].filter(Boolean).join(' ');
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [rows, setRows] = React.useState<ToolbarRowMeta[]>([]);
   const toolbarChildren = React.Children.toArray(children);
+  const hasSections = toolbarChildren.some((child) => getToolbarSectionAlign(child) !== undefined);
+  const classes = [styles.toolbar, alignClass, hasSections ? styles.toolbarSections : null, className]
+    .filter(Boolean)
+    .join(' ');
 
   useIsomorphicLayoutEffect(() => {
     const root = rootRef.current;
@@ -260,6 +276,7 @@ function CardToolbarBase({
           const key = React.isValidElement(child) && child.key !== null ? child.key : `toolbar-item-${index}`;
           const row = rowMeta?.row ?? 0;
           const rowStart = rowMeta?.rowStart ?? index === 0;
+          const sectionAlign = getToolbarSectionAlign(child);
 
           return (
             <div
@@ -269,7 +286,8 @@ function CardToolbarBase({
               data-toolbar-row={row}
               data-toolbar-row-start={rowStart ? 'true' : 'false'}
               data-toolbar-row-wrapped={row > 0 ? 'true' : 'false'}
-              data-toolbar-divider={dividers && !rowStart ? 'true' : 'false'}
+              data-toolbar-divider={dividers && !hasSections && !rowStart ? 'true' : 'false'}
+              data-toolbar-section-align={sectionAlign}
             >
               {child}
             </div>
@@ -328,13 +346,6 @@ function CardToolbarButton<TElement extends React.ElementType = 'button'>({
           {icon}
         </span>
       ) : null}
-      {hasBoth ? (
-        <span
-          className={styles.toolbarButtonSeparator}
-          data-card-toolbar-button-slot="separator"
-          aria-hidden="true"
-        />
-      ) : null}
       {hasLabel ? (
         <span className={styles.toolbarButtonLabel} data-card-toolbar-button-slot="label">
           {label}
@@ -342,6 +353,12 @@ function CardToolbarButton<TElement extends React.ElementType = 'button'>({
       ) : null}
     </ToolbarButtonComponent>
   );
+}
+
+function CardToolbarSection({ align = 'left', className, ...props }: CardToolbarSectionProps) {
+  const classes = [styles.toolbarSection, className].filter(Boolean).join(' ');
+
+  return <div className={classes} data-card-toolbar-section={align} {...props} />;
 }
 
 function CardToolbarGroup({ attached = false, className, role, ...props }: CardToolbarGroupProps) {
@@ -357,6 +374,7 @@ function CardToolbarGroup({ attached = false, className, role, ...props }: CardT
 }
 
 const CardToolbar = Object.assign(CardToolbarBase, {
+  Section: CardToolbarSection,
   Group: CardToolbarGroup,
   Button: CardToolbarButton,
 }) as CardToolbarComponent;

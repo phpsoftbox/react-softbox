@@ -116,6 +116,26 @@ yarn build
   <Button appearance="outline">Неделя</Button>
   <Button appearance="outline">Месяц</Button>
 </Button.Group>
+
+<Button.Split
+  variant="primary"
+  main={{
+    label: 'Импорт Ozon',
+    icon: <UploadIcon />,
+    onClick: handleImport,
+  }}
+  menu={{
+    ariaLabel: 'Действия импорта Ozon',
+    items: [
+      {
+        key: 'reset-cache',
+        label: 'Сбросить кеш',
+        icon: <RefreshIcon />,
+        onSelect: handleResetCache,
+      },
+    ],
+  }}
+/>
 ```
 
 Основной polymorphic prop для `Button` — `as`.
@@ -152,12 +172,45 @@ const InertiaButtonLink = (props) => (
 ```
 
 Для `as="a"` и внешних link-компонентов `disabled` добавляет `aria-disabled`, убирает элемент из tab order и блокирует click handler.
+`Button.Split` использует тот же `as` для `main`; если Inertia `Link` должен отрендериться как `button`, передайте adapter в `main.as`.
 
 Custom variants задаются через `--variant-{name}-*` токены:
 
 ```tsx
 <Button variant="brand">Brand</Button>
 <Badge variant="brand">Brand</Badge>
+```
+
+### Card.Toolbar
+
+`Card.Toolbar align="left|right|between"` задает общее выравнивание прямых групп. Если нужно разнести группы по зонам, используйте `Card.Toolbar.Section`:
+
+```tsx
+<Card.Toolbar>
+  <Card.Toolbar.Section align="left">
+    <Card.Toolbar.Group attached>
+      <Card.Toolbar.Button label="Все" />
+      <Card.Toolbar.Button label="Активные" />
+    </Card.Toolbar.Group>
+  </Card.Toolbar.Section>
+
+  <Card.Toolbar.Section align="center">
+    <Card.Toolbar.Group attached>
+      <Card.Toolbar.Button label="День" />
+      <Card.Toolbar.Button label="Неделя" />
+    </Card.Toolbar.Group>
+  </Card.Toolbar.Section>
+
+  <Card.Toolbar.Section align="right">
+    <Card.Toolbar.Group>
+      <Button.Split
+        variant="primary"
+        main={{ label: 'Импорт', onClick: handleImport }}
+        menu={{ ariaLabel: 'Действия импорта', items }}
+      />
+    </Card.Toolbar.Group>
+  </Card.Toolbar.Section>
+</Card.Toolbar>
 ```
 
 ### Input / FloatLabel
