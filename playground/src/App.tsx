@@ -38,10 +38,14 @@ const MarkdownEditorDemo = React.lazy(() => import('./MarkdownEditorDemo'));
 const paletteRow: Array<Parameters<typeof Button>[0]> = [
   { variant: 'default' },
   { variant: 'primary' },
+  { variant: 'secondary' },
   { variant: 'info' },
   { variant: 'success' },
   { variant: 'warning' },
   { variant: 'danger' },
+  { variant: 'dark' },
+  { variant: 'light' },
+  { variant: 'neutral' },
 ];
 
 const asyncMockData = [
@@ -566,6 +570,22 @@ export default function App() {
                   <a className="btn btn-primary btn-solid btn-md" href="#buttons">Link md</a>
                   <a className="btn btn-primary btn-solid btn-lg" href="#buttons">Link lg</a>
                 </Row>
+                <Row gap="12px" wrap="wrap" align="flex-start">
+                  <Button.Group aria-label="View mode">
+                    <Button appearance="outline">День</Button>
+                    <Button appearance="outline">Неделя</Button>
+                    <Button appearance="outline">Месяц</Button>
+                  </Button.Group>
+                  <Button.Group orientation="vertical" aria-label="Sort order">
+                    <Button size="sm" appearance="outline">A-Z</Button>
+                    <Button size="sm" appearance="outline">Z-A</Button>
+                  </Button.Group>
+                </Row>
+                <Button.Group stretch aria-label="Segmented actions">
+                  <Button variant="secondary">Черновик</Button>
+                  <Button variant="primary">Опубликовать</Button>
+                  <Button variant="danger" appearance="outline">Удалить</Button>
+                </Button.Group>
               </Stack>
             </Card.Body>
           </Card>
@@ -575,17 +595,42 @@ export default function App() {
             <Card.Body>
               <Stack gap="10px">
                 <Row gap="10px" wrap="wrap">
-                  <Badge variant="default">default</Badge>
-                  <Badge variant="primary">primary</Badge>
-                  <Badge variant="info">info</Badge>
-                  <Badge variant="success">success</Badge>
-                  <Badge variant="warning">warning</Badge>
-                  <Badge variant="danger">danger</Badge>
+                  <Badge variant="default">Default</Badge>
+                  <Badge variant="primary">Primary</Badge>
+                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="info">Info</Badge>
+                  <Badge variant="success">Success</Badge>
+                  <Badge variant="warning">Warning</Badge>
+                  <Badge variant="danger">Danger</Badge>
+                  <Badge variant="dark">Dark</Badge>
+                  <Badge variant="light">Light</Badge>
+                  <Badge variant="neutral">Neutral</Badge>
                 </Row>
                 <Row gap="10px" wrap="wrap">
                   <Badge size="sm" variant="info">sm</Badge>
                   <Badge size="md" variant="info">md</Badge>
                   <Badge size="lg" variant="info">lg</Badge>
+                  <Badge variant="success" className="rounded-pill">pill</Badge>
+                  <Badge variant="warning" className="rounded-circle size-6 p-0 f-2">3</Badge>
+                  <Badge variant="info" className="border border-info text-uppercase f-2">helper styled</Badge>
+                  <Badge variant="danger" dot aria-label="Ошибка" />
+                </Row>
+                <Row gap="12px" wrap="wrap">
+                  <Button variant="primary" className="position-relative">
+                    Inbox
+                    <Badge variant="danger" className="position-absolute top-0 left-100 translate-middle rounded-pill f-2">
+                      12
+                    </Badge>
+                  </Button>
+                  <Button variant="secondary" appearance="outline" className="position-relative">
+                    Updates
+                    <Badge
+                      variant="success"
+                      dot
+                      aria-label="Есть обновления"
+                      className="position-absolute top-0 left-100 translate-middle p-2"
+                    />
+                  </Button>
                 </Row>
               </Stack>
             </Card.Body>
@@ -1140,7 +1185,7 @@ export default function App() {
             <Card.Body>
               <Stack gap="12px">
                 <Card.Toolbar align="left">
-                  <Card.Toolbar.Group>
+                  <Card.Toolbar.Group attached>
                     <Tooltip content="Назад" placement="top">
                       <Card.Toolbar.Button
                         aria-label="Назад"
@@ -1154,7 +1199,7 @@ export default function App() {
                       />
                     </Tooltip>
                   </Card.Toolbar.Group>
-                  <Card.Toolbar.Group>
+                  <Card.Toolbar.Group attached>
                     <Card.Toolbar.Button
                       icon={<span aria-hidden="true">✂</span>}
                       label="Вырезать"

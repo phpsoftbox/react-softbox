@@ -30,7 +30,9 @@ type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
   align?: 'left' | 'right' | 'between';
   buttonHideLabelOn?: 'never' | 'md';
 };
-type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement>;
+type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement> & {
+  attached?: boolean;
+};
 type CardToolbarButtonBaseProps = Omit<React.ComponentProps<typeof Button>, 'children'> & {
   icon?: React.ReactNode;
   label?: React.ReactNode;
@@ -303,10 +305,16 @@ function CardToolbarButton({
   );
 }
 
-function CardToolbarGroup({ className, ...props }: CardToolbarGroupProps) {
-  const classes = [styles.toolbarGroup, className].filter(Boolean).join(' ');
+function CardToolbarGroup({ attached = false, className, role, ...props }: CardToolbarGroupProps) {
+  const classes = [
+    styles.toolbarGroup,
+    attached ? styles.toolbarGroupAttached : null,
+    attached ? 'btn-group btn-group-horizontal' : null,
+    className,
+  ].filter(Boolean).join(' ');
+  const resolvedRole = role ?? (attached ? 'group' : undefined);
 
-  return <div className={classes} {...props} />;
+  return <div className={classes} role={resolvedRole} {...props} />;
 }
 
 const CardToolbar = Object.assign(CardToolbarBase, {

@@ -2,7 +2,7 @@
   width: 100%;
   min-height: 120px;
   padding: 14px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--textarea-border-radius, var(--input-border-radius, var(--radius-default)));
   border: 1px solid rgba(30, 99, 233, 0.25);
   background: var(--surface-input-solid);
   color: var(--color-text);

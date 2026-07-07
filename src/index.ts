@@ -54,6 +54,7 @@ export type {
   WizardStepContentProps,
   WizardStepRenderProps,
   WizardStepStatus,
+  WizardStepVariantMap,
   WizardUrlSyncMode,
   WizardSummaryData,
   WizardSummaryProps,

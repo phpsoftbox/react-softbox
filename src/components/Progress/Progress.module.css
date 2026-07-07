@@ -13,7 +13,7 @@
   width: 100%;
   background: var(--surface-control);
   border: 1px solid rgba(30, 99, 233, 0.2);
-  border-radius: 999px;
+  border-radius: var(--progress-border-radius, var(--radius-pill));
   overflow: hidden;
   position: relative;
 }
@@ -21,7 +21,7 @@
 .bar {
   height: 100%;
   width: 0;
-  background: linear-gradient(90deg, rgba(79, 230, 163, 0.9), rgba(20, 201, 214, 0.9));
+  background: var(--progress-bg, var(--variant-primary-bg));
   transition: width 0.2s ease;
 }
 
@@ -44,27 +44,43 @@
 }
 
 .default .bar {
-  background: linear-gradient(90deg, rgba(79, 230, 163, 0.9), rgba(20, 201, 214, 0.9));
+  --progress-bg: var(--variant-default-accent);
 }
 
 .primary .bar {
-  background: linear-gradient(90deg, rgba(30, 99, 233, 0.9), rgba(20, 201, 214, 0.9));
+  --progress-bg: var(--variant-primary-bg);
+}
+
+.secondary .bar {
+  --progress-bg: var(--variant-secondary-bg);
 }
 
 .info .bar {
-  background: linear-gradient(90deg, rgba(20, 201, 214, 0.9), rgba(79, 230, 163, 0.9));
+  --progress-bg: var(--variant-info-bg);
 }
 
 .success .bar {
-  background: linear-gradient(90deg, rgba(79, 230, 163, 0.9), rgba(20, 201, 214, 0.9));
+  --progress-bg: var(--variant-success-bg);
 }
 
 .warning .bar {
-  background: linear-gradient(90deg, rgba(255, 214, 90, 0.9), rgba(255, 176, 59, 0.9));
+  --progress-bg: var(--variant-warning-bg);
 }
 
 .danger .bar {
-  background: linear-gradient(90deg, rgba(255, 94, 126, 0.9), rgba(255, 120, 106, 0.9));
+  --progress-bg: var(--variant-danger-bg);
+}
+
+.dark .bar {
+  --progress-bg: var(--variant-dark-bg);
+}
+
+.light .bar {
+  --progress-bg: var(--variant-light-bg);
+}
+
+.neutral .bar {
+  --progress-bg: var(--variant-neutral-bg);
 }
 
 .indeterminate .bar {

@@ -29,7 +29,7 @@
   background: var(--tooltip-bg, var(--surface-panel));
   color: var(--tooltip-color, var(--color-text));
   border: 1px solid var(--tooltip-border, var(--color-line));
-  border-radius: var(--radius-sm);
+  border-radius: var(--tooltip-border-radius, var(--radius-default));
   box-shadow: var(--shadow-soft);
   padding: var(--spacing-2) var(--spacing-3);
   font-size: var(--font-size-2);

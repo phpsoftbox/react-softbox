@@ -5,11 +5,11 @@
 }
 
 .rounded {
-  border-radius: var(--radius-sm);
+  border-radius: var(--image-border-radius, var(--radius-default));
 }
 
 .circle {
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .square {

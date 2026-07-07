@@ -15,7 +15,7 @@
 .control {
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: var(--radio-border-radius, var(--radius-circle));
   border: 1px solid rgba(30, 99, 233, 0.45);
   background: var(--surface-input);
   display: inline-flex;
@@ -28,7 +28,7 @@
   content: '';
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--radio-border-radius, var(--radius-circle));
   background: var(--color-teal);
   transform: scale(0);
   transition: transform 0.2s ease;

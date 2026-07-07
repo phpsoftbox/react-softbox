@@ -3,7 +3,7 @@
   gap: var(--spacing-4);
   align-items: flex-start;
   padding: var(--spacing-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--alert-border-radius, var(--radius-default));
   border: 1px solid transparent;
   background: var(--surface-panel-soft);
   color: var(--color-text);
@@ -34,8 +34,8 @@
   margin-top: 0;
   background: var(--alert-icon-bg, transparent);
   border-right: 1px solid var(--alert-icon-bg-border, transparent);
-  border-top-left-radius: var(--radius-md);
-  border-bottom-left-radius: var(--radius-md);
+  border-top-left-radius: var(--alert-border-radius, var(--radius-default));
+  border-bottom-left-radius: var(--alert-border-radius, var(--radius-default));
 }
 
 .alertIconBgFilled .iconTop,
@@ -123,49 +123,81 @@
 }
 
 .default {
-  border-color: rgba(30, 51, 85, 0.6);
-  box-shadow: 0 0 0 1px rgba(30, 51, 85, 0.2);
-  --alert-icon-color: #9fb2cc;
-  --alert-icon-bg: rgba(159, 178, 204, 0.16);
-  --alert-icon-bg-border: rgba(159, 178, 204, 0.35);
+  border-color: var(--variant-default-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-default-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-default-accent);
+  --alert-icon-bg: var(--variant-default-soft);
+  --alert-icon-bg-border: color-mix(in srgb, var(--variant-default-border) 55%, transparent);
 }
 
 .primary {
-  border-color: rgba(20, 201, 214, 0.5);
-  box-shadow: 0 0 0 1px rgba(20, 201, 214, 0.2);
-  --alert-icon-color: #14c9d6;
-  --alert-icon-bg: rgba(20, 201, 214, 0.16);
-  --alert-icon-bg-border: rgba(20, 201, 214, 0.36);
+  border-color: var(--variant-primary-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-primary-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-primary-bg);
+  --alert-icon-bg: var(--variant-primary-soft);
+  --alert-icon-bg-border: color-mix(in srgb, var(--variant-primary-border) 55%, transparent);
+}
+
+.secondary {
+  border-color: var(--variant-secondary-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-secondary-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-secondary-bg);
+  --alert-icon-bg: var(--variant-secondary-soft);
+  --alert-icon-bg-border: color-mix(in srgb, var(--variant-secondary-border) 55%, transparent);
 }
 
 .info {
-  border-color: rgba(30, 99, 233, 0.4);
-  box-shadow: 0 0 0 1px rgba(30, 99, 233, 0.2);
-  --alert-icon-color: #1e63e9;
-  --alert-icon-bg: rgba(30, 99, 233, 0.16);
-  --alert-icon-bg-border: rgba(30, 99, 233, 0.34);
+  border-color: var(--variant-info-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-info-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-info-bg);
+  --alert-icon-bg: var(--variant-info-soft);
+  --alert-icon-bg-border: color-mix(in srgb, var(--variant-info-border) 55%, transparent);
 }
 
 .success {
-  border-color: rgba(79, 230, 163, 0.5);
-  box-shadow: 0 0 0 1px rgba(79, 230, 163, 0.2);
-  --alert-icon-color: #4fe6a3;
-  --alert-icon-bg: rgba(79, 230, 163, 0.16);
-  --alert-icon-bg-border: rgba(79, 230, 163, 0.36);
+  border-color: var(--variant-success-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-success-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-success-bg);
+  --alert-icon-bg: var(--variant-success-soft);
+  --alert-icon-bg-border: color-mix(in srgb, var(--variant-success-border) 55%, transparent);
 }
 
 .warning {
-  border-color: rgba(246, 200, 106, 0.5);
-  box-shadow: 0 0 0 1px rgba(246, 200, 106, 0.2);
-  --alert-icon-color: #f6c86a;
-  --alert-icon-bg: rgba(246, 200, 106, 0.18);
-  --alert-icon-bg-border: rgba(246, 200, 106, 0.36);
+  border-color: var(--variant-warning-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-warning-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-warning-bg);
+  --alert-icon-bg: var(--variant-warning-soft);
+  --alert-icon-bg-border: color-mix(in srgb, var(--variant-warning-border) 55%, transparent);
 }
 
 .danger {
-  border-color: rgba(255, 107, 107, 0.5);
-  box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.2);
-  --alert-icon-color: #ff6b6b;
-  --alert-icon-bg: rgba(255, 107, 107, 0.16);
-  --alert-icon-bg-border: rgba(255, 107, 107, 0.36);
+  border-color: var(--variant-danger-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-danger-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-danger-bg);
+  --alert-icon-bg: var(--variant-danger-soft);
+  --alert-icon-bg-border: color-mix(in srgb, var(--variant-danger-border) 55%, transparent);
+}
+
+.dark {
+  border-color: var(--variant-dark-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-dark-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-dark-text);
+  --alert-icon-bg: color-mix(in srgb, var(--variant-dark-bg) 75%, transparent);
+  --alert-icon-bg-border: var(--variant-dark-border);
+}
+
+.light {
+  border-color: var(--variant-light-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-light-bg) 30%, transparent);
+  --alert-icon-color: var(--variant-light-text);
+  --alert-icon-bg: color-mix(in srgb, var(--variant-light-bg) 80%, transparent);
+  --alert-icon-bg-border: var(--variant-light-border);
+}
+
+.neutral {
+  border-color: var(--variant-neutral-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-neutral-bg) 20%, transparent);
+  --alert-icon-color: var(--variant-neutral-bg);
+  --alert-icon-bg: var(--variant-neutral-soft);
+  --alert-icon-bg-border: color-mix(in srgb, var(--variant-neutral-border) 55%, transparent);
 }

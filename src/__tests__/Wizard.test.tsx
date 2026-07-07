@@ -114,6 +114,25 @@ describe('Wizard', () => {
     expect(screen.getByRole('button', { name: 'Назад' })).toBeDisabled();
   });
 
+  it('applies configurable step variants', () => {
+    render(
+      <Wizard
+        state={{}}
+        stepVariants={{ active: 'warning', upcoming: 'dark' }}
+      >
+        <Wizard.Step id="step-1" title="Шаг 1" content="Контент 1" />
+        <Wizard.Step id="step-2" title="Шаг 2" content="Контент 2" />
+      </Wizard>,
+    );
+
+    expect(screen.getByRole('tab', { name: /Шаг 1/ })).toHaveStyle({
+      '--wizard-step-bg': 'var(--variant-warning-soft)',
+    });
+    expect(screen.getByRole('tab', { name: /Шаг 2/ })).toHaveStyle({
+      '--wizard-step-bg': 'var(--variant-dark-soft)',
+    });
+  });
+
   it('initializes active step from hash when hash sync is enabled', async () => {
     setHash('#step-2');
 

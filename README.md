@@ -106,6 +106,12 @@ yarn build
 <Button variant="info" appearance="outline">Info</Button>
 <Button variant="danger" appearance="ghost">Danger</Button>
 <Button variant="primary" size="sm">Small</Button>
+
+<Button.Group aria-label="Режим просмотра">
+  <Button appearance="outline">День</Button>
+  <Button appearance="outline">Неделя</Button>
+  <Button appearance="outline">Месяц</Button>
+</Button.Group>
 ```
 
 ### Input / FloatLabel
@@ -263,10 +269,14 @@ const collapsible = [
 ```tsx
 <Badge>Default</Badge>
 <Badge variant="primary">Primary</Badge>
+<Badge variant="secondary">Secondary</Badge>
 <Badge variant="info">Info</Badge>
 <Badge variant="success">Success</Badge>
 <Badge variant="warning">Warning</Badge>
 <Badge variant="danger">Danger</Badge>
+<Badge variant="warning" className="rounded-circle size-6 p-0 f-2">3</Badge>
+<Badge variant="info" className="border border-info text-uppercase f-2">helper styled</Badge>
+<Badge variant="danger" dot aria-label="Ошибка" className="p-2" />
 ```
 
 ### Typography

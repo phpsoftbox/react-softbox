@@ -34,7 +34,7 @@
 
 ```tsx
 <Card.Toolbar>
-  <Card.Toolbar.Group>
+  <Card.Toolbar.Group attached>
     <Card.Toolbar.Button icon={<SaveIcon />} label="Сохранить" />
     <Card.Toolbar.Button icon={<RefreshIcon />} />
   </Card.Toolbar.Group>
@@ -43,6 +43,7 @@
 
 `Card.Toolbar.Button` принимает `icon` и/или `label` (минимум одно из них обязательно).
 Если переданы оба, внутри кнопки появится вертикальный разделитель. На средних экранах текстовая часть скрывается.
+`Card.Toolbar.Group attached` склеивает соседние кнопки в одну группу; без `attached` группы остаются разделёнными gap и toolbar-разделителями.
 
 Скрытие текста включено по умолчанию (`md`) и настраивается:
 - на уровне `Card.Toolbar`: `buttonHideLabelOn="md" | "never"`

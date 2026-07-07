@@ -30,7 +30,7 @@
   min-width: 36px;
   height: 36px;
   padding: 0 10px;
-  border-radius: 10px;
+  border-radius: var(--pagination-border-radius, var(--radius-default));
   border: 1px solid rgba(30, 99, 233, 0.25);
   background: var(--surface-control);
   color: var(--color-text);

@@ -16,7 +16,7 @@
 .track {
   width: 46px;
   height: 26px;
-  border-radius: 999px;
+  border-radius: var(--switch-border-radius, var(--radius-pill));
   background: rgba(30, 51, 85, 0.8);
   border: 1px solid rgba(30, 51, 85, 0.9);
   position: relative;
@@ -28,7 +28,7 @@
 .thumb {
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: var(--switch-thumb-border-radius, var(--radius-circle));
   background: #f4f8ff;
   position: absolute;
   left: 3px;

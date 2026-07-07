@@ -18,7 +18,7 @@
   max-height: calc(100dvh - (var(--spacing-7) * 2));
   background: var(--surface-panel);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--modal-border-radius, var(--radius-default));
   box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;

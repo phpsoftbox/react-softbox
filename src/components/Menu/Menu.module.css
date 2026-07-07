@@ -22,7 +22,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--menu-item-border-radius, var(--radius-default));
   border: 1px solid transparent;
   background: transparent;
   color: var(--color-text);
@@ -203,7 +203,7 @@
   background: var(--surface-control);
   color: var(--color-text);
   padding: 8px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -228,7 +228,7 @@
   max-width: calc(100vw - 24px);
   background: var(--surface-panel);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
+  border-radius: var(--dropdown-border-radius, var(--radius-default));
   padding: 16px;
   box-shadow: var(--shadow-soft);
   z-index: 60;

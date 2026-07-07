@@ -26,7 +26,7 @@
   transition: transform 0.2s ease, color 0.2s ease;
   background: var(--surface-input);
   padding: 0 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-default);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -44,7 +44,7 @@
 .control {
   min-height: var(--ui-control-height, 48px);
   width: 100%;
-  border-radius: var(--radius-sm);
+  border-radius: var(--select-border-radius, var(--input-border-radius, var(--radius-default)));
   border: 1px solid var(--color-line);
   background: var(--surface-input);
   color: var(--color-text);
@@ -69,7 +69,7 @@
 .controlSearch {
   min-height: var(--ui-control-height, 48px);
   width: 100%;
-  border-radius: var(--radius-sm);
+  border-radius: var(--select-border-radius, var(--input-border-radius, var(--radius-default)));
   border: 1px solid var(--color-line);
   background: var(--surface-input);
   color: var(--color-text);
@@ -104,14 +104,14 @@
 
 .wrapper:global(.rsb-group-item):first-child .control,
 .wrapper:global(.rsb-group-item):first-child .controlSearch {
-  border-top-left-radius: var(--radius-sm);
-  border-bottom-left-radius: var(--radius-sm);
+  border-top-left-radius: var(--select-border-radius, var(--input-border-radius, var(--radius-default)));
+  border-bottom-left-radius: var(--select-border-radius, var(--input-border-radius, var(--radius-default)));
 }
 
 .wrapper:global(.rsb-group-item):last-child .control,
 .wrapper:global(.rsb-group-item):last-child .controlSearch {
-  border-top-right-radius: var(--radius-sm);
-  border-bottom-right-radius: var(--radius-sm);
+  border-top-right-radius: var(--select-border-radius, var(--input-border-radius, var(--radius-default)));
+  border-bottom-right-radius: var(--select-border-radius, var(--input-border-radius, var(--radius-default)));
 }
 
 .control:focus-visible {
@@ -181,7 +181,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 10px;
+  border-radius: var(--select-tag-border-radius, var(--radius-pill));
   background: var(--surface-pill);
   border: 1px solid var(--color-line);
   font-size: var(--font-size-2);
@@ -211,7 +211,7 @@
 .clearButton {
   width: 18px;
   height: 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-circle);
   border: 1px solid rgba(30, 51, 85, 0.4);
   background: rgba(15, 30, 51, 0.35);
   color: var(--color-text);
@@ -249,7 +249,7 @@
   left: 0;
   min-width: 100%;
   max-width: calc(100vw - 24px);
-  border-radius: var(--radius-md);
+  border-radius: var(--select-dropdown-border-radius, var(--select-border-radius, var(--radius-default)));
   border: 1px solid var(--color-line);
   background: var(--surface-panel);
   box-shadow: var(--shadow-soft);
@@ -276,7 +276,7 @@
   justify-content: flex-start;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: var(--select-option-border-radius, var(--radius-default));
   border: 1px solid transparent;
   background: transparent;
   color: var(--color-text);
@@ -332,7 +332,7 @@
 .createMark {
   width: 18px;
   height: 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-circle);
   border: 1px solid rgba(20, 201, 214, 0.35);
   display: inline-flex;
   align-items: center;

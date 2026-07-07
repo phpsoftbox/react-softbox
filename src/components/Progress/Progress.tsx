@@ -21,10 +21,14 @@ const clamp = (value: number, min: number, max: number) => Math.min(Math.max(val
 const variantMap: Record<ProgressVariant, string> = {
   default: styles.default,
   primary: styles.primary,
+  secondary: styles.secondary,
   info: styles.info,
   success: styles.success,
   warning: styles.warning,
   danger: styles.danger,
+  dark: styles.dark,
+  light: styles.light,
+  neutral: styles.neutral,
 };
 
 const sizeMap: Record<ProgressSize, string> = {

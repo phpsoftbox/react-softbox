@@ -38,10 +38,14 @@ const weightClass: Record<TextWeight, string> = {
 const variantClass: Record<UiVariant, string> = {
   default: styles.variantDefault,
   primary: styles.variantPrimary,
+  secondary: styles.variantSecondary,
   info: styles.variantInfo,
   success: styles.variantSuccess,
   warning: styles.variantWarning,
   danger: styles.variantDanger,
+  dark: styles.variantDark,
+  light: styles.variantLight,
+  neutral: styles.variantNeutral,
 };
 
 export default function Text({

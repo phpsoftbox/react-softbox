@@ -344,10 +344,14 @@ function TableBase<T>({
     const variantClassMap: Record<UiVariant, string> = {
       default: styles.bulkActionDefault,
       primary: styles.bulkActionPrimary,
+      secondary: styles.bulkActionSecondary,
       info: styles.bulkActionInfo,
       success: styles.bulkActionSuccess,
       warning: styles.bulkActionWarning,
       danger: styles.bulkActionDanger,
+      dark: styles.bulkActionDark,
+      light: styles.bulkActionLight,
+      neutral: styles.bulkActionNeutral,
     };
 
     return (

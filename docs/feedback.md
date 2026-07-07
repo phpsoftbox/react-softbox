@@ -1,12 +1,13 @@
 # Feedback
 
-Все статусные компоненты используют единый набор вариантов: `default`, `primary`, `info`, `success`, `warning`, `danger`.
+Все статусные компоненты используют единый набор вариантов: `default`, `primary`, `secondary`, `info`, `success`, `warning`, `danger`, `dark`, `light`, `neutral`.
 
 ## Badge
 
 ```tsx
 <Badge>Default</Badge>
 <Badge variant="primary">Primary</Badge>
+<Badge variant="secondary">Secondary</Badge>
 <Badge variant="info">Info</Badge>
 <Badge variant="success">Success</Badge>
 <Badge variant="warning">Warning</Badge>
@@ -14,7 +15,13 @@
 <Badge size="sm" variant="info">Small</Badge>
 <Badge size="md" variant="info">Medium</Badge>
 <Badge size="lg" variant="info">Large</Badge>
+<Badge variant="success" className="rounded-pill">Pill</Badge>
+<Badge variant="warning" className="rounded-circle size-6 p-0 f-2">3</Badge>
+<Badge variant="info" className="border border-info text-uppercase f-2">helper styled</Badge>
+<Badge variant="danger" dot aria-label="Ошибка" className="p-2" />
 ```
+
+`Badge` не меняет регистр текста и не задает font-size. Для декоративных решений используйте helpers: `text-uppercase`, `f-2`, `border`, `rounded-pill`, `rounded-circle` и т.д.
 
 ## Alert
 

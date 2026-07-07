@@ -86,23 +86,39 @@
 }
 
 .variantPrimary {
-  color: var(--color-teal);
+  color: var(--variant-primary-bg);
+}
+
+.variantSecondary {
+  color: var(--variant-secondary-bg);
 }
 
 .variantInfo {
-  color: #9cc0ff;
+  color: var(--variant-info-bg);
 }
 
 .variantSuccess {
-  color: var(--color-mint);
+  color: var(--variant-success-bg);
 }
 
 .variantWarning {
-  color: #f6c86a;
+  color: var(--variant-warning-bg);
 }
 
 .variantDanger {
-  color: #ff6b6b;
+  color: var(--variant-danger-bg);
+}
+
+.variantDark {
+  color: var(--variant-dark-text);
+}
+
+.variantLight {
+  color: var(--variant-light-text);
+}
+
+.variantNeutral {
+  color: var(--variant-neutral-bg);
 }
 
 .muted {
@@ -125,7 +141,7 @@
   font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: var(--typography-code-border-radius, var(--radius-default));
   background: var(--surface-code);
   border: 1px solid var(--color-line);
   font-size: 0.92em;

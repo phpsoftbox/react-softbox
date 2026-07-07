@@ -11,6 +11,8 @@ describe('Badge', () => {
         <Badge>Default</Badge>
         <Badge variant="danger">Danger</Badge>
         <Badge size="sm" variant="info">Small</Badge>
+        <Badge variant="warning" shape="circle">3</Badge>
+        <Badge variant="success" dot aria-label="Online" />
       </>,
     );
 
@@ -23,5 +25,7 @@ describe('Badge', () => {
     expect(smallBadge).toBeInTheDocument();
     expect(defaultBadge.className).not.toEqual(dangerBadge.className);
     expect(smallBadge.className).not.toEqual(defaultBadge.className);
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByLabelText('Online')).toBeEmptyDOMElement();
   });
 });

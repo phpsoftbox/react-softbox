@@ -2,7 +2,7 @@
   width: 100%;
   min-height: var(--ui-control-height, 48px);
   padding: var(--ui-control-padding-y, 12px) var(--ui-control-padding-x, 16px);
-  border-radius: var(--radius-sm);
+  border-radius: var(--input-border-radius, var(--radius-default));
   border: 1px solid rgba(30, 99, 233, 0.25);
   background: var(--surface-input);
   color: var(--color-text);

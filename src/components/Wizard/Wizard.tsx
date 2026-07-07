@@ -42,6 +42,7 @@ export type WizardWindowSizeMap = {
 
 export type WizardSummaryData = Record<string, string[]>;
 export type WizardSummaryVariant = UiVariant;
+export type WizardStepVariantMap = Partial<Record<WizardStepStatus, UiVariant>>;
 export type WizardSummaryProps = React.HTMLAttributes<HTMLDivElement> & {
   data: WizardSummaryData;
   variant?: WizardSummaryVariant;
@@ -159,6 +160,7 @@ type Props<TState> = Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   showPrevOnFirstStep?: boolean;
   showProgress?: boolean;
   progressProps?: WizardProgressProps<TState>;
+  stepVariants?: WizardStepVariantMap;
   stepsOrientation?: 'horizontal' | 'vertical';
   previousLabel?: React.ReactNode;
   nextLabel?: React.ReactNode;
@@ -235,10 +237,34 @@ const resolveStepIdFromHash = <TState,>(steps: WizardStep<TState>[], hash: strin
 const summaryVariantClassMap: Record<WizardSummaryVariant, string> = {
   default: styles.summaryDefault,
   primary: styles.summaryPrimary,
+  secondary: styles.summarySecondary,
   info: styles.summaryInfo,
   success: styles.summarySuccess,
   warning: styles.summaryWarning,
   danger: styles.summaryDanger,
+  dark: styles.summaryDark,
+  light: styles.summaryLight,
+  neutral: styles.summaryNeutral,
+};
+
+const defaultStepVariants: Record<WizardStepStatus, UiVariant> = {
+  completed: 'success',
+  active: 'info',
+  upcoming: 'neutral',
+};
+
+const normalizeVariantToken = (variant: UiVariant) => (variant === 'default' ? 'neutral' : variant);
+
+const buildStepVariantStyle = (variant: UiVariant) => {
+  const token = normalizeVariantToken(variant);
+  return {
+    '--wizard-step-bg': `var(--variant-${token}-soft)`,
+    '--wizard-step-border': `var(--variant-${token}-border)`,
+    '--wizard-step-color': `var(--variant-${token}-accent, var(--variant-${token}-bg))`,
+    '--wizard-step-index-bg': `var(--variant-${token}-bg)`,
+    '--wizard-step-index-color': `var(--variant-${token}-text)`,
+    '--wizard-step-shadow': `color-mix(in srgb, var(--variant-${token}-bg) 22%, transparent)`,
+  } as React.CSSProperties;
 };
 
 function WizardSummary({
@@ -355,6 +381,7 @@ function WizardBase<TState>({
   showPrevOnFirstStep = false,
   showProgress = false,
   progressProps,
+  stepVariants,
   stepsOrientation = 'horizontal',
   previousLabel = 'Назад',
   nextLabel = 'Далее',
@@ -848,6 +875,7 @@ function WizardBase<TState>({
           const isClickable = allowStepSelect && !isActive && canNavigate;
           const isDisabled = !isActive && (!allowStepSelect || !canNavigate);
           const visibleIndex = visiblePositionMap.get(item.index) ?? visibleIndexInWindow;
+          const stepVariant = stepVariants?.[item.status] ?? defaultStepVariants[item.status];
           const stepProps: WizardStepRenderProps<TState> = {
             step: item.step,
             index: item.index,
@@ -890,6 +918,7 @@ function WizardBase<TState>({
               <button
                 type="button"
                 className={stepClasses}
+                style={buildStepVariantStyle(stepVariant)}
                 role="tab"
                 aria-selected={isActive}
                 aria-disabled={isDisabled ? 'true' : undefined}

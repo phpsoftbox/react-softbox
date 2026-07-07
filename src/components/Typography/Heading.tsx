@@ -22,10 +22,14 @@ const weightClass: Record<HeadingWeight, string> = {
 const variantClass: Record<UiVariant, string> = {
   default: styles.variantDefault,
   primary: styles.variantPrimary,
+  secondary: styles.variantSecondary,
   info: styles.variantInfo,
   success: styles.variantSuccess,
   warning: styles.variantWarning,
   danger: styles.variantDanger,
+  dark: styles.variantDark,
+  light: styles.variantLight,
+  neutral: styles.variantNeutral,
 };
 
 const headingClass: Record<NonNullable<Props['level']>, string> = {

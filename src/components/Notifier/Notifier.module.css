@@ -33,7 +33,7 @@
   gap: var(--spacing-3);
   align-items: flex-start;
   padding: var(--spacing-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--toast-border-radius, var(--radius-default));
   border: 1px solid transparent;
   background: var(--surface-panel);
   color: var(--color-text);
@@ -41,6 +41,7 @@
   animation: toast-in 0.18s ease;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .toastClosing {
@@ -82,14 +83,15 @@
 
 .timer {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
   height: 3px;
   background: var(--toast-accent, rgba(20, 201, 214, 0.9));
   transform-origin: left;
   animation: toast-timer var(--toast-duration, 0ms) linear forwards;
   pointer-events: none;
+  z-index: 1;
 }
 
 .toast[data-paused="true"] .timer {
@@ -97,33 +99,53 @@
 }
 
 .default {
-  border-color: rgba(30, 51, 85, 0.6);
-  --toast-accent: rgba(30, 51, 85, 0.8);
+  border-color: var(--variant-default-border);
+  --toast-accent: var(--variant-default-accent);
 }
 
 .primary {
-  border-color: rgba(20, 201, 214, 0.55);
-  --toast-accent: rgba(20, 201, 214, 0.9);
+  border-color: var(--variant-primary-border);
+  --toast-accent: var(--variant-primary-bg);
+}
+
+.secondary {
+  border-color: var(--variant-secondary-border);
+  --toast-accent: var(--variant-secondary-bg);
 }
 
 .info {
-  border-color: rgba(30, 99, 233, 0.4);
-  --toast-accent: rgba(30, 99, 233, 0.9);
+  border-color: var(--variant-info-border);
+  --toast-accent: var(--variant-info-bg);
 }
 
 .success {
-  border-color: rgba(79, 230, 163, 0.5);
-  --toast-accent: rgba(79, 230, 163, 0.9);
+  border-color: var(--variant-success-border);
+  --toast-accent: var(--variant-success-bg);
 }
 
 .warning {
-  border-color: rgba(246, 200, 106, 0.5);
-  --toast-accent: rgba(246, 200, 106, 0.9);
+  border-color: var(--variant-warning-border);
+  --toast-accent: var(--variant-warning-bg);
 }
 
 .danger {
-  border-color: rgba(255, 107, 107, 0.5);
-  --toast-accent: rgba(255, 107, 107, 0.9);
+  border-color: var(--variant-danger-border);
+  --toast-accent: var(--variant-danger-bg);
+}
+
+.dark {
+  border-color: var(--variant-dark-border);
+  --toast-accent: var(--variant-dark-bg);
+}
+
+.light {
+  border-color: var(--variant-light-border);
+  --toast-accent: var(--variant-light-bg);
+}
+
+.neutral {
+  border-color: var(--variant-neutral-border);
+  --toast-accent: var(--variant-neutral-bg);
 }
 
 @keyframes toast-in {

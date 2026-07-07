@@ -37,23 +37,23 @@
 }
 
 :global(.rsb-input-group) > :global(.rsb-group-item):first-child {
-  border-top-left-radius: var(--radius-sm) !important;
-  border-bottom-left-radius: var(--radius-sm) !important;
+  border-top-left-radius: var(--input-border-radius, var(--radius-default)) !important;
+  border-bottom-left-radius: var(--input-border-radius, var(--radius-default)) !important;
 }
 
 :global(.rsb-input-group) > :global(.rsb-group-item):first-child > :where(input, button, textarea) {
-  border-top-left-radius: var(--radius-sm) !important;
-  border-bottom-left-radius: var(--radius-sm) !important;
+  border-top-left-radius: var(--input-border-radius, var(--radius-default)) !important;
+  border-bottom-left-radius: var(--input-border-radius, var(--radius-default)) !important;
 }
 
 :global(.rsb-input-group) > :global(.rsb-group-item):last-child {
-  border-top-right-radius: var(--radius-sm) !important;
-  border-bottom-right-radius: var(--radius-sm) !important;
+  border-top-right-radius: var(--input-border-radius, var(--radius-default)) !important;
+  border-bottom-right-radius: var(--input-border-radius, var(--radius-default)) !important;
 }
 
 :global(.rsb-input-group) > :global(.rsb-group-item):last-child > :where(input, button, textarea) {
-  border-top-right-radius: var(--radius-sm) !important;
-  border-bottom-right-radius: var(--radius-sm) !important;
+  border-top-right-radius: var(--input-border-radius, var(--radius-default)) !important;
+  border-bottom-right-radius: var(--input-border-radius, var(--radius-default)) !important;
 }
 
 :global(.rsb-input-group) > :global(.rsb-group-item) + :global(.rsb-group-item) {

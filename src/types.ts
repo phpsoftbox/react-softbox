@@ -1,1 +1,11 @@
-export type UiVariant = 'default' | 'primary' | 'info' | 'success' | 'warning' | 'danger';
+export type UiVariant =
+  | 'default'
+  | 'primary'
+  | 'secondary'
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'dark'
+  | 'light'
+  | 'neutral';

@@ -27,10 +27,14 @@ const positionClass: Record<NonNullable<Props['position']>, string> = {
 const variantClass: Record<UiVariant, string> = {
   default: styles.default,
   primary: styles.primary,
+  secondary: styles.secondary,
   info: styles.info,
   success: styles.success,
   warning: styles.warning,
   danger: styles.danger,
+  dark: styles.dark,
+  light: styles.light,
+  neutral: styles.neutral,
 };
 
 export default function Notifier({ items, onDismiss, position = 'top-right' }: Props) {

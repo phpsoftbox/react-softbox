@@ -42,7 +42,7 @@ describe('Card', () => {
     render(
       <Card>
         <Card.Toolbar>
-          <Card.Toolbar.Group>
+          <Card.Toolbar.Group attached aria-label="Toolbar actions">
             <Card.Toolbar.Button
               icon={<span aria-hidden="true">+</span>}
               label="Добавить"
@@ -52,6 +52,7 @@ describe('Card', () => {
       </Card>,
     );
 
+    expect(screen.getByRole('group', { name: 'Toolbar actions' })).toHaveClass('btn-group');
     expect(screen.getByRole('button', { name: 'Добавить' })).toBeInTheDocument();
   });
 

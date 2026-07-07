@@ -18,10 +18,14 @@ type Props = React.HTMLAttributes<HTMLDivElement> & {
 const classMap: Record<AlertVariant, string> = {
   default: styles.default,
   primary: styles.primary,
+  secondary: styles.secondary,
   info: styles.info,
   success: styles.success,
   warning: styles.warning,
   danger: styles.danger,
+  dark: styles.dark,
+  light: styles.light,
+  neutral: styles.neutral,
 };
 
 const iconPlacementClassMap: Record<AlertIconPlacement, string> = {
@@ -39,6 +43,13 @@ const defaultIcons: Record<AlertVariant, React.ReactNode> = {
     </svg>
   ),
   primary: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <circle cx="10" cy="10" r="7.2" />
+      <path d="M10 8v4" strokeLinecap="round" />
+      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  secondary: (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
       <circle cx="10" cy="10" r="7.2" />
       <path d="M10 8v4" strokeLinecap="round" />
@@ -69,6 +80,27 @@ const defaultIcons: Record<AlertVariant, React.ReactNode> = {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
       <circle cx="10" cy="10" r="7.2" />
       <path d="m7.5 7.5 5 5m0-5-5 5" strokeLinecap="round" />
+    </svg>
+  ),
+  dark: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <circle cx="10" cy="10" r="7.2" />
+      <path d="M10 8v4" strokeLinecap="round" />
+      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  light: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <circle cx="10" cy="10" r="7.2" />
+      <path d="M10 8v4" strokeLinecap="round" />
+      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  neutral: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <circle cx="10" cy="10" r="7.2" />
+      <path d="M10 8v4" strokeLinecap="round" />
+      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
     </svg>
   ),
 };

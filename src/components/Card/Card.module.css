@@ -1,7 +1,7 @@
 .card {
   background: var(--surface-card);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--card-border-radius, var(--radius-default));
   padding: var(--spacing-7);
   box-shadow: var(--shadow-soft);
   display: flex;
@@ -24,7 +24,7 @@
   column-gap: var(--spacing-2);
   row-gap: 0;
   padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-toolbar-border-radius, var(--card-border-radius, var(--radius-default)));
   border: 1px solid var(--color-line);
   background: var(--surface-panel-soft);
   overflow: hidden;
@@ -100,6 +100,12 @@
   padding-inline: var(--spacing-1);
   min-height: 30px;
   min-width: 0;
+}
+
+.toolbarGroupAttached {
+  flex-wrap: nowrap;
+  gap: 0;
+  padding-inline: var(--spacing-1);
 }
 
 .toolbarButton {
