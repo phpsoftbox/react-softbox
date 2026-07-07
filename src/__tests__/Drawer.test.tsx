@@ -17,6 +17,16 @@ describe('Drawer', () => {
     expect(dialog).toHaveAttribute('id', 'drawer-panel');
   });
 
+  it('allows adding radius through helper className', () => {
+    render(
+      <Drawer open title="Навигация" className="rounded" onClose={() => {}}>
+        Контент
+      </Drawer>,
+    );
+
+    expect(screen.getByRole('dialog')).toHaveClass('rounded');
+  });
+
   it('does not render when closed', () => {
     render(
       <Drawer open={false} title="Навигация" onClose={() => {}}>

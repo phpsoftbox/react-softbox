@@ -19,6 +19,7 @@
 ```
 
 `position` может быть `left` или `right`.
+По умолчанию у drawer нет скругления углов. Если нужен radius, добавьте helper через `className`, например `className="rounded"`.
 
 ### Inline режим
 
