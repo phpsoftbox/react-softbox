@@ -48,11 +48,11 @@
   min-width: 0;
 }
 
-.toolbarItem[data-toolbar-row-start="false"] {
+.toolbarItem[data-toolbar-divider="true"] {
   position: relative;
 }
 
-.toolbarItem[data-toolbar-row-start="false"]::before {
+.toolbarItem[data-toolbar-divider="true"]::before {
   content: '';
   position: absolute;
   left: calc(var(--spacing-2) / -2);
