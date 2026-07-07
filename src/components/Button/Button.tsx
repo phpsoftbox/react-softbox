@@ -7,20 +7,37 @@ import {
   mergeStyles,
 } from '../../utils/uiVariant';
 
-type ButtonVariant = UiVariant;
-type ButtonAppearance = 'solid' | 'outline' | 'ghost';
-type ButtonSize = 'sm' | 'md' | 'lg';
-type ButtonGroupOrientation = 'horizontal' | 'vertical';
+export type ButtonVariant = UiVariant;
+export type ButtonAppearance = 'solid' | 'outline' | 'ghost';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonGroupOrientation = 'horizontal' | 'vertical';
 
-type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonOwnProps<TElement extends React.ElementType> = {
+  component?: TElement;
   variant?: ButtonVariant | 'ghost' | 'outline';
   appearance?: ButtonAppearance;
   size?: ButtonSize;
+  disabled?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+  tabIndex?: number;
+  children?: React.ReactNode;
+  onClick?: React.MouseEventHandler;
 };
 
-type ButtonGroupProps = React.HTMLAttributes<HTMLDivElement> & {
+export type ButtonProps<TElement extends React.ElementType = 'button'> =
+  ButtonOwnProps<TElement>
+  & Omit<React.ComponentPropsWithoutRef<TElement>, keyof ButtonOwnProps<TElement>>;
+
+export type ButtonGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   orientation?: ButtonGroupOrientation;
   stretch?: boolean;
+};
+
+type ButtonComponent = (<TElement extends React.ElementType = 'button'>(
+  props: ButtonProps<TElement>
+) => React.ReactElement | null) & {
+  Group: React.FC<ButtonGroupProps>;
 };
 
 const variantClass: Record<BuiltinUiVariant, string> = {
@@ -66,20 +83,61 @@ const normalizeVariant = (
   };
 };
 
-function ButtonBase({ variant, appearance, size = 'md', className, ...props }: Props) {
+function ButtonBase<TElement extends React.ElementType = 'button'>({
+  component,
+  variant,
+  appearance,
+  size = 'md',
+  className,
+  disabled = false,
+  onClick,
+  tabIndex,
+  style,
+  ...props
+}: ButtonProps<TElement>) {
   const resolved = normalizeVariant(variant, appearance);
   const variantStyle = isBuiltinUiVariant(resolved.variant) ? undefined : buildButtonVariantStyle(resolved.variant);
+  const Component = (component ?? 'button') as React.ElementType;
+  const isNativeButton = component === undefined || component === 'button';
   const classes = [
     'btn',
     getBuiltinUiVariantClass(variantClass, resolved.variant),
     appearanceClass[resolved.appearance],
     sizeClass[size],
+    disabled ? 'btn-disabled' : null,
     className,
   ]
     .filter(Boolean)
     .join(' ');
+  const handleClick: React.MouseEventHandler = (event) => {
+    if (disabled && !isNativeButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
 
-  return <button className={classes} {...props} style={mergeStyles(variantStyle, props.style)} />;
+    onClick?.(event);
+  };
+  const componentProps: Record<string, unknown> = {
+    ...props,
+    className: classes,
+    style: mergeStyles(variantStyle, style),
+  };
+
+  if (onClick || (disabled && !isNativeButton)) {
+    componentProps.onClick = handleClick;
+  }
+
+  if (isNativeButton) {
+    componentProps.disabled = disabled;
+  } else if (disabled) {
+    componentProps['aria-disabled'] = true;
+    componentProps.tabIndex = -1;
+  } else if (tabIndex !== undefined) {
+    componentProps.tabIndex = tabIndex;
+  }
+
+  return <Component {...componentProps} />;
 }
 
 function ButtonGroup({
@@ -103,6 +161,6 @@ function ButtonGroup({
 
 const Button = Object.assign(ButtonBase, {
   Group: ButtonGroup,
-});
+}) as ButtonComponent;
 
 export default Button;

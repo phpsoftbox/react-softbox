@@ -1,4 +1,12 @@
 export { default as Button } from './components/Button/Button';
+export type {
+  ButtonAppearance,
+  ButtonGroupOrientation,
+  ButtonGroupProps,
+  ButtonProps,
+  ButtonSize,
+  ButtonVariant,
+} from './components/Button/Button';
 export { default as Badge } from './components/Badge/Badge';
 export { default as Card } from './components/Card/Card';
 export { default as CollapseButton } from './components/CollapseButton/CollapseButton';

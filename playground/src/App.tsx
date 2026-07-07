@@ -30,12 +30,20 @@ import {
   getStoredThemeMode,
   setThemeMode,
 } from '@phpsoftbox/react-softbox';
-import type { DetailsItem, SelectOption, ThemeMode, TableColumn, WizardProgressState, WizardSummaryData } from '@phpsoftbox/react-softbox';
+import type {
+  ButtonProps,
+  DetailsItem,
+  SelectOption,
+  ThemeMode,
+  TableColumn,
+  WizardProgressState,
+  WizardSummaryData,
+} from '@phpsoftbox/react-softbox';
 import avatarImage from '../avatar.png';
 
 const MarkdownEditorDemo = React.lazy(() => import('./MarkdownEditorDemo'));
 
-const paletteRow: Array<Parameters<typeof Button>[0]> = [
+const paletteRow: ButtonProps[] = [
   { variant: 'default' },
   { variant: 'primary' },
   { variant: 'secondary' },
@@ -47,6 +55,26 @@ const paletteRow: Array<Parameters<typeof Button>[0]> = [
   { variant: 'light' },
   { variant: 'neutral' },
 ];
+
+type DemoLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+  method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
+  preserveScroll?: boolean;
+  preserveState?: boolean;
+};
+
+const DemoInertiaLink = ({
+  method = 'get',
+  preserveScroll,
+  preserveState,
+  ...props
+}: DemoLinkProps) => (
+  <a
+    data-method={method}
+    data-preserve-scroll={preserveScroll ? 'true' : undefined}
+    data-preserve-state={preserveState ? 'true' : undefined}
+    {...props}
+  />
+);
 
 const asyncMockData = [
   { value: 'alpha', label: 'Alpha' },
@@ -561,14 +589,24 @@ export default function App() {
                   <Button appearance="ghost">ghost</Button>
                 </Row>
                 <Row gap="12px" wrap="wrap">
-                  <a className="btn btn-primary btn-solid" href="#buttons">Link primary</a>
-                  <a className="btn btn-info btn-outline" href="#buttons">Link outline</a>
-                  <a className="btn btn-danger btn-ghost" href="#buttons">Link ghost</a>
+                  <Button component="a" href="#buttons">Link primary</Button>
+                  <Button component="a" href="#buttons" variant="info" appearance="outline">Link outline</Button>
+                  <Button component="a" href="#buttons" variant="danger" appearance="ghost">Link ghost</Button>
+                  <Button
+                    component={DemoInertiaLink}
+                    href="#buttons"
+                    method="post"
+                    preserveScroll
+                    variant="warning"
+                    appearance="outline"
+                  >
+                    Inertia-like
+                  </Button>
                 </Row>
                 <Row gap="12px" wrap="wrap">
-                  <a className="btn btn-primary btn-solid btn-sm" href="#buttons">Link sm</a>
-                  <a className="btn btn-primary btn-solid btn-md" href="#buttons">Link md</a>
-                  <a className="btn btn-primary btn-solid btn-lg" href="#buttons">Link lg</a>
+                  <Button component="a" href="#buttons" size="sm">Link sm</Button>
+                  <Button component="a" href="#buttons" size="md">Link md</Button>
+                  <Button component="a" href="#buttons" size="lg">Link lg</Button>
                   <Button variant="brand">Custom brand</Button>
                 </Row>
                 <Row gap="12px" wrap="wrap">
@@ -1246,6 +1284,15 @@ export default function App() {
                       icon={<span aria-hidden="true">✓</span>}
                       label="Сохранить"
                       variant="primary"
+                    />
+                    <Card.Toolbar.Button
+                      component={DemoInertiaLink}
+                      href="#toolbar-link"
+                      method="post"
+                      preserveScroll
+                      icon={<span aria-hidden="true">↗</span>}
+                      label="Link"
+                      variant="info"
                     />
                   </Card.Toolbar.Group>
                 </Card.Toolbar>
