@@ -59,7 +59,7 @@ describe('Button', () => {
 
   it('renders through a custom link component', () => {
     render(
-      <Button component={TestLink} href="/orders" method="post" preserveScroll>
+      <Button as={TestLink} href="/orders" method="post" preserveScroll>
         Link action
       </Button>,
     );
@@ -75,7 +75,7 @@ describe('Button', () => {
     const onClick = jest.fn();
 
     render(
-      <Button component="a" href="/orders" disabled onClick={onClick}>
+      <Button as="a" href="/orders" disabled onClick={onClick}>
         Disabled link
       </Button>,
     );

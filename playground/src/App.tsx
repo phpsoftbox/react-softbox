@@ -76,6 +76,10 @@ const DemoInertiaLink = ({
   />
 );
 
+const DemoInertiaButtonLink = (props: DemoLinkProps) => (
+  <DemoInertiaLink data-render-as="button" {...props} />
+);
+
 const asyncMockData = [
   { value: 'alpha', label: 'Alpha' },
   { value: 'beta', label: 'Beta' },
@@ -589,11 +593,11 @@ export default function App() {
                   <Button appearance="ghost">ghost</Button>
                 </Row>
                 <Row gap="12px" wrap="wrap">
-                  <Button component="a" href="#buttons">Link primary</Button>
-                  <Button component="a" href="#buttons" variant="info" appearance="outline">Link outline</Button>
-                  <Button component="a" href="#buttons" variant="danger" appearance="ghost">Link ghost</Button>
+                  <Button as="a" href="#buttons">Link primary</Button>
+                  <Button as="a" href="#buttons" variant="info" appearance="outline">Link outline</Button>
+                  <Button as="a" href="#buttons" variant="danger" appearance="ghost">Link ghost</Button>
                   <Button
-                    component={DemoInertiaLink}
+                    as={DemoInertiaButtonLink}
                     href="#buttons"
                     method="post"
                     preserveScroll
@@ -604,9 +608,9 @@ export default function App() {
                   </Button>
                 </Row>
                 <Row gap="12px" wrap="wrap">
-                  <Button component="a" href="#buttons" size="sm">Link sm</Button>
-                  <Button component="a" href="#buttons" size="md">Link md</Button>
-                  <Button component="a" href="#buttons" size="lg">Link lg</Button>
+                  <Button as="a" href="#buttons" size="sm">Link sm</Button>
+                  <Button as="a" href="#buttons" size="md">Link md</Button>
+                  <Button as="a" href="#buttons" size="lg">Link lg</Button>
                   <Button variant="brand">Custom brand</Button>
                 </Row>
                 <Row gap="12px" wrap="wrap">
@@ -1245,6 +1249,11 @@ export default function App() {
             <Card.Body>
               <Stack gap="12px">
                 <Card.Toolbar align="left">
+                  <Card.Toolbar.Group attached aria-label="Toolbar view mode">
+                    <Card.Toolbar.Button label="Обзор" />
+                    <Card.Toolbar.Button label="Метрики" />
+                    <Card.Toolbar.Button label="Логи" />
+                  </Card.Toolbar.Group>
                   <Card.Toolbar.Group attached>
                     <Tooltip content="Назад" placement="top">
                       <Card.Toolbar.Button
@@ -1286,7 +1295,7 @@ export default function App() {
                       variant="primary"
                     />
                     <Card.Toolbar.Button
-                      component={DemoInertiaLink}
+                      as={DemoInertiaButtonLink}
                       href="#toolbar-link"
                       method="post"
                       preserveScroll

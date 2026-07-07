@@ -98,7 +98,7 @@
   flex-wrap: wrap;
   gap: var(--spacing-2);
   padding-inline: var(--spacing-1);
-  min-height: 30px;
+  min-height: var(--card-toolbar-button-height-md);
   min-width: 0;
 }
 
@@ -109,15 +109,68 @@
 }
 
 .toolbarButton {
-  min-height: 32px;
+  --card-toolbar-button-height: var(--card-toolbar-button-height-md);
+  --card-toolbar-button-padding-x: var(--card-toolbar-button-padding-x-md);
+  --card-toolbar-button-icon-size: var(--card-toolbar-button-icon-size-md);
+  --card-toolbar-button-font-size: var(--card-toolbar-button-font-size-md);
+  min-height: var(--card-toolbar-button-height);
   min-width: 0;
   max-width: 100%;
+}
+
+:global(.btn).toolbarButton {
+  height: var(--card-toolbar-button-height);
+  min-height: var(--card-toolbar-button-height);
+  padding-block: 0;
+  padding-inline: var(--card-toolbar-button-padding-x);
+  font-size: var(--card-toolbar-button-font-size);
+  white-space: nowrap;
+}
+
+.toolbarButtonSizeSm {
+  --card-toolbar-button-height: var(--card-toolbar-button-height-sm);
+  --card-toolbar-button-padding-x: var(--card-toolbar-button-padding-x-sm);
+  --card-toolbar-button-icon-size: var(--card-toolbar-button-icon-size-sm);
+  --card-toolbar-button-font-size: var(--card-toolbar-button-font-size-sm);
+}
+
+.toolbarButtonSizeMd {
+  --card-toolbar-button-height: var(--card-toolbar-button-height-md);
+  --card-toolbar-button-padding-x: var(--card-toolbar-button-padding-x-md);
+  --card-toolbar-button-icon-size: var(--card-toolbar-button-icon-size-md);
+  --card-toolbar-button-font-size: var(--card-toolbar-button-font-size-md);
+}
+
+.toolbarButtonSizeLg {
+  --card-toolbar-button-height: var(--card-toolbar-button-height-lg);
+  --card-toolbar-button-padding-x: var(--card-toolbar-button-padding-x-lg);
+  --card-toolbar-button-icon-size: var(--card-toolbar-button-icon-size-lg);
+  --card-toolbar-button-font-size: var(--card-toolbar-button-font-size-lg);
+}
+
+:global(.btn).toolbarButtonIconOnly {
+  width: var(--card-toolbar-button-height);
+  min-width: var(--card-toolbar-button-height);
+  max-width: var(--card-toolbar-button-height);
+  padding: 0;
+  flex: 0 0 var(--card-toolbar-button-height);
+  aspect-ratio: 1 / 1;
 }
 
 .toolbarButtonIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: var(--card-toolbar-button-icon-size);
+  height: var(--card-toolbar-button-icon-size);
+  line-height: 1;
+  flex: 0 0 var(--card-toolbar-button-icon-size);
+}
+
+.toolbarButtonIcon :where(svg) {
+  width: var(--card-toolbar-button-icon-size);
+  height: var(--card-toolbar-button-icon-size);
+  flex-shrink: 0;
 }
 
 .toolbarButtonLabel {

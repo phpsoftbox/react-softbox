@@ -35,8 +35,18 @@
 ```tsx
 <Card.Toolbar>
   <Card.Toolbar.Group attached>
+    <Card.Toolbar.Button label="Обзор" />
+    <Card.Toolbar.Button label="Метрики" />
+    <Card.Toolbar.Button label="Логи" />
+  </Card.Toolbar.Group>
+
+  <Card.Toolbar.Group attached>
     <Card.Toolbar.Button icon={<SaveIcon />} label="Сохранить" />
-    <Card.Toolbar.Button icon={<RefreshIcon />} />
+    <Card.Toolbar.Button icon={<RefreshIcon />} label="Обновить" />
+  </Card.Toolbar.Group>
+
+  <Card.Toolbar.Group>
+    <Card.Toolbar.Button aria-label="Настройки" icon={<SettingsIcon />} />
   </Card.Toolbar.Group>
 </Card.Toolbar>
 ```
@@ -45,23 +55,67 @@
 Если переданы оба, внутри кнопки появится вертикальный разделитель. На средних экранах текстовая часть скрывается.
 `Card.Toolbar.Group attached` склеивает соседние кнопки в одну группу; без `attached` группы остаются разделёнными gap и toolbar-разделителями.
 
-Для ссылок используйте `component`. Это работает и с native `<a>`, и с внешними link-компонентами:
+Если передан `icon` без `label`, кнопка становится стабильным square-контролом. Для таких кнопок указывайте `aria-label`.
+
+Размер toolbar-кнопки по умолчанию — `md`. Его можно переопределить через `size="sm" | "md" | "lg"`;
+высота, горизонтальный padding и размер icon-only слота берутся из `--card-toolbar-button-*` токенов.
+
+Основной polymorphic prop для `Card.Toolbar.Button` — `as`.
+Для ссылок используйте `as`. Это работает и с native `<a>`, и с внешними link-компонентами:
 
 ```tsx
 import { Link } from '@inertiajs/react';
 
 <Card.Toolbar.Button
-  component={Link}
+  as="a"
+  href="/reports.csv"
+  download
+  icon={<DownloadIcon />}
+  label="Скачать"
+/>
+
+<Card.Toolbar.Button
+  as={Link}
+  href="/reports"
+  icon={<ReportIcon />}
+  label="Отчеты"
+/>
+
+<Card.Toolbar.Button
+  as={Link}
   href="/reports/export"
   method="post"
   preserveScroll
-  as="button"
+  icon={<ExportIcon />}
+  label="Экспорт"
+/>
+
+<Card.Toolbar.Button
+  as={Link}
+  href="/reports/export"
+  disabled
   icon={<ExportIcon />}
   label="Экспорт"
 />
 ```
 
-`component`, а не `as`, используется намеренно: у Inertia `Link` есть собственный проп `as`, и его нужно передавать дальше без конфликта.
+Если нужно передать Inertia `Link` собственный `as="button"`, используйте adapter:
+
+```tsx
+const InertiaToolbarButtonLink = (props) => (
+  <Link as="button" {...props} />
+);
+
+<Card.Toolbar.Button
+  as={InertiaToolbarButtonLink}
+  href="/reports/export"
+  method="post"
+  icon={<ExportIcon />}
+  label="Экспорт"
+/>
+```
+
+Для link-рендера `disabled` добавляет `aria-disabled`, убирает ссылку из tab order и блокирует click handler.
 
 Скрытие текста включено по умолчанию (`md`) и настраивается:
 - на уровне `Card.Toolbar`: `buttonHideLabelOn="md" | "never"`
