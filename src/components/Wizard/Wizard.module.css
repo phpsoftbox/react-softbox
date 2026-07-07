@@ -189,8 +189,8 @@
 }
 
 .summaryDefault {
-  border-color: var(--variant-neutral-border);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-neutral-bg) 20%, transparent);
+  border-color: var(--variant-default-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--variant-default-bg) 20%, transparent);
 }
 
 .summaryPrimary {

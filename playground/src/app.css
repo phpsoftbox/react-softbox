@@ -1,5 +1,15 @@
 :root {
   color-scheme: light dark;
+  --variant-brand-bg: #8b5cf6;
+  --variant-brand-hover: #9468ff;
+  --variant-brand-active: #7c3aed;
+  --variant-brand-border: #7c3aed;
+  --variant-brand-text: #ffffff;
+  --variant-brand-accent: #a78bfa;
+  --variant-brand-soft: rgba(139, 92, 246, 0.18);
+  --variant-brand-disabled-bg: var(--variant-disabled-bg);
+  --variant-brand-disabled-border: var(--variant-disabled-border);
+  --variant-brand-disabled-text: var(--variant-disabled-text);
 }
 
 body {

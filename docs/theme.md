@@ -99,6 +99,31 @@ setThemeMode('dark', { storageKey: 'my-app-theme' });
 
 `default` и `neutral` — разные варианты. `default` используется для обычного UI-состояния компонента, а `neutral` — для явного нейтрального/status-варианта в общей палитре.
 
+Можно добавлять project-level custom variants. Имя должно быть валидным CSS identifier (`brand`, `crm-accent`, `tenant_1`). Компоненты будут искать токены по схеме `--variant-{name}-*`:
+
+```css
+:root {
+  --variant-brand-bg: #8b5cf6;
+  --variant-brand-hover: #9468ff;
+  --variant-brand-active: #7c3aed;
+  --variant-brand-border: #7c3aed;
+  --variant-brand-text: #ffffff;
+  --variant-brand-accent: #a78bfa;
+  --variant-brand-soft: rgba(139, 92, 246, 0.18);
+  --variant-brand-disabled-bg: var(--variant-disabled-bg);
+  --variant-brand-disabled-border: var(--variant-disabled-border);
+  --variant-brand-disabled-text: var(--variant-disabled-text);
+}
+```
+
+```tsx
+<Button variant="brand">Brand</Button>
+<Badge variant="brand">Brand</Badge>
+<Progress variant="brand" value={64} />
+```
+
+Если токен custom variant не задан, компонент использует fallback из `default`.
+
 ## Radius and Units
 
 Базовые размеры, отступы, font-size и radius задаются в `rem`, чтобы интерфейс корректно масштабировался вместе с настройками шрифта пользователя. Hairline-границы (`1px`, `2px`) остаются в `px`: так они предсказуемее выглядят на разных масштабах и плотностях экрана.

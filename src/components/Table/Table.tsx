@@ -3,7 +3,12 @@ import Button from '../Button/Button';
 import Dropdown from '../Menu/Dropdown';
 import Checkbox from '../Input/Checkbox/Checkbox';
 import styles from './Table.module.css';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildTextVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+} from '../../utils/uiVariant';
 
 export type TableSortDirection = 'asc' | 'desc';
 
@@ -341,7 +346,7 @@ function TableBase<T>({
     const label = selectedCount > 0 ? `Действия (${selectedCount})` : 'Действия';
     const isDisabled = Boolean(bulkActions.disabled);
     const alignClass = bulkActions.align === 'right' ? styles.bulkActionsRight : styles.bulkActionsLeft;
-    const variantClassMap: Record<UiVariant, string> = {
+    const variantClassMap: Record<BuiltinUiVariant, string> = {
       default: styles.bulkActionDefault,
       primary: styles.bulkActionPrimary,
       secondary: styles.bulkActionSecondary,
@@ -371,7 +376,8 @@ function TableBase<T>({
                   key={action.id}
                   disabled={!hasSelected || isDisabled || action.disabled}
                   onClick={!hasSelected || isDisabled ? undefined : () => action.onClick(bulkActions.selectedIds)}
-                  className={action.variant ? variantClassMap[action.variant] : undefined}
+                  className={action.variant ? getBuiltinUiVariantClass(variantClassMap, action.variant) : undefined}
+                  style={action.variant && !isBuiltinUiVariant(action.variant) ? buildTextVariantStyle(action.variant) : undefined}
                   icon={action.icon}
                 >
                   {action.label}

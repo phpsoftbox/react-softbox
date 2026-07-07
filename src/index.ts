@@ -67,6 +67,6 @@ export type {
 export { default as Text } from './components/Typography/Text';
 export { default as Heading } from './components/Typography/Heading';
 export { default as useMediaQuery } from './hooks/useMediaQuery';
-export type { UiVariant } from './types';
+export type { BuiltinUiVariant, CustomUiVariant, UiVariant } from './types';
 export { applyTheme, setThemeMode, getStoredThemeMode, initTheme } from './theme';
 export type { ThemeMode, ThemeOptions } from './theme';

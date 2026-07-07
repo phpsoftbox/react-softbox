@@ -1,5 +1,11 @@
 import React from 'react';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildButtonVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+  mergeStyles,
+} from '../../utils/uiVariant';
 
 type ButtonVariant = UiVariant;
 type ButtonAppearance = 'solid' | 'outline' | 'ghost';
@@ -17,7 +23,7 @@ type ButtonGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   stretch?: boolean;
 };
 
-const variantClass: Record<ButtonVariant, string> = {
+const variantClass: Record<BuiltinUiVariant, string> = {
   default: 'btn-default',
   primary: 'btn-primary',
   secondary: 'btn-secondary',
@@ -42,9 +48,16 @@ const sizeClass: Record<ButtonSize, string> = {
   lg: 'btn-lg',
 };
 
-const normalizeVariant = (variant?: ButtonVariant | 'ghost' | 'outline', appearance?: ButtonAppearance) => {
-  if (variant === 'ghost' || variant === 'outline') {
-    return { variant: 'primary' as ButtonVariant, appearance: variant };
+const normalizeVariant = (
+  variant?: ButtonVariant | 'ghost' | 'outline',
+  appearance?: ButtonAppearance,
+): { variant: ButtonVariant; appearance: ButtonAppearance } => {
+  if (variant === 'ghost') {
+    return { variant: 'primary', appearance: 'ghost' };
+  }
+
+  if (variant === 'outline') {
+    return { variant: 'primary', appearance: 'outline' };
   }
 
   return {
@@ -55,11 +68,18 @@ const normalizeVariant = (variant?: ButtonVariant | 'ghost' | 'outline', appeara
 
 function ButtonBase({ variant, appearance, size = 'md', className, ...props }: Props) {
   const resolved = normalizeVariant(variant, appearance);
-  const classes = ['btn', variantClass[resolved.variant], appearanceClass[resolved.appearance], sizeClass[size], className]
+  const variantStyle = isBuiltinUiVariant(resolved.variant) ? undefined : buildButtonVariantStyle(resolved.variant);
+  const classes = [
+    'btn',
+    getBuiltinUiVariantClass(variantClass, resolved.variant),
+    appearanceClass[resolved.appearance],
+    sizeClass[size],
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
 
-  return <button className={classes} {...props} />;
+  return <button className={classes} {...props} style={mergeStyles(variantStyle, props.style)} />;
 }
 
 function ButtonGroup({

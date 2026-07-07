@@ -1,6 +1,8 @@
 # Feedback
 
-Все статусные компоненты используют единый набор вариантов: `default`, `primary`, `secondary`, `info`, `success`, `warning`, `danger`, `dark`, `light`, `neutral`.
+Все статусные компоненты используют единый набор встроенных вариантов: `default`, `primary`, `secondary`, `info`, `success`, `warning`, `danger`, `dark`, `light`, `neutral`.
+
+Также поддерживаются custom variants через токены `--variant-{name}-*`; пример контракта описан в `theme.md`.
 
 ## Badge
 
@@ -12,6 +14,7 @@
 <Badge variant="success">Success</Badge>
 <Badge variant="warning">Warning</Badge>
 <Badge variant="danger">Danger</Badge>
+<Badge variant="brand">Brand</Badge>
 <Badge size="sm" variant="info">Small</Badge>
 <Badge size="md" variant="info">Medium</Badge>
 <Badge size="lg" variant="info">Large</Badge>

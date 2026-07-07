@@ -1,9 +1,15 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import styles from './Tooltip.module.css';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildTooltipVariantStyle,
+  isBuiltinUiVariant,
+  mergeStyles,
+} from '../../utils/uiVariant';
 
 export type TooltipPlacement = 'auto' | 'top' | 'bottom' | 'left' | 'right';
-export type TooltipVariant = 'default' | 'info' | 'success' | 'warning' | 'danger';
+export type TooltipVariant = UiVariant;
 
 type Props = {
   content: React.ReactNode;
@@ -26,7 +32,7 @@ type Props = {
   anchorId?: string;
 };
 
-const variantClass: Record<TooltipVariant, string> = {
+const variantClass: Partial<Record<BuiltinUiVariant, string>> = {
   default: styles.variantDefault,
   info: styles.variantInfo,
   success: styles.variantSuccess,
@@ -286,6 +292,9 @@ function TooltipBase({
     };
   }, [children, isOpen, openOnClick, openOnFocus, openOnHover, resolveAnchor]);
 
+  const resolvedVariantClass = isBuiltinUiVariant(variant) ? variantClass[variant] : undefined;
+  const variantStyle = resolvedVariantClass ? undefined : buildTooltipVariantStyle(variant);
+
   const tooltip = mounted ? (
     <div
       className={[styles.tooltip, interactive ? styles.interactive : null, className].filter(Boolean).join(' ')}
@@ -309,7 +318,8 @@ function TooltipBase({
       }}
     >
       <div
-        className={[styles.bubble, variantClass[variant], contentClassName].filter(Boolean).join(' ')}
+        className={[styles.bubble, resolvedVariantClass, contentClassName].filter(Boolean).join(' ')}
+        style={mergeStyles(variantStyle, undefined)}
         data-placement={resolvedPlacement}
       >
         {content}

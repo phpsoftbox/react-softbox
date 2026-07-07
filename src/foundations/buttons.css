@@ -51,13 +51,13 @@
   box-shadow: none;
   transform: none;
   opacity: 1;
+  filter: saturate(0.45);
   cursor: not-allowed;
-  pointer-events: none;
 }
 
 .btn-outline:disabled,
 .btn-outline.btn-disabled {
-  background: transparent;
+  background: var(--btn-bg-disabled, var(--variant-disabled-bg));
   border-color: var(--btn-border-disabled, var(--variant-disabled-border));
   color: var(--btn-color-disabled, var(--variant-disabled-text));
 }

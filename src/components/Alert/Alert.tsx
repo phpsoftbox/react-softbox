@@ -1,6 +1,12 @@
 import React from 'react';
 import styles from './Alert.module.css';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildAlertVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+  mergeStyles,
+} from '../../utils/uiVariant';
 
 export type AlertVariant = UiVariant;
 export type AlertIconPlacement = 'top' | 'center' | 'bottom';
@@ -15,7 +21,7 @@ type Props = React.HTMLAttributes<HTMLDivElement> & {
   onClose?: () => void;
 };
 
-const classMap: Record<AlertVariant, string> = {
+const classMap: Record<BuiltinUiVariant, string> = {
   default: styles.default,
   primary: styles.primary,
   secondary: styles.secondary,
@@ -34,7 +40,7 @@ const iconPlacementClassMap: Record<AlertIconPlacement, string> = {
   bottom: styles.iconBottom,
 };
 
-const defaultIcons: Record<AlertVariant, React.ReactNode> = {
+const defaultIcons: Record<BuiltinUiVariant, React.ReactNode> = {
   default: (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
       <circle cx="10" cy="10" r="7.2" />
@@ -114,12 +120,14 @@ export default function Alert({
   actions,
   onClose,
   className,
+  style,
   children,
   ...props
 }: Props) {
+  const variantStyle = isBuiltinUiVariant(variant) ? undefined : buildAlertVariantStyle(variant);
   const classes = [
     styles.alert,
-    classMap[variant],
+    getBuiltinUiVariantClass(classMap, variant),
     iconBgFilled ? styles.alertIconBgFilled : null,
     className,
   ].filter(Boolean).join(' ');
@@ -127,10 +135,10 @@ export default function Alert({
     styles.icon,
     iconPlacementClassMap[iconPlacement],
   ].filter(Boolean).join(' ');
-  const resolvedIcon = icon === undefined ? defaultIcons[variant] : icon;
+  const resolvedIcon = icon === undefined ? defaultIcons[isBuiltinUiVariant(variant) ? variant : 'default'] : icon;
 
   return (
-    <div className={classes} role="status" {...props}>
+    <div className={classes} role="status" style={mergeStyles(variantStyle, style)} {...props}>
       {resolvedIcon !== null ? (
         <div className={iconClasses} data-alert-icon-placement={iconPlacement}>
           {resolvedIcon}

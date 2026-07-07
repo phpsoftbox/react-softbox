@@ -1,6 +1,11 @@
 import React from 'react';
 import styles from './Notifier.module.css';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildNotifierVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+} from '../../utils/uiVariant';
 
 export type NotifierItem = {
   id: string;
@@ -24,7 +29,7 @@ const positionClass: Record<NonNullable<Props['position']>, string> = {
   'bottom-left': styles.bottomLeft,
 };
 
-const variantClass: Record<UiVariant, string> = {
+const variantClass: Record<BuiltinUiVariant, string> = {
   default: styles.default,
   primary: styles.primary,
   secondary: styles.secondary,
@@ -225,16 +230,18 @@ export default function Notifier({ items, onDismiss, position = 'top-right' }: P
         const variant = item.variant ?? 'info';
         const isPaused = Boolean(pausedIds[item.id] || visibilityPaused);
         const isClosing = Boolean(closingIds[item.id]);
+        const variantStyle = isBuiltinUiVariant(variant) ? undefined : buildNotifierVariantStyle(variant);
         return (
           <div
             key={item.id}
             className={[
               styles.toast,
-              variantClass[variant],
+              getBuiltinUiVariantClass(variantClass, variant),
               isClosing ? styles.toastClosing : null,
             ]
               .filter(Boolean)
               .join(' ')}
+            style={variantStyle}
             data-paused={isPaused ? 'true' : undefined}
             onMouseEnter={() => {
               if (!item.duration) {

@@ -1,6 +1,12 @@
 import React from 'react';
 import styles from './Badge.module.css';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildBadgeVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+  mergeStyles,
+} from '../../utils/uiVariant';
 
 type BadgeVariant = UiVariant;
 type BadgeSize = 'sm' | 'md' | 'lg';
@@ -13,7 +19,7 @@ type Props = React.HTMLAttributes<HTMLSpanElement> & {
   dot?: boolean;
 };
 
-const classMap: Record<BadgeVariant, string> = {
+const classMap: Record<BuiltinUiVariant, string> = {
   default: styles.default,
   primary: styles.primary,
   secondary: styles.secondary,
@@ -51,19 +57,21 @@ export default function Badge({
   shape = 'rounded',
   dot = false,
   className,
+  style,
   children,
   ...props
 }: Props) {
   const isDot = dot || isEmptyChildren(children);
   const resolvedShape = isDot ? 'circle' : shape;
+  const variantStyle = isBuiltinUiVariant(variant) ? undefined : buildBadgeVariantStyle(variant);
   const classes = [
     styles.badge,
-    classMap[variant],
+    getBuiltinUiVariantClass(classMap, variant),
     sizeMap[size],
     shapeMap[resolvedShape],
     isDot ? styles.dot : null,
     className,
   ].filter(Boolean).join(' ');
 
-  return <span className={classes} {...props}>{isDot ? null : children}</span>;
+  return <span className={classes} style={mergeStyles(variantStyle, style)} {...props}>{isDot ? null : children}</span>;
 }

@@ -1,4 +1,4 @@
-export type UiVariant =
+export type BuiltinUiVariant =
   | 'default'
   | 'primary'
   | 'secondary'
@@ -9,3 +9,7 @@ export type UiVariant =
   | 'dark'
   | 'light'
   | 'neutral';
+
+export type CustomUiVariant = string & {};
+
+export type UiVariant = BuiltinUiVariant | CustomUiVariant;

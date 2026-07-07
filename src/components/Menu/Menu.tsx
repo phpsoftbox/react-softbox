@@ -5,6 +5,7 @@ import useDropdownPosition from '../../hooks/useDropdownPosition';
 type LinkComponent = React.ElementType<{
   href?: string;
   className?: string;
+  style?: React.CSSProperties;
   onClick?: React.MouseEventHandler<HTMLElement>;
   onMouseEnter?: React.MouseEventHandler<HTMLElement>;
   children?: React.ReactNode;
@@ -23,6 +24,7 @@ export type MenuItem = {
   divider?: boolean;
   static?: boolean;
   className?: string;
+  style?: React.CSSProperties;
   children?: MenuItem[];
   open?: boolean;
   align?: 'left' | 'right';
@@ -69,6 +71,7 @@ function HorizontalDropdown({
       <button
         type="button"
         className={classNames}
+        style={item.style}
         onClick={onToggle}
         aria-expanded={isOpen}
         aria-controls={dropdownId}
@@ -279,7 +282,7 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
 
         if (item.static) {
           return (
-            <div key={key} className={staticClasses} role="presentation" onMouseEnter={handleMouseEnter}>
+            <div key={key} className={staticClasses} style={item.style} role="presentation" onMouseEnter={handleMouseEnter}>
               {content}
             </div>
           );
@@ -294,6 +297,7 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
               <button
                 type="button"
                 className={[classNames, styles.groupButton].filter(Boolean).join(' ')}
+                style={item.style}
                 onClick={() => setOpenGroups((prev) => ({ ...prev, [key]: !isOpen }))}
                 aria-expanded={isOpen}
                 aria-controls={submenuId}
@@ -351,6 +355,7 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
             <LinkTag
               key={key}
               className={classNames}
+              style={item.style}
               href={item.href}
               onClick={handleClick}
               onMouseEnter={handleMouseEnter}
@@ -369,6 +374,7 @@ export default function Menu({ items, orientation = 'vertical', className, onIte
             key={key}
             type="button"
             className={classNames}
+            style={item.style}
             onClick={handleClick}
             onMouseEnter={handleMouseEnter}
             disabled={item.disabled}

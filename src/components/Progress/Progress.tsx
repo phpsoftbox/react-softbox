@@ -1,6 +1,12 @@
 import React from 'react';
 import styles from './Progress.module.css';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildProgressVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+  mergeStyles,
+} from '../../utils/uiVariant';
 
 type ProgressVariant = UiVariant;
 type ProgressSize = 'sm' | 'md' | 'lg';
@@ -14,11 +20,12 @@ type Props = {
   size?: ProgressSize;
   indeterminate?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-const variantMap: Record<ProgressVariant, string> = {
+const variantMap: Record<BuiltinUiVariant, string> = {
   default: styles.default,
   primary: styles.primary,
   secondary: styles.secondary,
@@ -46,14 +53,16 @@ export default function Progress({
   size = 'md',
   indeterminate = false,
   className,
+  style,
 }: Props) {
   const safeMax = max > 0 ? max : 100;
   const normalized = clamp(value, 0, safeMax);
   const percent = Math.round((normalized / safeMax) * 100);
 
+  const variantStyle = isBuiltinUiVariant(variant) ? undefined : buildProgressVariantStyle(variant);
   const wrapperClasses = [
     styles.progress,
-    variantMap[variant],
+    getBuiltinUiVariantClass(variantMap, variant),
     sizeMap[size],
     indeterminate ? styles.indeterminate : null,
     className,
@@ -62,7 +71,7 @@ export default function Progress({
     .join(' ');
 
   return (
-    <div className={wrapperClasses}>
+    <div className={wrapperClasses} style={mergeStyles(variantStyle, style)}>
       {label ? <div className={styles.label}>{label}</div> : null}
       <div
         className={styles.track}

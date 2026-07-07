@@ -1,6 +1,12 @@
 import React from 'react';
 import styles from './Typography.module.css';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildTextVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+  mergeStyles,
+} from '../../utils/uiVariant';
 
 type HeadingWeight = 'regular' | 'semibold' | 'bold';
 
@@ -10,6 +16,7 @@ type Props = {
   variant?: UiVariant;
   muted?: boolean;
   className?: string;
+  style?: React.CSSProperties;
   children?: React.ReactNode;
 };
 
@@ -19,7 +26,7 @@ const weightClass: Record<HeadingWeight, string> = {
   bold: styles.weightBold,
 };
 
-const variantClass: Record<UiVariant, string> = {
+const variantClass: Record<BuiltinUiVariant, string> = {
   default: styles.variantDefault,
   primary: styles.variantPrimary,
   secondary: styles.variantSecondary,
@@ -47,19 +54,21 @@ export default function Heading({
   variant = 'default',
   muted = false,
   className,
+  style,
   children,
 }: Props) {
   const Component = `h${level}` as React.ElementType;
+  const variantStyle = isBuiltinUiVariant(variant) ? undefined : buildTextVariantStyle(variant);
   const classes = [
     styles.heading,
     headingClass[level],
     weightClass[weight],
-    variantClass[variant],
+    getBuiltinUiVariantClass(variantClass, variant),
     muted ? styles.muted : null,
     className,
   ]
     .filter(Boolean)
     .join(' ');
 
-  return <Component className={classes}>{children}</Component>;
+  return <Component className={classes} style={mergeStyles(variantStyle, style)}>{children}</Component>;
 }

@@ -1,6 +1,12 @@
 import React, {JSX} from 'react';
 import styles from './Typography.module.css';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildTextVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+  mergeStyles,
+} from '../../utils/uiVariant';
 
 type TextSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 type TextWeight = 'regular' | 'medium' | 'semibold' | 'bold';
@@ -17,6 +23,7 @@ type Props = {
   code?: boolean;
   small?: boolean;
   className?: string;
+  style?: React.CSSProperties;
   children?: React.ReactNode;
 };
 
@@ -35,7 +42,7 @@ const weightClass: Record<TextWeight, string> = {
   bold: styles.weightBold,
 };
 
-const variantClass: Record<UiVariant, string> = {
+const variantClass: Record<BuiltinUiVariant, string> = {
   default: styles.variantDefault,
   primary: styles.variantPrimary,
   secondary: styles.variantSecondary,
@@ -60,16 +67,18 @@ export default function Text({
   code = false,
   small = false,
   className,
+  style,
   children,
 }: Props) {
   const Component = (code ? 'code' : as) as keyof JSX.IntrinsicElements;
   const resolvedSize = small ? 'xs' : size;
+  const variantStyle = isBuiltinUiVariant(variant) ? undefined : buildTextVariantStyle(variant);
 
   const classes = [
     styles.text,
     sizeClass[resolvedSize],
     weightClass[weight],
-    variantClass[variant],
+    getBuiltinUiVariantClass(variantClass, variant),
     muted ? styles.muted : null,
     italic ? styles.italic : null,
     underline ? styles.underline : null,
@@ -80,5 +89,5 @@ export default function Text({
     .filter(Boolean)
     .join(' ');
 
-  return <Component className={classes}>{children}</Component>;
+  return <Component className={classes} style={mergeStyles(variantStyle, style)}>{children}</Component>;
 }

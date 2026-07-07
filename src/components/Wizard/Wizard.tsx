@@ -2,7 +2,14 @@ import React from 'react';
 import styles from './Wizard.module.css';
 import Button from '../Button/Button';
 import Progress from '../Progress/Progress';
-import type { UiVariant } from '../../types';
+import type { BuiltinUiVariant, UiVariant } from '../../types';
+import {
+  buildAlertVariantStyle,
+  buildWizardStepVariantStyle,
+  getBuiltinUiVariantClass,
+  isBuiltinUiVariant,
+  mergeStyles,
+} from '../../utils/uiVariant';
 
 export type WizardDirection = 'next' | 'prev' | 'jump';
 export type WizardStepStatus = 'completed' | 'active' | 'upcoming';
@@ -234,7 +241,7 @@ const resolveStepIdFromHash = <TState,>(steps: WizardStep<TState>[], hash: strin
   return steps.some((step) => step.id === decoded) ? decoded : undefined;
 };
 
-const summaryVariantClassMap: Record<WizardSummaryVariant, string> = {
+const summaryVariantClassMap: Record<BuiltinUiVariant, string> = {
   default: styles.summaryDefault,
   primary: styles.summaryPrimary,
   secondary: styles.summarySecondary,
@@ -253,25 +260,12 @@ const defaultStepVariants: Record<WizardStepStatus, UiVariant> = {
   upcoming: 'neutral',
 };
 
-const normalizeVariantToken = (variant: UiVariant) => (variant === 'default' ? 'neutral' : variant);
-
-const buildStepVariantStyle = (variant: UiVariant) => {
-  const token = normalizeVariantToken(variant);
-  return {
-    '--wizard-step-bg': `var(--variant-${token}-soft)`,
-    '--wizard-step-border': `var(--variant-${token}-border)`,
-    '--wizard-step-color': `var(--variant-${token}-accent, var(--variant-${token}-bg))`,
-    '--wizard-step-index-bg': `var(--variant-${token}-bg)`,
-    '--wizard-step-index-color': `var(--variant-${token}-text)`,
-    '--wizard-step-shadow': `color-mix(in srgb, var(--variant-${token}-bg) 22%, transparent)`,
-  } as React.CSSProperties;
-};
-
 function WizardSummary({
   data,
   variant = 'danger',
   title = 'Проверьте ошибки по шагам',
   className,
+  style,
   ...props
 }: WizardSummaryProps) {
   const entries = React.useMemo(() => (
@@ -289,12 +283,13 @@ function WizardSummary({
 
   const classes = [
     styles.summary,
-    summaryVariantClassMap[variant],
+    getBuiltinUiVariantClass(summaryVariantClassMap, variant),
     className,
   ].filter(Boolean).join(' ');
+  const variantStyle = isBuiltinUiVariant(variant) ? undefined : buildAlertVariantStyle(variant);
 
   return (
-    <div className={classes} role="alert" {...props}>
+    <div className={classes} role="alert" style={mergeStyles(variantStyle, style)} {...props}>
       {title ? <div className={styles.summaryTitle}>{title}</div> : null}
       <ul className={styles.summarySteps}>
         {entries.map(({ stepName, errors }) => (
@@ -918,7 +913,7 @@ function WizardBase<TState>({
               <button
                 type="button"
                 className={stepClasses}
-                style={buildStepVariantStyle(stepVariant)}
+                style={buildWizardStepVariantStyle(stepVariant)}
                 role="tab"
                 aria-selected={isActive}
                 aria-disabled={isDisabled ? 'true' : undefined}

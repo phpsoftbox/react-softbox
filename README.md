@@ -114,6 +114,13 @@ yarn build
 </Button.Group>
 ```
 
+Custom variants задаются через `--variant-{name}-*` токены:
+
+```tsx
+<Button variant="brand">Brand</Button>
+<Badge variant="brand">Brand</Badge>
+```
+
 ### Input / FloatLabel
 
 ```tsx
@@ -274,6 +281,7 @@ const collapsible = [
 <Badge variant="success">Success</Badge>
 <Badge variant="warning">Warning</Badge>
 <Badge variant="danger">Danger</Badge>
+<Badge variant="brand">Brand</Badge>
 <Badge variant="warning" className="rounded-circle size-6 p-0 f-2">3</Badge>
 <Badge variant="info" className="border border-info text-uppercase f-2">helper styled</Badge>
 <Badge variant="danger" dot aria-label="Ошибка" className="p-2" />

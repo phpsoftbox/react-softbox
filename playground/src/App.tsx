@@ -569,6 +569,13 @@ export default function App() {
                   <a className="btn btn-primary btn-solid btn-sm" href="#buttons">Link sm</a>
                   <a className="btn btn-primary btn-solid btn-md" href="#buttons">Link md</a>
                   <a className="btn btn-primary btn-solid btn-lg" href="#buttons">Link lg</a>
+                  <Button variant="brand">Custom brand</Button>
+                </Row>
+                <Row gap="12px" wrap="wrap">
+                  <Button variant="primary" disabled>Disabled primary</Button>
+                  <Button variant="secondary" appearance="outline" disabled>Disabled outline</Button>
+                  <Button variant="danger" appearance="ghost" disabled>Disabled ghost</Button>
+                  <Button variant="brand" disabled>Disabled brand</Button>
                 </Row>
                 <Row gap="12px" wrap="wrap" align="flex-start">
                   <Button.Group aria-label="View mode">
@@ -605,6 +612,7 @@ export default function App() {
                   <Badge variant="dark">Dark</Badge>
                   <Badge variant="light">Light</Badge>
                   <Badge variant="neutral">Neutral</Badge>
+                  <Badge variant="brand">Brand</Badge>
                 </Row>
                 <Row gap="10px" wrap="wrap">
                   <Badge size="sm" variant="info">sm</Badge>
@@ -1082,6 +1090,19 @@ export default function App() {
                   <Input.Checkbox label="Согласен с условиями" hint="Нужно для продолжения." defaultChecked />
                   <Input.Switch label="Автообновление" hint="Проверять обновления автоматически." defaultChecked />
                 </Row>
+                <Row gap="14px" wrap="wrap">
+                  <Input.Radio name="disabled-mode" label="Disabled radio" disabled />
+                  <Input.Checkbox label="Disabled checkbox" disabled />
+                  <Input.Switch label="Disabled switch" disabled />
+                </Row>
+                <Input>
+                  <Input.Label>Disabled controls</Input.Label>
+                  <Input.Group stretch>
+                    <Input.Group.Label>prefix</Input.Group.Label>
+                    <Input.Field name="disabled-field" placeholder="Недоступно" disabled />
+                    <Button appearance="outline" disabled>Action</Button>
+                  </Input.Group>
+                </Input>
               </Stack>
             </Card.Body>
           </Card>
@@ -1105,6 +1126,7 @@ export default function App() {
               <Stack gap="12px">
                 <Progress value={48} label="Default" showValue />
                 <Progress value={72} label="Primary" variant="primary" showValue />
+                <Progress value={64} label="Custom brand" variant="brand" showValue />
                 <Progress value={36} label="Success" variant="success" size="sm" showValue />
                 <Progress value={92} label="Warning" variant="warning" size="lg" showValue />
                 <Progress label="Indeterminate" variant="info" indeterminate />

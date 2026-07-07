@@ -25,6 +25,7 @@ type DropdownItemProps = {
   as?: React.ElementType<{
     href?: string;
     className?: string;
+    style?: React.CSSProperties;
     onClick?: React.MouseEventHandler<HTMLElement>;
     onMouseEnter?: React.MouseEventHandler<HTMLElement>;
     children?: React.ReactNode;
@@ -36,6 +37,7 @@ type DropdownItemProps = {
   disabled?: boolean;
   static?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 type DropdownHeaderProps = {
@@ -147,6 +149,7 @@ const buildItemsFromChildren = (
           disabled: child.props.disabled,
           static: child.props.static,
           className: child.props.className,
+          style: child.props.style,
         });
       }
     });
