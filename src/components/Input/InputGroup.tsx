@@ -1,5 +1,5 @@
 import React from 'react';
-import './InputGroup.module.css';
+import './InputGroup.css';
 
 const GROUP_CLASS = 'rsb-input-group';
 const GROUP_STRETCH_CLASS = 'rsb-input-group--stretch';
