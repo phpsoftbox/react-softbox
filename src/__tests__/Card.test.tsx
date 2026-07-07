@@ -76,7 +76,38 @@ describe('Card', () => {
     expect(button).toBeInTheDocument();
     expect(container.querySelector('[data-card-toolbar-button-slot="icon"]')).toBeInTheDocument();
     expect(container.querySelector('[data-card-toolbar-button-slot="label"]')).toHaveTextContent('Добавить');
-    expect(container.querySelector('[data-card-toolbar-button-slot="separator"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-card-toolbar-button-slot="separator"]')).not.toBeInTheDocument();
+  });
+
+  it('supports explicit toolbar sections for left, center, and right groups', () => {
+    const { container } = render(
+      <Card>
+        <Card.Toolbar>
+          <Card.Toolbar.Section align="left">
+            <Card.Toolbar.Group>
+              <Card.Toolbar.Button label="Left" />
+            </Card.Toolbar.Group>
+          </Card.Toolbar.Section>
+          <Card.Toolbar.Section align="center">
+            <Card.Toolbar.Group>
+              <Card.Toolbar.Button label="Center" />
+            </Card.Toolbar.Group>
+          </Card.Toolbar.Section>
+          <Card.Toolbar.Section align="right">
+            <Card.Toolbar.Group>
+              <Card.Toolbar.Button label="Right" />
+            </Card.Toolbar.Group>
+          </Card.Toolbar.Section>
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    const items = container.querySelectorAll('[data-card-toolbar-item="true"]');
+    expect(items[0]).toHaveAttribute('data-toolbar-section-align', 'left');
+    expect(items[1]).toHaveAttribute('data-toolbar-section-align', 'center');
+    expect(items[2]).toHaveAttribute('data-toolbar-section-align', 'right');
+    expect(items[1]).toHaveAttribute('data-toolbar-divider', 'false');
+    expect(container.querySelector('[data-card-toolbar-section="center"]')).toBeInTheDocument();
   });
 
   it('renders toolbar group dividers by default', () => {
@@ -189,6 +220,38 @@ describe('Card', () => {
     expect(button).toHaveAttribute('data-card-toolbar-button-icon-only', 'true');
     expect(button.className).toContain('toolbarButtonIconOnly');
     expect(iconSlot?.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('supports Button.Split inside toolbar groups', () => {
+    const { container } = render(
+      <Card>
+        <Card.Toolbar>
+          <Card.Toolbar.Group attached aria-label="Split actions">
+            <Card.Toolbar.Button label="Обзор" />
+            <Button.Split
+              variant="primary"
+              main={{ label: 'Импорт', onClick: jest.fn() }}
+              menu={{
+                ariaLabel: 'Действия импорта',
+                items: [
+                  { key: 'reset', label: 'Сбросить кеш', onSelect: jest.fn() },
+                ],
+              }}
+            />
+          </Card.Toolbar.Group>
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    const group = screen.getByRole('group', { name: 'Split actions' });
+    const split = container.querySelector('.btn-split');
+    const dropdown = container.querySelector('.btn-split-dropdown');
+
+    expect(group).toHaveClass('btn-group', 'btn-group-horizontal');
+    expect(split).toHaveClass('btn-split-md');
+    expect(dropdown).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Импорт' })).toHaveClass('btn-split-main');
+    expect(screen.getByRole('button', { name: 'Действия импорта' })).toHaveClass('btn-split-toggle');
   });
 
   it('renders toolbar button content through framework slots', () => {

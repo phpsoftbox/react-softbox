@@ -52,9 +52,41 @@
 ```
 
 `Card.Toolbar.Button` принимает `icon` и/или `label` (минимум одно из них обязательно).
-Если переданы оба, внутри кнопки появится вертикальный разделитель. На средних экранах текстовая часть скрывается.
+Если переданы оба, контент рендерится через отдельные icon/label слоты. На средних экранах текстовая часть скрывается.
 `Card.Toolbar.Group attached` склеивает соседние кнопки в одну группу; без `attached` группы остаются разделёнными gap и toolbar-разделителями.
 `Card.Toolbar` по умолчанию рисует вертикальные разделители между группами; если они не нужны, передайте `dividers={false}`.
+
+`Card.Toolbar align="left" | "right" | "between"` задает общее выравнивание прямых групп. Если нужно разнести несколько зон независимо, используйте `Card.Toolbar.Section`:
+
+```tsx
+<Card.Toolbar>
+  <Card.Toolbar.Section align="left">
+    <Card.Toolbar.Group attached>
+      <Card.Toolbar.Button label="Все" />
+      <Card.Toolbar.Button label="Активные" />
+    </Card.Toolbar.Group>
+  </Card.Toolbar.Section>
+
+  <Card.Toolbar.Section align="center">
+    <Card.Toolbar.Group attached>
+      <Card.Toolbar.Button label="День" />
+      <Card.Toolbar.Button label="Неделя" />
+    </Card.Toolbar.Group>
+  </Card.Toolbar.Section>
+
+  <Card.Toolbar.Section align="right">
+    <Card.Toolbar.Group>
+      <Button.Split
+        variant="primary"
+        main={{ label: 'Импорт', onClick: handleImport }}
+        menu={{ ariaLabel: 'Действия импорта', items }}
+      />
+    </Card.Toolbar.Group>
+  </Card.Toolbar.Section>
+</Card.Toolbar>
+```
+
+`Button.Split` можно размещать внутри `Card.Toolbar.Group`; toolbar выставит ему ту же высоту, размер и attached-геометрию, что и обычным toolbar-кнопкам.
 
 Если передан `icon` без `label`, кнопка становится стабильным square-контролом. Для таких кнопок указывайте `aria-label`.
 

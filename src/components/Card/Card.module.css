@@ -42,10 +42,31 @@
   justify-content: space-between;
 }
 
+.toolbarSections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+}
+
 .toolbarItem {
   display: flex;
   align-items: center;
   min-width: 0;
+}
+
+.toolbarSections .toolbarItem[data-toolbar-section-align='left'] {
+  grid-column: 1;
+  justify-content: flex-start;
+}
+
+.toolbarSections .toolbarItem[data-toolbar-section-align='center'] {
+  grid-column: 2;
+  justify-content: center;
+}
+
+.toolbarSections .toolbarItem[data-toolbar-section-align='right'] {
+  grid-column: 3;
+  justify-content: flex-end;
 }
 
 .toolbarItem[data-toolbar-divider="true"] {
@@ -106,6 +127,30 @@
   flex-wrap: nowrap;
   gap: 0;
   padding-inline: var(--spacing-1);
+}
+
+.toolbarSection {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.toolbarItem[data-toolbar-section-align] .toolbarSection {
+  width: 100%;
+}
+
+.toolbarItem[data-toolbar-section-align='left'] .toolbarSection {
+  justify-content: flex-start;
+}
+
+.toolbarItem[data-toolbar-section-align='center'] .toolbarSection {
+  justify-content: center;
+}
+
+.toolbarItem[data-toolbar-section-align='right'] .toolbarSection {
+  justify-content: flex-end;
 }
 
 .toolbarButton {
@@ -179,15 +224,69 @@
   min-width: 0;
 }
 
-.toolbarButtonSeparator {
-  width: 1px;
-  align-self: stretch;
-  background: currentColor;
-  opacity: 0.4;
-}
-
 .toolbarButtonHasBoth {
   gap: var(--spacing-2);
+}
+
+.toolbarGroup :global(.btn-split) {
+  --card-toolbar-button-height: var(--card-toolbar-button-height-md);
+  --card-toolbar-button-padding-x: var(--card-toolbar-button-padding-x-md);
+  --card-toolbar-button-icon-size: var(--card-toolbar-button-icon-size-md);
+  --card-toolbar-button-font-size: var(--card-toolbar-button-font-size-md);
+}
+
+.toolbarGroup :global(.btn-split-sm) {
+  --card-toolbar-button-height: var(--card-toolbar-button-height-sm);
+  --card-toolbar-button-padding-x: var(--card-toolbar-button-padding-x-sm);
+  --card-toolbar-button-icon-size: var(--card-toolbar-button-icon-size-sm);
+  --card-toolbar-button-font-size: var(--card-toolbar-button-font-size-sm);
+}
+
+.toolbarGroup :global(.btn-split-md) {
+  --card-toolbar-button-height: var(--card-toolbar-button-height-md);
+  --card-toolbar-button-padding-x: var(--card-toolbar-button-padding-x-md);
+  --card-toolbar-button-icon-size: var(--card-toolbar-button-icon-size-md);
+  --card-toolbar-button-font-size: var(--card-toolbar-button-font-size-md);
+}
+
+.toolbarGroup :global(.btn-split-lg) {
+  --card-toolbar-button-height: var(--card-toolbar-button-height-lg);
+  --card-toolbar-button-padding-x: var(--card-toolbar-button-padding-x-lg);
+  --card-toolbar-button-icon-size: var(--card-toolbar-button-icon-size-lg);
+  --card-toolbar-button-font-size: var(--card-toolbar-button-font-size-lg);
+}
+
+.toolbarGroup :global(.btn-split .btn) {
+  height: var(--card-toolbar-button-height);
+  min-height: var(--card-toolbar-button-height);
+  padding-block: 0;
+  font-size: var(--card-toolbar-button-font-size);
+  white-space: nowrap;
+}
+
+.toolbarGroup :global(.btn-split .btn-split-main) {
+  padding-inline: var(--card-toolbar-button-padding-x);
+}
+
+.toolbarGroup :global(.btn-split .btn-split-toggle) {
+  width: var(--card-toolbar-button-height);
+  min-width: var(--card-toolbar-button-height);
+  flex-basis: var(--card-toolbar-button-height);
+}
+
+.toolbarGroup :global(.btn-split .btn-split-main-icon) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--card-toolbar-button-icon-size);
+  height: var(--card-toolbar-button-icon-size);
+  flex: 0 0 var(--card-toolbar-button-icon-size);
+}
+
+.toolbarGroup :global(.btn-split .btn-split-main-icon svg) {
+  width: var(--card-toolbar-button-icon-size);
+  height: var(--card-toolbar-button-icon-size);
+  flex-shrink: 0;
 }
 
 .headerMain {
@@ -228,8 +327,7 @@
 }
 
 @media (max-width: 1024px) {
-  .toolbarButtonHideLabelMd .toolbarButtonLabel,
-  .toolbarButtonHideLabelMd .toolbarButtonSeparator {
+  .toolbarButtonHideLabelMd .toolbarButtonLabel {
     display: none;
   }
 }
@@ -237,5 +335,18 @@
 @media (max-width: 720px) {
   .toolbar {
     padding: var(--spacing-2);
+  }
+
+  .toolbarSections {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbarSections .toolbarItem[data-toolbar-section-align] {
+    grid-column: 1;
+    justify-content: flex-start;
+  }
+
+  .toolbarItem[data-toolbar-section-align] .toolbarSection {
+    justify-content: flex-start;
   }
 }

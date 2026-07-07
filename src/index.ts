@@ -5,6 +5,11 @@ export type {
   ButtonGroupProps,
   ButtonProps,
   ButtonSize,
+  ButtonSplitMainProps,
+  ButtonSplitMenuAlign,
+  ButtonSplitMenuItem,
+  ButtonSplitMenuProps,
+  ButtonSplitProps,
   ButtonVariant,
 } from './components/Button/Button';
 export { default as Badge } from './components/Badge/Badge';
@@ -13,6 +18,8 @@ export type {
   CardToolbarButtonProps,
   CardToolbarGroupProps,
   CardToolbarProps,
+  CardToolbarSectionAlign,
+  CardToolbarSectionProps,
 } from './components/Card/Card';
 export { default as CollapseButton } from './components/CollapseButton/CollapseButton';
 export { default as Collapse } from './components/Collapse/Collapse';

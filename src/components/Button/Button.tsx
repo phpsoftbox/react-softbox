@@ -1,4 +1,6 @@
 import React from 'react';
+import Dropdown from '../Menu/Dropdown';
+import type { MenuItem } from '../Menu/Menu';
 import type { BuiltinUiVariant, UiVariant } from '../../types';
 import {
   buildButtonVariantStyle,
@@ -11,6 +13,7 @@ export type ButtonVariant = UiVariant;
 export type ButtonAppearance = 'solid' | 'outline' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export type ButtonGroupOrientation = 'horizontal' | 'vertical';
+export type ButtonSplitMenuAlign = 'start' | 'end';
 
 type ButtonOwnProps<TElement extends React.ElementType> = {
   as?: TElement;
@@ -34,10 +37,63 @@ export type ButtonGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   stretch?: boolean;
 };
 
+type ButtonSplitLinkComponent = React.ElementType<{
+  href?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  onClick?: React.MouseEventHandler<HTMLElement>;
+  onMouseEnter?: React.MouseEventHandler<HTMLElement>;
+  children?: React.ReactNode;
+}>;
+
+export type ButtonSplitMainProps<TElement extends React.ElementType = 'button'> =
+  Omit<ButtonProps<TElement>, 'children' | 'variant' | 'appearance' | 'size' | 'label'> & {
+    label: React.ReactNode;
+    icon?: React.ReactNode;
+  };
+
+export type ButtonSplitMenuItem = {
+  key: React.Key;
+  label: React.ReactNode;
+  icon?: React.ReactNode;
+  disabled?: boolean;
+  danger?: boolean;
+  href?: string;
+  as?: ButtonSplitLinkComponent;
+  className?: string;
+  style?: React.CSSProperties;
+  onSelect?: () => void;
+};
+
+export type ButtonSplitMenuProps = {
+  ariaLabel: string;
+  items: ButtonSplitMenuItem[];
+  align?: ButtonSplitMenuAlign;
+  disabled?: boolean;
+  className?: string;
+};
+
+export type ButtonSplitProps<TElement extends React.ElementType = 'button'> = {
+  variant?: ButtonVariant | 'ghost' | 'outline';
+  appearance?: ButtonAppearance;
+  size?: ButtonSize;
+  disabled?: boolean;
+  main: ButtonSplitMainProps<TElement>;
+  menu: ButtonSplitMenuProps;
+  className?: string;
+  style?: React.CSSProperties;
+  ariaLabel?: string;
+};
+
+type ButtonSplitComponent = <TElement extends React.ElementType = 'button'>(
+  props: ButtonSplitProps<TElement>
+) => React.ReactElement | null;
+
 type ButtonComponent = (<TElement extends React.ElementType = 'button'>(
   props: ButtonProps<TElement>
 ) => React.ReactElement | null) & {
   Group: React.FC<ButtonGroupProps>;
+  Split: ButtonSplitComponent;
 };
 
 const variantClass: Record<BuiltinUiVariant, string> = {
@@ -159,8 +215,121 @@ function ButtonGroup({
   return <div className={classes} role={role} {...props} />;
 }
 
+const splitMenuAlignMap: Record<ButtonSplitMenuAlign, 'left' | 'right'> = {
+  start: 'left',
+  end: 'right',
+};
+
+function SplitChevron() {
+  return <span className="btn-split-chevron" aria-hidden="true" />;
+}
+
+function ButtonSplit<TElement extends React.ElementType = 'button'>({
+  variant = 'primary',
+  appearance = 'solid',
+  size = 'md',
+  disabled = false,
+  main,
+  menu,
+  className,
+  style,
+  ariaLabel,
+}: ButtonSplitProps<TElement>) {
+  const {
+    label,
+    icon,
+    disabled: mainDisabled = false,
+    className: mainClassName,
+    ...mainProps
+  } = main;
+  const menuDisabled = disabled || menu.disabled || menu.items.length === 0;
+  const resolvedMainDisabled = disabled || mainDisabled;
+  const mainAs = (mainProps as { as?: React.ElementType }).as;
+  const mainButtonProps: Record<string, unknown> = {
+    ...mainProps,
+  };
+
+  if (mainAs === undefined || mainAs === 'button') {
+    mainButtonProps.type = (mainProps as { type?: string }).type ?? 'button';
+  }
+
+  const menuItems: MenuItem[] = menu.items.map((item) => ({
+    id: String(item.key),
+    label: item.label,
+    icon: item.icon,
+    href: item.href,
+    as: item.as,
+    disabled: item.disabled,
+    style: item.style,
+    className: [
+      'btn-split-menu-item',
+      item.danger ? 'btn-split-menu-item-danger' : null,
+      item.className,
+    ]
+      .filter(Boolean)
+      .join(' '),
+    onClick: item.onSelect,
+  }));
+  const menuAlign = splitMenuAlignMap[menu.align ?? 'end'];
+  const classes = ['btn-split', `btn-split-${size}`, className].filter(Boolean).join(' ');
+  const MainButtonComponent = ButtonBase as React.ElementType;
+  const ToggleButtonComponent = ButtonBase as React.ElementType;
+
+  return (
+    <ButtonGroup className={classes} style={style} aria-label={ariaLabel}>
+      <MainButtonComponent
+        {...mainButtonProps}
+        variant={variant}
+        appearance={appearance}
+        size={size}
+        disabled={resolvedMainDisabled}
+        className={['btn-split-main', mainClassName].filter(Boolean).join(' ')}
+      >
+        {icon ? <span className="btn-split-main-icon">{icon}</span> : null}
+        <span className="btn-split-main-label">{label}</span>
+      </MainButtonComponent>
+      <Dropdown
+        className="btn-split-dropdown"
+        align={menuAlign}
+        trigger={(
+          <ToggleButtonComponent
+            type="button"
+            variant={variant}
+            appearance={appearance}
+            size={size}
+            disabled={menuDisabled}
+            className="btn-split-toggle"
+            aria-label={menu.ariaLabel}
+          >
+            <SplitChevron />
+          </ToggleButtonComponent>
+        )}
+      >
+        <Dropdown.Nav className={menu.className}>
+          {menuItems.map((item) => (
+            <Dropdown.Item
+              key={item.id}
+              id={item.id}
+              href={item.href}
+              as={item.as}
+              icon={item.icon}
+              disabled={item.disabled}
+              className={item.className}
+              style={item.style}
+              onClick={item.onClick}
+            >
+              {item.label}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Nav>
+      </Dropdown>
+    </ButtonGroup>
+  );
+}
+
 const Button = Object.assign(ButtonBase, {
   Group: ButtonGroup,
+  Split: ButtonSplit,
 }) as ButtonComponent;
 
 export default Button;
