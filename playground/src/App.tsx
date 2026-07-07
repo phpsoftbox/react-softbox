@@ -1305,6 +1305,27 @@ export default function App() {
                     />
                   </Card.Toolbar.Group>
                 </Card.Toolbar>
+                <Card.Toolbar align="left" dividers={false}>
+                  <Card.Toolbar.Group attached aria-label="Toolbar without dividers">
+                    <Card.Toolbar.Button label="Все" />
+                    <Card.Toolbar.Button label="Активные" />
+                    <Card.Toolbar.Button label="Архив" />
+                  </Card.Toolbar.Group>
+                  <Card.Toolbar.Group>
+                    <Card.Toolbar.Button
+                      aria-label="Фильтры"
+                      icon={<span aria-hidden="true">⚙</span>}
+                    />
+                    <Card.Toolbar.Button
+                      as={DemoInertiaButtonLink}
+                      href="#toolbar-link"
+                      method="post"
+                      preserveScroll
+                      icon={<span aria-hidden="true">↗</span>}
+                      label="Link"
+                    />
+                  </Card.Toolbar.Group>
+                </Card.Toolbar>
               </Stack>
             </Card.Body>
           </Card>
