@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Card.module.css';
 import Button from '../Button/Button';
+import type { ButtonProps } from '../Button/Button';
 
 type CardProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -33,14 +34,17 @@ type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
 type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   attached?: boolean;
 };
-type CardToolbarButtonBaseProps = Omit<React.ComponentProps<typeof Button>, 'children'> & {
+type CardToolbarButtonBaseProps<TElement extends React.ElementType = 'button'> = Omit<ButtonProps<TElement>, 'children'> & {
   icon?: React.ReactNode;
   label?: React.ReactNode;
   hideLabelOn?: 'never' | 'md';
 };
-type CardToolbarButtonProps =
-  | (CardToolbarButtonBaseProps & { icon: React.ReactNode; label?: React.ReactNode })
-  | (CardToolbarButtonBaseProps & { icon?: React.ReactNode; label: React.ReactNode });
+type CardToolbarButtonProps<TElement extends React.ElementType = 'button'> =
+  | (CardToolbarButtonBaseProps<TElement> & { icon: React.ReactNode; label?: React.ReactNode })
+  | (CardToolbarButtonBaseProps<TElement> & { icon?: React.ReactNode; label: React.ReactNode });
+type CardToolbarButtonComponent = <TElement extends React.ElementType = 'button'>(
+  props: CardToolbarButtonProps<TElement>
+) => React.ReactElement | null;
 
 type ToolbarRowMeta = {
   row: number;
@@ -49,7 +53,7 @@ type ToolbarRowMeta = {
 
 type CardToolbarComponent = React.FC<CardToolbarProps> & {
   Group: React.FC<CardToolbarGroupProps>;
-  Button: React.FC<CardToolbarButtonProps>;
+  Button: CardToolbarButtonComponent;
 };
 type CardHeaderComponent = React.FC<CardHeaderProps> & {
   Title: CardHeaderTitleComponent;
@@ -266,13 +270,13 @@ function CardToolbarBase({
   );
 }
 
-function CardToolbarButton({
+function CardToolbarButton<TElement extends React.ElementType = 'button'>({
   icon,
   label,
   hideLabelOn,
   className,
   ...props
-}: CardToolbarButtonProps) {
+}: CardToolbarButtonProps<TElement>) {
   const toolbarConfig = React.useContext(CardToolbarContext);
   const resolvedHideLabelOn = hideLabelOn ?? toolbarConfig.hideLabelOn;
   const hasIcon = icon !== undefined && icon !== null;
@@ -292,8 +296,10 @@ function CardToolbarButton({
     .filter(Boolean)
     .join(' ');
 
+  const ToolbarButtonComponent = Button as React.ElementType;
+
   return (
-    <Button size="sm" appearance="outline" className={classes} {...props}>
+    <ToolbarButtonComponent size="sm" appearance="outline" className={classes} {...props}>
       {hasIcon ? <span className={styles.toolbarButtonIcon}>{icon}</span> : null}
       {hasBoth ? <span className={styles.toolbarButtonSeparator} aria-hidden="true" /> : null}
       {hasLabel ? (
@@ -301,7 +307,7 @@ function CardToolbarButton({
           {label}
         </span>
       ) : null}
-    </Button>
+    </ToolbarButtonComponent>
   );
 }
 

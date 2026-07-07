@@ -45,6 +45,24 @@
 Если переданы оба, внутри кнопки появится вертикальный разделитель. На средних экранах текстовая часть скрывается.
 `Card.Toolbar.Group attached` склеивает соседние кнопки в одну группу; без `attached` группы остаются разделёнными gap и toolbar-разделителями.
 
+Для ссылок используйте `component`. Это работает и с native `<a>`, и с внешними link-компонентами:
+
+```tsx
+import { Link } from '@inertiajs/react';
+
+<Card.Toolbar.Button
+  component={Link}
+  href="/reports/export"
+  method="post"
+  preserveScroll
+  as="button"
+  icon={<ExportIcon />}
+  label="Экспорт"
+/>
+```
+
+`component`, а не `as`, используется намеренно: у Inertia `Link` есть собственный проп `as`, и его нужно передавать дальше без конфликта.
+
 Скрытие текста включено по умолчанию (`md`) и настраивается:
 - на уровне `Card.Toolbar`: `buttonHideLabelOn="md" | "never"`
 - на уровне конкретной кнопки: `hideLabelOn="md" | "never"` (переопределяет тулбар)

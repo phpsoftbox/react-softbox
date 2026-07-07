@@ -106,12 +106,23 @@ yarn build
 <Button variant="info" appearance="outline">Info</Button>
 <Button variant="danger" appearance="ghost">Danger</Button>
 <Button variant="primary" size="sm">Small</Button>
+<Button component="a" href="/settings">Link button</Button>
 
 <Button.Group aria-label="Режим просмотра">
   <Button appearance="outline">День</Button>
   <Button appearance="outline">Неделя</Button>
   <Button appearance="outline">Месяц</Button>
 </Button.Group>
+```
+
+Для Inertia/Router-ссылок передайте компонент через `component`. Проп `as` остается свободным для самого link-компонента:
+
+```tsx
+import { Link } from '@inertiajs/react';
+
+<Button component={Link} href="/logout" method="post" as="button">
+  Выйти
+</Button>
 ```
 
 Custom variants задаются через `--variant-{name}-*` токены:

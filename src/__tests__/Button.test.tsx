@@ -4,6 +4,23 @@ import { render } from '@testing-library/react';
 import { screen } from '@testing-library/dom';
 import Button from '../components/Button/Button';
 
+type TestLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+  method?: 'get' | 'post';
+  preserveScroll?: boolean;
+};
+
+const TestLink = ({
+  method,
+  preserveScroll,
+  ...props
+}: TestLinkProps) => (
+  <a
+    data-method={method}
+    data-preserve-scroll={preserveScroll ? 'true' : undefined}
+    {...props}
+  />
+);
+
 describe('Button', () => {
   it('renders label and variants', () => {
     render(
@@ -38,5 +55,37 @@ describe('Button', () => {
     expect(screen.getByRole('group', { name: 'View mode' })).toHaveClass('btn-group');
     expect(screen.getByRole('button', { name: 'Day' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Week' })).toBeInTheDocument();
+  });
+
+  it('renders through a custom link component', () => {
+    render(
+      <Button component={TestLink} href="/orders" method="post" preserveScroll>
+        Link action
+      </Button>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Link action' });
+    expect(link).toHaveClass('btn', 'btn-primary');
+    expect(link).toHaveAttribute('href', '/orders');
+    expect(link).toHaveAttribute('data-method', 'post');
+    expect(link).toHaveAttribute('data-preserve-scroll', 'true');
+  });
+
+  it('marks custom link buttons as disabled', () => {
+    const onClick = jest.fn();
+
+    render(
+      <Button component="a" href="/orders" disabled onClick={onClick}>
+        Disabled link
+      </Button>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Disabled link' });
+    link.click();
+
+    expect(link).toHaveClass('btn-disabled');
+    expect(link).toHaveAttribute('aria-disabled', 'true');
+    expect(link).toHaveAttribute('tabindex', '-1');
+    expect(onClick).not.toHaveBeenCalled();
   });
 });

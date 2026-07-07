@@ -5,6 +5,23 @@ import { screen } from '@testing-library/dom';
 import Card from '../components/Card/Card';
 import Button from '../components/Button/Button';
 
+type ToolbarLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+  method?: 'get' | 'post';
+  preserveScroll?: boolean;
+};
+
+const ToolbarLink = ({
+  method,
+  preserveScroll,
+  ...props
+}: ToolbarLinkProps) => (
+  <a
+    data-method={method}
+    data-preserve-scroll={preserveScroll ? 'true' : undefined}
+    {...props}
+  />
+);
+
 describe('Card', () => {
   it('renders header, body, and footer', () => {
     render(
@@ -54,6 +71,31 @@ describe('Card', () => {
 
     expect(screen.getByRole('group', { name: 'Toolbar actions' })).toHaveClass('btn-group');
     expect(screen.getByRole('button', { name: 'Добавить' })).toBeInTheDocument();
+  });
+
+  it('renders toolbar button through a custom link component', () => {
+    render(
+      <Card>
+        <Card.Toolbar>
+          <Card.Toolbar.Group attached aria-label="Toolbar links">
+            <Card.Toolbar.Button
+              component={ToolbarLink}
+              href="/exports"
+              method="post"
+              preserveScroll
+              icon={<span aria-hidden="true">↓</span>}
+              label="Экспорт"
+            />
+          </Card.Toolbar.Group>
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Экспорт' });
+    expect(link).toHaveClass('btn', 'btn-outline');
+    expect(link).toHaveAttribute('href', '/exports');
+    expect(link).toHaveAttribute('data-method', 'post');
+    expect(link).toHaveAttribute('data-preserve-scroll', 'true');
   });
 
   it('renders custom header children node', () => {
