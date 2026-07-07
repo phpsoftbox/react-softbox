@@ -30,6 +30,7 @@ type CardSectionProps = React.HTMLAttributes<HTMLDivElement>;
 export type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
   align?: 'left' | 'right' | 'between';
   buttonHideLabelOn?: 'never' | 'md';
+  dividers?: boolean;
 };
 export type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   attached?: boolean;
@@ -174,6 +175,7 @@ const toolbarButtonSizeClass: Record<ButtonSize, string> = {
 function CardToolbarBase({
   align = 'left',
   buttonHideLabelOn = 'md',
+  dividers = true,
   className,
   children,
   ...props
@@ -267,6 +269,7 @@ function CardToolbarBase({
               data-toolbar-row={row}
               data-toolbar-row-start={rowStart ? 'true' : 'false'}
               data-toolbar-row-wrapped={row > 0 ? 'true' : 'false'}
+              data-toolbar-divider={dividers && !rowStart ? 'true' : 'false'}
             >
               {child}
             </div>

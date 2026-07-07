@@ -79,6 +79,44 @@ describe('Card', () => {
     expect(container.querySelector('[data-card-toolbar-button-slot="separator"]')).toBeInTheDocument();
   });
 
+  it('renders toolbar group dividers by default', () => {
+    const { container } = render(
+      <Card>
+        <Card.Toolbar>
+          <Card.Toolbar.Group>
+            <Card.Toolbar.Button label="One" />
+          </Card.Toolbar.Group>
+          <Card.Toolbar.Group>
+            <Card.Toolbar.Button label="Two" />
+          </Card.Toolbar.Group>
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    const items = container.querySelectorAll('[data-card-toolbar-item="true"]');
+    expect(items[0]).toHaveAttribute('data-toolbar-divider', 'false');
+    expect(items[1]).toHaveAttribute('data-toolbar-divider', 'true');
+  });
+
+  it('can disable toolbar group dividers', () => {
+    const { container } = render(
+      <Card>
+        <Card.Toolbar dividers={false}>
+          <Card.Toolbar.Group>
+            <Card.Toolbar.Button label="One" />
+          </Card.Toolbar.Group>
+          <Card.Toolbar.Group>
+            <Card.Toolbar.Button label="Two" />
+          </Card.Toolbar.Group>
+        </Card.Toolbar>
+      </Card>,
+    );
+
+    const items = container.querySelectorAll('[data-card-toolbar-item="true"]');
+    expect(items[0]).toHaveAttribute('data-toolbar-divider', 'false');
+    expect(items[1]).toHaveAttribute('data-toolbar-divider', 'false');
+  });
+
   it('renders native toolbar links', () => {
     render(
       <Card>
