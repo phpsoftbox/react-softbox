@@ -243,7 +243,7 @@
   --select-border-radius: var(--input-border-radius);
   --textarea-border-radius: var(--input-border-radius);
   --modal-border-radius: var(--radius-default);
-  --drawer-border-radius: var(--radius-default);
+  --drawer-border-radius: 0;
   --tooltip-border-radius: var(--radius-default);
   --toast-border-radius: var(--radius-default);
   --progress-border-radius: var(--radius-pill);
