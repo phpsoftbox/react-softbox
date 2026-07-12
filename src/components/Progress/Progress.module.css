@@ -1,11 +1,13 @@
 .progress {
+  --progress-label-font-size: var(--progress-label-font-size-md, var(--font-size-3));
+  --progress-value-font-size: var(--progress-value-font-size-md, var(--font-size-2));
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .label {
-  font-size: 13px;
+  font-size: var(--progress-label-font-size);
   color: var(--color-muted);
 }
 
@@ -26,17 +28,32 @@
 }
 
 .value {
-  font-size: 12px;
+  font-size: var(--progress-value-font-size);
   color: var(--color-muted);
   text-align: right;
+}
+
+.sm {
+  --progress-label-font-size: var(--progress-label-font-size-sm, var(--font-size-2));
+  --progress-value-font-size: var(--progress-value-font-size-sm, var(--font-size-1));
 }
 
 .sm .track {
   height: 6px;
 }
 
+.md {
+  --progress-label-font-size: var(--progress-label-font-size-md, var(--font-size-3));
+  --progress-value-font-size: var(--progress-value-font-size-md, var(--font-size-2));
+}
+
 .md .track {
   height: 10px;
+}
+
+.lg {
+  --progress-label-font-size: var(--progress-label-font-size-lg, var(--font-size-4));
+  --progress-value-font-size: var(--progress-value-font-size-lg, var(--font-size-3));
 }
 
 .lg .track {

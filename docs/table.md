@@ -138,3 +138,4 @@ const [selected, setSelected] = useState<React.Key[]>([]);
 - `hideOn` — скрыть колонку на `sm`/`md`/`lg`
 - `width` / `minWidth` — размеры колонки
 - `align` — `left` | `center` | `right`
+- `size` — `sm` или `md`; меняет padding и font-size таблицы, заголовков и caption через `--table-*` токены

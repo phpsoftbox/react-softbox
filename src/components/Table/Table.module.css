@@ -1,4 +1,7 @@
 .wrapper {
+  --table-font-size: var(--table-font-size-md, var(--font-size-3));
+  --table-head-font-size: var(--table-head-font-size-md, var(--font-size-2));
+  --table-caption-font-size: var(--table-caption-font-size-md, var(--font-size-2));
   width: 100%;
   border-radius: var(--table-border-radius, var(--radius-default));
   border: 1px solid var(--color-line);
@@ -28,6 +31,7 @@
   border-bottom: 1px solid var(--color-divider);
   background: var(--surface-panel-soft);
   border-radius: var(--table-border-radius, var(--radius-default)) var(--table-border-radius, var(--radius-default)) 0 0;
+  font-size: var(--table-font-size);
 }
 
 .bulkActions[data-position='bottom'] {
@@ -104,7 +108,7 @@
   width: 100%;
   border-collapse: collapse;
   color: var(--color-text);
-  font-size: var(--font-size-3);
+  font-size: var(--table-font-size);
   min-width: var(--ui-table-min, 560px);
 }
 
@@ -112,7 +116,7 @@
   caption-side: top;
   text-align: left;
   padding: var(--spacing-3) var(--spacing-4);
-  font-size: var(--font-size-2);
+  font-size: var(--table-caption-font-size);
   color: var(--color-muted);
 }
 
@@ -140,14 +144,14 @@
 }
 
 .headCell {
-  font-size: var(--font-size-2);
+  font-size: var(--table-head-font-size);
   letter-spacing: 0.02em;
   color: var(--color-muted);
   text-align: left;
 }
 
 .cell {
-  font-size: var(--font-size-3);
+  font-size: var(--table-font-size);
 }
 
 .cellContent {
@@ -161,6 +165,7 @@
 }
 
 .footerCell {
+  font-size: var(--table-font-size);
   font-weight: 600;
   border-top: 1px solid var(--color-divider);
   border-bottom: none;
@@ -190,7 +195,12 @@
 .sizeSm .cell,
 .sizeSm .footerCell {
   padding: var(--spacing-2) var(--spacing-3);
-  font-size: var(--font-size-2);
+}
+
+.sizeSm {
+  --table-font-size: var(--table-font-size-sm, var(--font-size-2));
+  --table-head-font-size: var(--table-head-font-size-sm, var(--font-size-1));
+  --table-caption-font-size: var(--table-caption-font-size-sm, var(--font-size-1));
 }
 
 .alignCenter {
