@@ -24,7 +24,7 @@
 <Badge variant="danger" dot aria-label="Ошибка" className="p-2" />
 ```
 
-`Badge` не меняет регистр текста и не задает font-size. Для декоративных решений используйте helpers: `text-uppercase`, `f-2`, `border`, `rounded-pill`, `rounded-circle` и т.д.
+`Badge` не меняет регистр текста. Размеры `sm`, `md`, `lg` задают padding, circle-size и font-size через `--badge-*` токены; для декоративных решений используйте helpers: `text-uppercase`, `f-2`, `border`, `rounded-pill`, `rounded-circle` и т.д.
 
 ## Alert
 
