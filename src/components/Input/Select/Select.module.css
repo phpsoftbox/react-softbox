@@ -371,8 +371,10 @@
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
-  font: inherit;
+  font-family: inherit;
+  font-size: var(--select-option-font-size, var(--ui-control-font-size, var(--font-size-3)));
   font-weight: var(--select-option-font-weight, 400);
+  line-height: var(--select-option-line-height, var(--ui-control-line-height, 1.2));
   text-align: left;
 }
 
