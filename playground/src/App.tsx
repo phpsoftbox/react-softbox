@@ -241,6 +241,7 @@ export default function App() {
   const [modalAssignee, setModalAssignee] = React.useState<string>('qa');
   const [collapseOpen, setCollapseOpen] = React.useState(false);
   const [multiValue, setMultiValue] = React.useState<string[]>(['cache']);
+  const [searchableMultiValue, setSearchableMultiValue] = React.useState<string[]>(['cache']);
   const [asyncValue, setAsyncValue] = React.useState<string>('alpha');
   const [searchableValue, setSearchableValue] = React.useState<string | undefined>('cache');
   const [phoneCountry, setPhoneCountry] = React.useState<PhoneCountry>('ru');
@@ -1046,6 +1047,28 @@ export default function App() {
                         clearable
                         value={searchableValue}
                         onChange={(next) => setSearchableValue(next as string | undefined)}
+                        options={[
+                          { value: 'cache', label: 'Cache' },
+                          { value: 'queue', label: 'Queue' },
+                          { value: 'db', label: 'Database' },
+                          { value: 'search', label: 'Search' },
+                          { value: 'analytics', label: 'Analytics' },
+                        ]}
+                    />
+                  </Input.FloatLabel>
+                </Input>
+                <Input>
+                  <Input.FloatLabel
+                    label="Multiple searchable select"
+                    hint="После выбора пункт сразу отображается tag-ом, dropdown остается открытым."
+                  >
+                    <Input.Select
+                        required
+                        name="services-searchable"
+                        searchable
+                        multiple
+                        value={searchableMultiValue}
+                        onChange={(next) => setSearchableMultiValue(next as string[])}
                         options={[
                           { value: 'cache', label: 'Cache' },
                           { value: 'queue', label: 'Queue' },

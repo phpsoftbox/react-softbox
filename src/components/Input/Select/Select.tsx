@@ -41,6 +41,7 @@ type SharedProps<T extends string | number, M = unknown> = {
   placeholder?: string;
   multiple?: boolean;
   searchable?: boolean;
+  closeOnSelect?: boolean;
   clearable?: boolean;
   clearLabel?: string;
   allowEmptyValue?: boolean;
@@ -135,6 +136,7 @@ export default function Select<T extends string | number = string | number, M = 
   placeholder = 'Выберите...',
   multiple = false,
   searchable = false,
+  closeOnSelect,
   clearable = false,
   clearLabel = 'Очистить',
   allowEmptyValue = false,
@@ -188,11 +190,13 @@ export default function Select<T extends string | number = string | number, M = 
   });
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
+  const focusControlAfterCloseRef = React.useRef(false);
   const generatedId = React.useId();
   const labelId = React.useId();
   const listId = React.useId();
   const controlId = id ?? context?.fieldId ?? generatedId;
   const hasLabel = Boolean(label);
+  const resolvedCloseOnSelect = closeOnSelect ?? !multiple;
 
   const isControlled = value !== undefined;
   const allowEmpty = allowEmptyValue && !multiple;
@@ -322,6 +326,22 @@ export default function Select<T extends string | number = string | number, M = 
       setQuery('');
     }
   }, [open, query]);
+
+  React.useEffect(() => {
+    if (open || !focusControlAfterCloseRef.current) {
+      return;
+    }
+
+    focusControlAfterCloseRef.current = false;
+    controlRef.current?.focus();
+  }, [open]);
+
+  const closeDropdown = (focusControl = false) => {
+    if (focusControl) {
+      focusControlAfterCloseRef.current = true;
+    }
+    setOpen(false);
+  };
 
   const allOptions = React.useMemo<SelectItem<T, M>[]>(
     () => (emptyOption ? [emptyOption, ...mergedItems] : mergedItems),
@@ -482,9 +502,15 @@ export default function Select<T extends string | number = string | number, M = 
         ? selectedList.filter((item) => item.value !== option.value)
         : [...selectedList, option];
       updateValue(nextValues, nextOptions);
+      if (searchable) {
+        setQuery('');
+      }
+      if (resolvedCloseOnSelect) {
+        closeDropdown(true);
+      }
     } else {
       updateValue(option.value as T | null, [option]);
-      setOpen(false);
+      closeDropdown(true);
     }
   };
 
@@ -573,8 +599,7 @@ export default function Select<T extends string | number = string | number, M = 
     if (event.key === 'Escape') {
       if (open) {
         event.preventDefault();
-        setOpen(false);
-        controlRef.current?.focus();
+        closeDropdown(true);
       }
       return;
     }
@@ -626,6 +651,17 @@ export default function Select<T extends string | number = string | number, M = 
     setQuery('');
   };
 
+  const handleToggle = () => {
+    if (disabled) {
+      return;
+    }
+    if (open) {
+      closeDropdown(true);
+      return;
+    }
+    setOpen(true);
+  };
+
   const createFallbackOption = (nextQuery: string): SelectOption<T, M> => ({
     value: nextQuery as unknown as T,
     label: nextQuery,
@@ -662,9 +698,12 @@ export default function Select<T extends string | number = string | number, M = 
         if (!values.includes(nextOption.value as T)) {
           updateValue([...values, nextOption.value as T], [...selectedList, nextOption]);
         }
+        if (resolvedCloseOnSelect) {
+          closeDropdown(true);
+        }
       } else {
         updateValue(nextOption.value as T, [nextOption]);
-        setOpen(false);
+        closeDropdown(true);
       }
       setQuery('');
     } finally {
@@ -680,6 +719,31 @@ export default function Select<T extends string | number = string | number, M = 
         minWidth: controlWidth ? `${controlWidth}px` : undefined,
       }
     : dropdownStyle;
+
+  const renderSelectedTags = () => selectedList.map((item) => (
+    <div key={String(item.value)} className={styles.tag}>
+      {renderValue ? renderValue(item) : item.label}
+      <span
+        role="button"
+        tabIndex={0}
+        className={styles.remove}
+        onClick={(event) => {
+          event.stopPropagation();
+          handleRemove(item.value);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            event.stopPropagation();
+            handleRemove(item.value);
+          }
+        }}
+        aria-label={`Удалить ${item.label}`}
+      >
+        ×
+      </span>
+    </div>
+  ));
 
   const dropdown = open ? (
     <div
@@ -783,7 +847,40 @@ export default function Select<T extends string | number = string | number, M = 
           {label}
         </span>
       ) : null}
-      {showInlineSearch ? (
+      {showInlineSearch && multiple ? (
+        <div
+          className={styles.controlSearchMulti}
+          style={controlStyle}
+          data-disabled={disabled ? 'true' : undefined}
+          onClick={() => inputRef.current?.focus()}
+        >
+          <div className={[styles.value, styles.searchValue].filter(Boolean).join(' ')}>
+            {hasValue ? renderSelectedTags() : null}
+            <input
+              ref={inputRef}
+              id={controlId}
+              className={styles.searchInput}
+              value={query}
+              placeholder={hasValue ? undefined : searchPlaceholder}
+              autoComplete="off"
+              spellCheck={false}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={open}
+              aria-controls={listId}
+              aria-labelledby={label ? labelId : undefined}
+              disabled={disabled}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && canCreate) {
+                  event.preventDefault();
+                  void handleCreateOption();
+                }
+              }}
+            />
+          </div>
+        </div>
+      ) : showInlineSearch ? (
         <input
           ref={inputRef}
           id={controlId}
@@ -824,30 +921,7 @@ export default function Select<T extends string | number = string | number, M = 
           <div className={styles.value}>
             {hasValue ? (
               multiple ? (
-                selectedList.map((item) => (
-                  <div key={String(item.value)} className={styles.tag}>
-                    {renderValue ? renderValue(item) : item.label}
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      className={styles.remove}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleRemove(item.value);
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          handleRemove(item.value);
-                        }
-                      }}
-                      aria-label={`Удалить ${item.label}`}
-                    >
-                      ×
-                    </span>
-                  </div>
-                ))
+                renderSelectedTags()
               ) : (
                 <span className={styles.singleValue}>
                   {selectedList[0] ? (renderValue ? renderValue(selectedList[0]) : selectedList[0].label) : null}
@@ -879,7 +953,19 @@ export default function Select<T extends string | number = string | number, M = 
             ×
           </span>
         ) : null}
-        <span className={styles.chevron} aria-hidden="true" />
+        <button
+          type="button"
+          className={styles.toggleButton}
+          aria-label={open ? 'Закрыть список' : 'Открыть список'}
+          disabled={disabled}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={(event) => {
+            event.stopPropagation();
+            handleToggle();
+          }}
+        >
+          <span className={styles.chevron} aria-hidden="true" />
+        </button>
       </ActionStack>
       {dropdown ? (shouldPortal ? createPortal(dropdown, document.body) : dropdown) : null}
     </div>
