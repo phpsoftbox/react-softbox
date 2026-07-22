@@ -18,7 +18,7 @@ describe('Select', () => {
       />,
     );
 
-    const control = screen.getByRole('button');
+    const control = screen.getByRole('button', { name: 'Окружение' });
     await user.click(control);
     await user.click(screen.getByRole('option', { name: 'Production' }));
 
@@ -38,13 +38,139 @@ describe('Select', () => {
       />,
     );
 
-    const control = screen.getByRole('button');
+    const control = screen.getByRole('button', { name: 'Сервисы' });
     await user.click(control);
     await user.click(screen.getByRole('option', { name: 'Cache' }));
     await user.click(screen.getByRole('option', { name: 'Database' }));
 
     expect(screen.getAllByText('Cache').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Database').length).toBeGreaterThan(0);
+  });
+
+  it('keeps multiple searchable select open after selecting an option and shows selected tags', async () => {
+    const user = userEvent.setup();
+    render(
+      <Select
+        label="Сервисы"
+        multiple
+        searchable
+        options={[
+          { value: 'cache', label: 'Cache' },
+          { value: 'db', label: 'Database' },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Сервисы' }));
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('option', { name: 'Database' }));
+
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Удалить Database' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Удалить Database' }));
+    expect(screen.queryByRole('button', { name: 'Удалить Database' })).not.toBeInTheDocument();
+  });
+
+  it('keeps controlled multiple searchable select open after selecting an option and shows selected tags', async () => {
+    const user = userEvent.setup();
+
+    function ControlledSelect() {
+      const [selected, setSelected] = React.useState<string[]>(['cache']);
+
+      return (
+        <Select
+          label="Сервисы"
+          multiple
+          searchable
+          value={selected}
+          onChange={(next) => setSelected(next as string[])}
+          options={[
+            { value: 'cache', label: 'Cache' },
+            { value: 'db', label: 'Database' },
+          ]}
+        />
+      );
+    }
+
+    render(<ControlledSelect />);
+
+    await user.click(screen.getByRole('button', { name: 'Сервисы' }));
+    await user.click(screen.getByRole('option', { name: 'Database' }));
+
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Удалить Cache' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Удалить Database' })).toBeInTheDocument();
+  });
+
+  it('closes multiple searchable dropdown when closeOnSelect is true', async () => {
+    const user = userEvent.setup();
+    render(
+      <Select
+        label="Сервисы"
+        multiple
+        searchable
+        closeOnSelect
+        options={[
+          { value: 'cache', label: 'Cache' },
+          { value: 'db', label: 'Database' },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Сервисы' }));
+    await user.click(screen.getByRole('option', { name: 'Database' }));
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Удалить Database' })).toBeInTheDocument();
+  });
+
+  it('keeps multiple searchable select open from keyboard and keeps focus on search input', async () => {
+    const user = userEvent.setup();
+    render(
+      <Select
+        label="Сервисы"
+        multiple
+        searchable
+        options={[
+          { value: 'cache', label: 'Cache' },
+          { value: 'db', label: 'Database' },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Сервисы' }));
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Удалить Database' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toHaveFocus();
+  });
+
+  it('closes searchable dropdown from toggle button', async () => {
+    const user = userEvent.setup();
+    render(
+      <Select
+        label="Сервисы"
+        multiple
+        searchable
+        options={[
+          { value: 'cache', label: 'Cache' },
+          { value: 'db', label: 'Database' },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Сервисы' }));
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Закрыть список' }));
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сервисы' })).toHaveFocus();
   });
 
   it('supports meta and custom option rendering', async () => {
@@ -85,7 +211,7 @@ describe('Select', () => {
       />,
     );
 
-    const control = screen.getByRole('button');
+    const control = screen.getByRole('button', { name: 'Пользователь' });
     await user.click(control);
 
     expect(screen.getByText('ru Vasya')).toBeInTheDocument();
@@ -105,7 +231,7 @@ describe('Select', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('button', { name: 'Окружение' }));
 
     expect(container.querySelector('[role="listbox"]')).toBeNull();
     expect(screen.getByRole('listbox')).toBeInTheDocument();
@@ -124,7 +250,7 @@ describe('Select', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('button', { name: 'Окружение' }));
 
     expect(container.querySelector('[role="listbox"]')).toBeInTheDocument();
   });
@@ -142,7 +268,7 @@ describe('Select', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('button', { name: 'Окружение' }));
 
     const list = screen.getByRole('listbox');
     const production = screen.getByRole('option', { name: 'Production' });

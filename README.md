@@ -249,6 +249,8 @@ Custom variants задаются через `--variant-{name}-*` токены:
 <Select label="Сервисы" options={options} multiple searchable />
 ```
 
+В `multiple searchable` выбранные значения отображаются tag-ами прямо в открытом control; dropdown остается открыт для серии выборов. Если нужно закрывать его после выбора, передайте `closeOnSelect`.
+
 ### Table
 
 ```tsx
