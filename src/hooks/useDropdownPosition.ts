@@ -15,6 +15,7 @@ type Result = {
 };
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
+const fixedPositionSettleMs = 500;
 
 export default function useDropdownPosition(open: boolean, options: Options = {}): Result {
   const { gap = 8, align = 'right', placement: requestedPlacement = 'auto', anchorRef, strategy = 'absolute' } = options;
@@ -119,10 +120,20 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
     if (strategy !== 'fixed') {
       return;
     }
+    let frame = 0;
+    const settleUntil = window.performance.now() + fixedPositionSettleMs;
+    const computeWhileSettling = () => {
+      compute();
+      if (window.performance.now() < settleUntil) {
+        frame = window.requestAnimationFrame(computeWhileSettling);
+      }
+    };
+    frame = window.requestAnimationFrame(computeWhileSettling);
     const handler = () => compute();
     window.addEventListener('resize', handler);
     window.addEventListener('scroll', handler, true);
     return () => {
+      window.cancelAnimationFrame(frame);
       window.removeEventListener('resize', handler);
       window.removeEventListener('scroll', handler, true);
     };
