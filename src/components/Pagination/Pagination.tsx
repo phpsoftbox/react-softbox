@@ -18,7 +18,9 @@ export type PaginationMeta = {
   path?: string;
 };
 
-type Props = {
+export type PaginationLinkComponent = React.ElementType;
+
+export type PaginationProps = {
   meta: PaginationMeta;
   links?: PaginationLinks;
   pageParam?: string;
@@ -28,6 +30,7 @@ type Props = {
   buildUrl?: (page: number) => string;
   onNavigate?: (page: number, url: string) => void;
   className?: string;
+  as?: PaginationLinkComponent;
 };
 
 type PageItem =
@@ -60,7 +63,9 @@ export default function Pagination({
   buildUrl,
   onNavigate,
   className,
-}: Props) {
+  as,
+}: PaginationProps) {
+  const Link = as ?? 'a';
   const current = clamp(meta.current_page, 1, meta.last_page);
   const last = Math.max(meta.last_page, 1);
   const base = meta.path ?? links?.first ?? '';
@@ -101,8 +106,13 @@ export default function Pagination({
   const firstUrl = links?.first ?? resolveUrl(1);
   const lastUrl = links?.last ?? resolveUrl(last);
 
-  const handleNavigate = (event: React.MouseEvent, page: number | null, url: string) => {
-    if (!page || !url) {
+  const handleNavigate = (
+    event: React.MouseEvent<HTMLElement>,
+    page: number | null,
+    url: string,
+    disabled = false,
+  ) => {
+    if (disabled || !page || !url) {
       event.preventDefault();
       return;
     }
@@ -124,23 +134,23 @@ export default function Pagination({
       ) : null}
       <div className={styles.controls}>
         {showEdges ? (
-          <a
+          <Link
             href={firstUrl}
             className={[styles.control, current === 1 ? styles.disabled : null].filter(Boolean).join(' ')}
             aria-disabled={current === 1}
-            onClick={(event) => handleNavigate(event, 1, firstUrl)}
+            onClick={(event: React.MouseEvent<HTMLElement>) => handleNavigate(event, 1, firstUrl, current === 1)}
           >
             «
-          </a>
+          </Link>
         ) : null}
-        <a
+        <Link
           href={prevUrl}
           className={[styles.control, !prevPage ? styles.disabled : null].filter(Boolean).join(' ')}
           aria-disabled={!prevPage}
-          onClick={(event) => handleNavigate(event, prevPage, prevUrl)}
+          onClick={(event: React.MouseEvent<HTMLElement>) => handleNavigate(event, prevPage, prevUrl)}
         >
           ‹
-        </a>
+        </Link>
         <div className={styles.pages}>
           {pages.map((item) => {
             if (item.type === 'ellipsis') {
@@ -152,35 +162,35 @@ export default function Pagination({
             }
             const url = resolveUrl(item.page);
             return (
-              <a
+              <Link
                 key={item.page}
                 href={url}
                 className={[styles.page, item.active ? styles.active : null].filter(Boolean).join(' ')}
                 aria-current={item.active ? 'page' : undefined}
-                onClick={(event) => handleNavigate(event, item.page, url)}
+                onClick={(event: React.MouseEvent<HTMLElement>) => handleNavigate(event, item.page, url)}
               >
                 {item.page}
-              </a>
+              </Link>
             );
           })}
         </div>
-        <a
+        <Link
           href={nextUrl}
           className={[styles.control, !nextPage ? styles.disabled : null].filter(Boolean).join(' ')}
           aria-disabled={!nextPage}
-          onClick={(event) => handleNavigate(event, nextPage, nextUrl)}
+          onClick={(event: React.MouseEvent<HTMLElement>) => handleNavigate(event, nextPage, nextUrl)}
         >
           ›
-        </a>
+        </Link>
         {showEdges ? (
-          <a
+          <Link
             href={lastUrl}
             className={[styles.control, current === last ? styles.disabled : null].filter(Boolean).join(' ')}
             aria-disabled={current === last}
-            onClick={(event) => handleNavigate(event, last, lastUrl)}
+            onClick={(event: React.MouseEvent<HTMLElement>) => handleNavigate(event, last, lastUrl, current === last)}
           >
             »
-          </a>
+          </Link>
         ) : null}
       </div>
     </nav>
