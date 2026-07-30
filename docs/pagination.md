@@ -26,9 +26,24 @@ const pagination = {
 <Pagination meta={pagination.meta} links={pagination.links} />
 ```
 
+## Inertia Link
+
+Для клиентской навигации можно передать компонент ссылки через `as`. Он будет
+использован для всех ссылок пагинации:
+
+```tsx
+import { Link } from '@inertiajs/react';
+
+<Pagination
+  as={Link}
+  meta={pagination.meta}
+  links={pagination.links}
+/>;
+```
+
 ## Управление навигацией вручную
 
-Если нужен контроль над переходом (например, через Inertia), используйте `onNavigate`.
+Если нужен полный контроль над переходом, используйте `onNavigate`.
 
 ```tsx
 <Pagination
@@ -48,3 +63,4 @@ const pagination = {
 - `showInfo` — показывать текст `from–to из total`.
 - `pageParam` — имя query‑параметра, по умолчанию `page`.
 - `buildUrl` — собственный способ собрать URL.
+- `as` — компонент, которым рендерятся ссылки (например, Inertia `Link`).

@@ -42,4 +42,47 @@ describe('Pagination', () => {
 
     expect(screen.getByText('‹')).toHaveAttribute('aria-disabled', 'true');
   });
+
+  it('renders links through a custom link component', async () => {
+    const user = userEvent.setup();
+    const visits: string[] = [];
+    const TestLink = ({
+      href = '',
+      onClick,
+      ...props
+    }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+      <a
+        {...props}
+        href={href}
+        data-custom-link="true"
+        onClick={(event) => {
+          onClick?.(event);
+          if (!event.defaultPrevented) {
+            visits.push(href);
+          }
+        }}
+      />
+    );
+
+    render(
+      <Pagination
+        as={TestLink}
+        meta={{
+          current_page: 1,
+          last_page: 3,
+          per_page: 10,
+          total: 30,
+          path: '/ui-kit',
+        }}
+      />,
+    );
+
+    const pageLink = screen.getByRole('link', { name: '2' });
+    expect(pageLink).toHaveAttribute('data-custom-link', 'true');
+
+    await user.click(pageLink);
+    await user.click(screen.getByRole('link', { name: '«' }));
+
+    expect(visits).toEqual(['/ui-kit?page=2']);
+  });
 });

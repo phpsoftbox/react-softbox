@@ -45,7 +45,12 @@ export { default as Dropdown } from './components/Menu/Dropdown';
 export { default as Modal } from './components/Modal/Modal';
 export { default as Drawer } from './components/Drawer/Drawer';
 export { default as Pagination } from './components/Pagination/Pagination';
-export type { PaginationLinks, PaginationMeta } from './components/Pagination/Pagination';
+export type {
+  PaginationLinkComponent,
+  PaginationLinks,
+  PaginationMeta,
+  PaginationProps,
+} from './components/Pagination/Pagination';
 export { default as Tabs } from './components/Tabs/Tabs';
 export { default as Progress } from './components/Progress/Progress';
 export { default as Breadcrumbs } from './components/Breadcrumbs/Breadcrumbs';
