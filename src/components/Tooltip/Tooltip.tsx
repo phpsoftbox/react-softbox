@@ -69,6 +69,9 @@ const mergeRefs = <T,>(...refs: Array<React.Ref<T> | undefined>) => (value: T) =
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
+const containsEventTarget = (element: HTMLElement, target: EventTarget | null) =>
+  target instanceof Node && element.contains(target);
+
 function TooltipBase({
   content,
   children,
@@ -340,7 +343,10 @@ function TooltipBase({
   const handleMouseEnter = openOnHover
     ? (event: React.MouseEvent<HTMLElement>) => {
         (childProps.onMouseEnter as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(event);
-        scheduleOpen();
+        // Events from a portalled child still bubble through the React tree.
+        if (containsEventTarget(event.currentTarget, event.target)) {
+          scheduleOpen();
+        }
       }
     : childProps.onMouseEnter ?? noop;
   const handleMouseLeave = openOnHover
@@ -352,7 +358,12 @@ function TooltipBase({
   const handleFocus = openOnFocus
     ? (event: React.FocusEvent<HTMLElement>) => {
         (childProps.onFocus as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(event);
-        scheduleOpen();
+        const focusEnteredTrigger = containsEventTarget(event.currentTarget, event.target)
+          && !containsEventTarget(event.currentTarget, event.relatedTarget);
+
+        if (focusEnteredTrigger) {
+          scheduleOpen();
+        }
       }
     : childProps.onFocus ?? noop;
   const handleBlur = openOnFocus
@@ -361,17 +372,23 @@ function TooltipBase({
         scheduleClose();
       }
     : childProps.onBlur ?? noop;
-  const handleClick = openOnClick
-    ? (event: React.MouseEvent<HTMLElement>) => {
-        (childProps.onClick as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(event);
-        setOpen(!isOpen);
-      }
-    : childProps.onClick ?? noop;
-  const handleWrapperClick = openOnClick
-    ? () => {
-        setOpen(!isOpen);
-      }
-    : undefined;
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    (childProps.onClick as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(event);
+    if (openOnClick) {
+      setOpen(!isOpen);
+    } else {
+      clearTimer();
+      setOpen(false);
+    }
+  };
+  const handleWrapperClick = () => {
+    if (openOnClick) {
+      setOpen(!isOpen);
+    } else {
+      clearTimer();
+      setOpen(false);
+    }
+  };
 
   const isForwardRef = (children as any)?.type?.$$typeof === Symbol.for('react.forward_ref');
   const canAttachRef = typeof (children as any)?.type === 'string' || isForwardRef;
