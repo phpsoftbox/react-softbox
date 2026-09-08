@@ -251,6 +251,8 @@ Custom variants задаются через `--variant-{name}-*` токены:
 
 В `multiple searchable` выбранные значения отображаются tag-ами прямо в открытом control; dropdown остается открыт для серии выборов. Если нужно закрывать его после выбора, передайте `closeOnSelect`.
 
+Для поиска без списка при фокусе используйте `searchable openOnFocus={false} minSearchLength={1}`. `minSearchLength` задаёт минимальную длину запроса для автооткрытия; по умолчанию `openOnFocus=true`, `minSearchLength=0`. Закрытие списка через Escape или стрелку сохраняет фокус и запрос. Списки Select внутри Modal/Drawer принадлежат слою своего окна, поэтому фоновый Select не перекрывает модалку.
+
 ### Table
 
 ```tsx

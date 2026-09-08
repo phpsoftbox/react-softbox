@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import styles from './Modal.module.css';
+import { OverlayPortalContext } from '../OverlayPortalContext';
 
 type Props = {
   open: boolean;
@@ -23,6 +24,7 @@ export default function Modal({
   lockScroll = true,
   onClose,
 }: Props) {
+  const overlayRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     if (!open || !lockScroll || typeof document === 'undefined') {
       return;
@@ -74,17 +76,19 @@ export default function Modal({
   };
 
   return createPortal(
-    <div className={styles.overlay} onMouseDown={handleBackdropClick}>
-      <div className={[styles.modal, styles[size]].filter(Boolean).join(' ')} role="dialog" aria-modal="true">
-        <header className={styles.header}>
-          {title ? <h3>{title}</h3> : <span />}
-          <button type="button" className={styles.close} onClick={onClose} aria-label="Закрыть">
-            ×
-          </button>
-        </header>
-        <div className={styles.body}>{children}</div>
-        {footer ? <footer className={styles.footer}>{footer}</footer> : null}
-      </div>
+    <div className={styles.overlay} onMouseDown={handleBackdropClick} ref={overlayRef}>
+      <OverlayPortalContext.Provider value={overlayRef}>
+        <div className={[styles.modal, styles[size]].filter(Boolean).join(' ')} role="dialog" aria-modal="true">
+          <header className={styles.header}>
+            {title ? <h3>{title}</h3> : <span />}
+            <button type="button" className={styles.close} onClick={onClose} aria-label="Закрыть">
+              ×
+            </button>
+          </header>
+          <div className={styles.body}>{children}</div>
+          {footer ? <footer className={styles.footer}>{footer}</footer> : null}
+        </div>
+      </OverlayPortalContext.Provider>
     </div>,
     document.body,
   );
