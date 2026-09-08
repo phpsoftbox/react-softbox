@@ -5,6 +5,7 @@ import styles from './Select.module.css';
 import useDropdownPosition from '../../../hooks/useDropdownPosition';
 import { useFormFieldContext } from '../FormField/FormField';
 import ActionStack, { countActionItems } from '../ActionStack/ActionStack';
+import { OverlayPortalContext } from '../../OverlayPortalContext';
 
 export type SelectOptionValue = string | number | null;
 
@@ -41,6 +42,10 @@ type SharedProps<T extends string | number, M = unknown> = {
   placeholder?: string;
   multiple?: boolean;
   searchable?: boolean;
+  /** Automatically show options when entering searchable mode. Defaults to true. */
+  openOnFocus?: boolean;
+  /** Minimum trimmed query length for automatic opening; explicit opening bypasses it. */
+  minSearchLength?: number;
   closeOnSelect?: boolean;
   clearable?: boolean;
   clearLabel?: string;
@@ -136,6 +141,8 @@ export default function Select<T extends string | number = string | number, M = 
   placeholder = 'Выберите...',
   multiple = false,
   searchable = false,
+  openOnFocus = true,
+  minSearchLength = 0,
   closeOnSelect,
   clearable = false,
   clearLabel = 'Очистить',
@@ -167,7 +174,9 @@ export default function Select<T extends string | number = string | number, M = 
   const resolvedRequest = request as RequestConfig<T, M> | undefined;
   const resolvedOnAfterRequest = onAfterRequest as ((options: SelectOption<T, M>[], query: string) => void) | undefined;
   const context = useFormFieldContext();
+  const overlayPortalRef = React.useContext(OverlayPortalContext);
   const [open, setOpen] = React.useState(false);
+  const [searchActive, setSearchActive] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
@@ -284,6 +293,8 @@ export default function Select<T extends string | number = string | number, M = 
       const insideDropdown = dropdownRef.current ? dropdownRef.current.contains(target) : false;
       if (!insideControl && !insideDropdown) {
         setOpen(false);
+        setSearchActive(false);
+        setQuery('');
       }
     };
 
@@ -308,7 +319,7 @@ export default function Select<T extends string | number = string | number, M = 
   }, [id, name]);
 
   React.useEffect(() => {
-    if (open && searchable) {
+    if (searchActive && searchable) {
       const target = inputRef.current;
       if (!target) {
         return;
@@ -319,13 +330,7 @@ export default function Select<T extends string | number = string | number, M = 
         target.focus();
       }
     }
-  }, [open, searchable]);
-
-  React.useEffect(() => {
-    if (!open && query !== '') {
-      setQuery('');
-    }
-  }, [open, query]);
+  }, [searchActive, searchable]);
 
   React.useEffect(() => {
     if (open || !focusControlAfterCloseRef.current) {
@@ -333,14 +338,26 @@ export default function Select<T extends string | number = string | number, M = 
     }
 
     focusControlAfterCloseRef.current = false;
-    controlRef.current?.focus();
-  }, [open]);
+    (searchable ? inputRef.current : controlRef.current)?.focus();
+  }, [open, searchable]);
 
   const closeDropdown = (focusControl = false) => {
     if (focusControl) {
       focusControlAfterCloseRef.current = true;
     }
     setOpen(false);
+  };
+
+  const startSearch = () => {
+    if (disabled) return;
+    setSearchActive(true);
+    setOpen(openOnFocus && query.trim().length >= minSearchLength);
+  };
+
+  const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextQuery = event.target.value;
+    setQuery(nextQuery);
+    setOpen(nextQuery.trim().length >= minSearchLength);
   };
 
   const allOptions = React.useMemo<SelectItem<T, M>[]>(
@@ -396,8 +413,8 @@ export default function Select<T extends string | number = string | number, M = 
 
   const hasValue = multiple ? (selectedValues as T[]).length > 0 : selectedValues !== undefined;
   const isEmptySelection = !multiple && allowEmpty && selectedValues === resolvedEmptyValue;
-  const floatActive = floatLabel && (open || hasValue);
-  const showInlineSearch = searchable && open;
+  const floatActive = floatLabel && (open || searchActive || hasValue);
+  const showInlineSearch = searchable && searchActive;
   const searchPlaceholder = React.useMemo(() => {
     if (!hasValue) {
       return placeholder;
@@ -504,12 +521,14 @@ export default function Select<T extends string | number = string | number, M = 
       updateValue(nextValues, nextOptions);
       if (searchable) {
         setQuery('');
+        if (minSearchLength > 0) closeDropdown(true);
       }
       if (resolvedCloseOnSelect) {
         closeDropdown(true);
       }
     } else {
       updateValue(option.value as T | null, [option]);
+      setQuery('');
       closeDropdown(true);
     }
   };
@@ -599,6 +618,7 @@ export default function Select<T extends string | number = string | number, M = 
     if (event.key === 'Escape') {
       if (open) {
         event.preventDefault();
+        event.stopPropagation();
         closeDropdown(true);
       }
       return;
@@ -610,6 +630,7 @@ export default function Select<T extends string | number = string | number, M = 
       activeOptionSourceRef.current = 'keyboard';
 
       if (!open) {
+        if (searchable) setSearchActive(true);
         setOpen(true);
         setActiveOptionIndex(direction === 1 ? findFirstSelectableIndex() : findLastSelectableIndex());
         return;
@@ -649,6 +670,7 @@ export default function Select<T extends string | number = string | number, M = 
     const nextOptions = multiple ? [] : allowEmpty && emptyOption ? [emptyOption] : [];
     updateValue(nextValue, nextOptions);
     setQuery('');
+    if (searchable && minSearchLength > 0) setOpen(false);
   };
 
   const handleToggle = () => {
@@ -658,6 +680,10 @@ export default function Select<T extends string | number = string | number, M = 
     if (open) {
       closeDropdown(true);
       return;
+    }
+    if (searchable) {
+      setSearchActive(true);
+      inputRef.current?.focus();
     }
     setOpen(true);
   };
@@ -706,6 +732,7 @@ export default function Select<T extends string | number = string | number, M = 
         closeDropdown(true);
       }
       setQuery('');
+      if (minSearchLength > 0) closeDropdown(true);
     } finally {
       setCreating(false);
     }
@@ -841,6 +868,16 @@ export default function Select<T extends string | number = string | number, M = 
       ref={containerRef}
       style={{ ...style, ...controlStyle }}
       onKeyDown={handleKeyDown}
+      onBlur={(event) => {
+        const nextTarget = event.relatedTarget;
+        if (nextTarget instanceof Node
+          && (event.currentTarget.contains(nextTarget) || dropdownRef.current?.contains(nextTarget))) {
+          return;
+        }
+        setOpen(false);
+        setSearchActive(false);
+        setQuery('');
+      }}
     >
       {label ? (
         <span id={labelId} className={styles.label}>
@@ -870,9 +907,9 @@ export default function Select<T extends string | number = string | number, M = 
               aria-controls={listId}
               aria-labelledby={label ? labelId : undefined}
               disabled={disabled}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={handleQueryChange}
               onKeyDown={(event) => {
-                if (event.key === 'Enter' && canCreate) {
+                if (event.key === 'Enter' && open && canCreate) {
                   event.preventDefault();
                   void handleCreateOption();
                 }
@@ -896,9 +933,9 @@ export default function Select<T extends string | number = string | number, M = 
           aria-controls={listId}
           aria-labelledby={label ? labelId : undefined}
           disabled={disabled}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={handleQueryChange}
           onKeyDown={(event) => {
-            if (event.key === 'Enter' && canCreate) {
+            if (event.key === 'Enter' && open && canCreate) {
               event.preventDefault();
               void handleCreateOption();
             }
@@ -914,7 +951,11 @@ export default function Select<T extends string | number = string | number, M = 
           aria-controls={listId}
           aria-labelledby={label ? labelId : undefined}
           id={controlId}
-          onClick={() => !disabled && setOpen((prev) => !prev)}
+          onFocus={searchable ? startSearch : undefined}
+          onClick={() => {
+            if (searchable) startSearch();
+            else if (!disabled) setOpen((prev) => !prev);
+          }}
           disabled={disabled}
           ref={controlRef}
         >
@@ -967,7 +1008,7 @@ export default function Select<T extends string | number = string | number, M = 
           <span className={styles.chevron} aria-hidden="true" />
         </button>
       </ActionStack>
-      {dropdown ? (shouldPortal ? createPortal(dropdown, document.body) : dropdown) : null}
+      {dropdown ? (shouldPortal ? createPortal(dropdown, overlayPortalRef?.current ?? document.body) : dropdown) : null}
     </div>
   );
 }

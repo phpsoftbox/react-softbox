@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import styles from './Drawer.module.css';
+import { OverlayPortalContext } from '../OverlayPortalContext';
 
 type Props = {
   open: boolean;
@@ -35,6 +36,7 @@ export default function Drawer({
   showClose = true,
   onClose,
 }: Props) {
+  const overlayRef = React.useRef<HTMLDivElement>(null);
   const shouldRenderHeader = showHeader || showClose;
 
   React.useEffect(() => {
@@ -103,8 +105,10 @@ export default function Drawer({
   }
 
   return createPortal(
-    <div className={[styles.overlay, overlayClassName].filter(Boolean).join(' ')} onMouseDown={handleBackdropClick}>
-      {panel}
+    <div className={[styles.overlay, overlayClassName].filter(Boolean).join(' ')} onMouseDown={handleBackdropClick} ref={overlayRef}>
+      <OverlayPortalContext.Provider value={overlayRef}>
+        {panel}
+      </OverlayPortalContext.Provider>
     </div>,
     document.body,
   );
