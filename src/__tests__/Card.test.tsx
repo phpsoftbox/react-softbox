@@ -26,6 +26,47 @@ const ToolbarLink = ({
 );
 
 describe('Card', () => {
+  it('renders Toolbar.Row with shared divider spacing and wrapping by default', () => {
+    render(
+      <Card.Toolbar data-testid="toolbar" buttonHideLabelOn="never">
+        <Card.Toolbar.Row data-testid="row">
+          <Card.Toolbar.Group data-testid="group" divider="left">
+            <Card.Toolbar.Button icon={<span>+</span>} label="Create" />
+          </Card.Toolbar.Group>
+        </Card.Toolbar.Row>
+      </Card.Toolbar>,
+    );
+    const row = screen.getByTestId('row');
+    expect(row.style.getPropertyValue('--ui-gap')).toBe('var(--card-toolbar-group-divider-gap, var(--spacing-2))');
+    expect(row).toHaveStyle({ flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-start' });
+    expect(row.parentElement).toBe(screen.getByTestId('toolbar'));
+    expect(screen.getByTestId('group').parentElement).toBe(row);
+    expect(screen.getByRole('button')).not.toHaveClass(styles.toolbarButtonHideLabelMd);
+  });
+
+  it('allows overriding Toolbar.Row layout and forwards HTML props', () => {
+    render(
+      <Card.Toolbar.Row data-testid="row" gap={0} wrap="nowrap" align="stretch" justify="space-between"
+        className="custom-row" aria-label="Actions" style={{ marginTop: 4 }}>
+        Actions
+      </Card.Toolbar.Row>,
+    );
+    const row = screen.getByTestId('row');
+    expect(row.style.getPropertyValue('--ui-gap')).toBe('0px');
+    expect(row).toHaveStyle({ flexWrap: 'nowrap', alignItems: 'stretch', justifyContent: 'space-between', marginTop: '4px' });
+    expect(row).toHaveClass('custom-row');
+    expect(row).toHaveAttribute('aria-label', 'Actions');
+    expect(row).not.toHaveAttribute('gap');
+    expect(row).not.toHaveAttribute('wrap');
+  });
+
+  it('keeps the universal Row defaults unchanged', () => {
+    render(<Row data-testid="row">Content</Row>);
+    const row = screen.getByTestId('row');
+    expect(row.style.getPropertyValue('--ui-gap')).toBe('16px');
+    expect(row).toHaveStyle({ flexWrap: 'nowrap' });
+  });
+
   it('renders a framed inset toolbar by default', () => {
     render(<Card.Toolbar data-testid="toolbar">Actions</Card.Toolbar>);
     expect(screen.getByTestId('toolbar')).toHaveClass(styles.toolbarInset, styles.toolbarDividerTop, styles.toolbarDividerBottom);

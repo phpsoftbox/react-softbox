@@ -18,6 +18,7 @@ export type {
   CardToolbarButtonProps,
   CardToolbarGroupProps,
   CardToolbarProps,
+  CardToolbarRowProps,
 } from './components/Card/Card';
 export { default as CollapseButton } from './components/CollapseButton/CollapseButton';
 export { default as Collapse } from './components/Collapse/Collapse';

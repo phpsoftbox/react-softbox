@@ -133,7 +133,7 @@ Header использует CSS Grid для прямых слотов. Прои�
 
 ```tsx
 <Card.Toolbar>
-  <Row gap="var(--card-toolbar-group-divider-gap, var(--spacing-2))" wrap="wrap">
+  <Card.Toolbar.Row>
     <Card.Toolbar.Group attached>
       <Card.Toolbar.Button label="Обзор" />
       <Card.Toolbar.Button label="Метрики" />
@@ -148,7 +148,7 @@ Header использует CSS Grid для прямых слотов. Прои�
     <Card.Toolbar.Group divider="left">
       <Card.Toolbar.Button aria-label="Настройки" icon={<SettingsIcon />} />
     </Card.Toolbar.Group>
-  </Row>
+  </Card.Toolbar.Row>
 </Card.Toolbar>
 ```
 
@@ -161,13 +161,13 @@ Header использует CSS Grid для прямых слотов. Прои�
 
 `divider="none" | "left" | "right" | "both"` задаёт боковые линии конкретной группы, по умолчанию `none`. Линии занимают высоту группы, а отступ от линии до контента задаётся `--card-toolbar-group-divider-gap` (по умолчанию `--spacing-2`). Проп совместим с `attached` и не зависит от выравнивания, вложенности или положения группы в строке. Left/right обозначают физические стороны.
 
-Для одинаковых расстояний по обе стороны линии между соседними группами задавайте Row `gap="var(--card-toolbar-group-divider-gap, var(--spacing-2))"`. Иначе расстояние снаружи группы определяется gap раскладки, а внутри — padding группы: например, gap 16px и padding 8px дадут асимметрию. В Grid с растянутыми колонками свободное место в колонке также влияет на расстояние до контента; для плотного ряда групп используйте Row.
+Для одинаковых расстояний по обе стороны линии между соседними группами используйте `Card.Toolbar.Row`: он согласует gap с отступами Group по умолчанию. Обычный Row остаётся универсальным: например, его gap 16px и padding группы 8px дадут асимметрию. В Grid с растянутыми колонками свободное место в колонке также влияет на расстояние до контента; для плотного ряда групп используйте Row.
 
 Group требует предка Card.Toolbar, но между ними могут находиться Grid, Row и пользовательские компоненты. Без Toolbar компонент выдаёт понятную ошибку. Текст и отдельные кнопки не обязательно оборачивать в Group.
 
 При переносе явно заданные боковые линии сохраняются. Автоматических разделителей между группами и строками нет. Для адаптивного изменения линий используйте класс/style группы; не задавайте одновременно right и left у соседних групп, если нужна одна общая линия.
 
-Для колонок используйте Grid, для ряда с переносами — Row. Toolbar не добавляет обёрток и не управляет шириной колонок.
+Для колонок используйте Grid, для ряда с переносами — `Card.Toolbar.Row`. Toolbar не добавляет обёрток и не управляет шириной колонок.
 
 ```tsx
 <Card.Toolbar inset={false} dividerBottom>
@@ -187,24 +187,30 @@ Group требует предка Card.Toolbar, но между ними мог�
 
 ```tsx
 <Card.Toolbar inset={false}>
-  <Row justify="space-between" wrap="wrap" gap="16px">
+  <Card.Toolbar.Row justify="space-between">
     <Text>Всего записей: 5</Text>
     <Card.Toolbar.Group>
       <Card.Toolbar.Button label="Экспорт" />
       <Card.Toolbar.Button label="Добавить" />
     </Card.Toolbar.Group>
-  </Row>
+  </Card.Toolbar.Row>
 </Card.Toolbar>
 ```
 
 Для трёх зон с геометрически центрированной средней колонкой задайте Grid `grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)`. На узком экране переключайте колонки через CSS media query. Готовые примеры есть в playground.
 
+### Toolbar.Row
+
+Обёртка над обычным Row без дополнительных DOM-элементов. По умолчанию `gap="var(--card-toolbar-group-divider-gap, var(--spacing-2))"`, `wrap="wrap"`, `align="center"`, `justify="flex-start"`.
+
+Принимает все пропсы Row, включая числовой или строковый gap, className, style и HTML/ARIA-атрибуты; экспортируется тип `CardToolbarRowProps`. Любой параметр можно переопределить. Явный gap меняет только расстояние между группами. Чтобы одновременно изменить gap и отступы до линий, задайте `--card-toolbar-group-divider-gap` на Toolbar или Toolbar.Row. Пропы и значения по умолчанию универсального Row не изменены.
+
 ### Переход со старого Toolbar
 
 - Удалены `align`, `dividers`, `Card.Toolbar.Section` и типы `CardToolbarSectionAlign`/`CardToolbarSectionProps`.
-- Вместо `align="between"` используйте `Row justify="space-between"`; вместо left/right — `justify="flex-start"`/`"flex-end"`.
+- Вместо `align="between"` используйте `Card.Toolbar.Row justify="space-between"`; вместо left/right — `justify="flex-start"`/`"flex-end"`.
 - Вместо Section используйте колонки Grid. Grid/Row — непосредственные дети Toolbar, без служебных обёрток.
-- Несколько соседних групп оберните в Row с явными `gap` и `wrap`. Toolbar теперь отвечает только за оформление контейнера.
+- Несколько соседних групп оберните в `Card.Toolbar.Row` с готовыми настройками gap/wrap либо в обычный Row с явными параметрами. Toolbar теперь отвечает только за оформление контейнера.
 - Вместо общего `dividers` назначайте нужным группам `divider`. По умолчанию линий нет, включая раскладку space-between.
 - Удалите стили для старых `data-toolbar-row-*`/`data-card-toolbar-item`: измерения строк, автоматические псевдоэлементы и ResizeObserver больше не используются.
 

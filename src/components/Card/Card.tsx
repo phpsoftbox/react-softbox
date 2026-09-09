@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Card.module.css';
 import Button from '../Button/Button';
+import Row from '../Flex/Row';
 import type { ButtonAppearance, ButtonProps, ButtonSize } from '../Button/Button';
 
 type CardProps = React.HTMLAttributes<HTMLDivElement>;
@@ -45,6 +46,7 @@ export type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   /** Explicit side dividers, independent of layout. Defaults to none. */
   divider?: 'none' | 'left' | 'right' | 'both';
 };
+export type CardToolbarRowProps = React.ComponentProps<typeof Row>;
 type CardToolbarButtonBaseProps<TElement extends React.ElementType = 'button'> = Omit<ButtonProps<TElement>, 'children'> & {
   icon?: React.ReactNode;
   label?: React.ReactNode;
@@ -59,6 +61,7 @@ type CardToolbarButtonComponent = <TElement extends React.ElementType = 'button'
 ) => React.ReactElement | null;
 
 type CardToolbarComponent = React.FC<CardToolbarProps> & {
+  Row: React.FC<CardToolbarRowProps>;
   Group: React.FC<CardToolbarGroupProps>;
   Button: CardToolbarButtonComponent;
 };
@@ -258,6 +261,14 @@ function CardToolbarButton<TElement extends React.ElementType = 'button'>({
   );
 }
 
+function CardToolbarRow({
+  gap = 'var(--card-toolbar-group-divider-gap, var(--spacing-2))',
+  wrap = 'wrap',
+  ...props
+}: CardToolbarRowProps) {
+  return <Row gap={gap} wrap={wrap} {...props} />;
+}
+
 function CardToolbarGroup({ attached = false, divider = 'none', className, role, ...props }: CardToolbarGroupProps) {
   const toolbar = React.useContext(CardToolbarContext);
   if (!toolbar) {
@@ -277,6 +288,7 @@ function CardToolbarGroup({ attached = false, divider = 'none', className, role,
 }
 
 const CardToolbar = Object.assign(CardToolbarBase, {
+  Row: CardToolbarRow,
   Group: CardToolbarGroup,
   Button: CardToolbarButton,
 }) as CardToolbarComponent;

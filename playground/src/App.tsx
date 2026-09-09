@@ -1397,7 +1397,7 @@ export default function App() {
             <Card.Body>
               <Stack gap="12px">
                 <Card.Toolbar>
-                  <Row gap="var(--card-toolbar-group-divider-gap, var(--spacing-2))" wrap="wrap" data-testid="toolbar-balanced-dividers">
+                  <Card.Toolbar.Row data-testid="toolbar-balanced-dividers">
                     <Card.Toolbar.Group attached aria-label="Toolbar view mode">
                       <Card.Toolbar.Button label="Обзор" />
                       <Card.Toolbar.Button label="Метрики" />
@@ -1453,10 +1453,10 @@ export default function App() {
                         variant="info"
                       />
                     </Card.Toolbar.Group>
-                  </Row>
+                  </Card.Toolbar.Row>
                 </Card.Toolbar>
                 <Card.Toolbar>
-                  <Row gap="16px" wrap="wrap">
+                  <Card.Toolbar.Row>
                     <Card.Toolbar.Group attached aria-label="Toolbar without dividers">
                       <Card.Toolbar.Button label="Все" />
                       <Card.Toolbar.Button label="Активные" />
@@ -1476,7 +1476,7 @@ export default function App() {
                         label="Link"
                       />
                     </Card.Toolbar.Group>
-                  </Row>
+                  </Card.Toolbar.Row>
                 </Card.Toolbar>
                 <Card.Toolbar aria-label="Три колонки через Grid">
                   <Grid className="toolbarColumns" gap="16px">
@@ -1758,7 +1758,7 @@ export default function App() {
 
           <Card className="gridCard gridCardWide">
             <Card.Toolbar inset={false} dividerBottom aria-label="Действия таблицы">
-              <Row justify="space-between" gap="16px" wrap="wrap">
+              <Card.Toolbar.Row justify="space-between">
                 <Card.Toolbar.Group>
                   <Text size="sm" muted>Всего записей: {sortedRows.length}</Text>
                 </Card.Toolbar.Group>
@@ -1768,7 +1768,7 @@ export default function App() {
                     <Button size="sm" variant="primary">Добавить</Button>
                   </Row>
                 </Card.Toolbar.Group>
-              </Row>
+              </Card.Toolbar.Row>
             </Card.Toolbar>
             <Card.Header title="Tables" />
             <Card.Body>

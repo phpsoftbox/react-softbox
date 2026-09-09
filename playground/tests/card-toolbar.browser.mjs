@@ -53,6 +53,7 @@ try {
 
     // Compare actual button-to-divider distances, not just padding values.
     const balancedRow = page.getByTestId('toolbar-balanced-dividers');
+    assert.equal(await balancedRow.evaluate(el => getComputedStyle(el).flexWrap), 'wrap');
     for (const gap of [8, 12]) {
       await balancedRow.evaluate((el, value) => {
         el.style.setProperty('--card-toolbar-group-divider-gap', `${value}px`);
