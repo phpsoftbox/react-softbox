@@ -33,8 +33,10 @@ type CardFooterProps = CardSectionProps & {
 };
 export type CardToolbarSectionAlign = 'left' | 'center' | 'right';
 export type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
-  /** Apply Card section margins when placed directly inside Card. Defaults to true. */
+  /** Apply Card section padding when placed directly inside Card. Defaults to true. */
   inset?: boolean;
+  dividerTop?: boolean;
+  dividerBottom?: boolean;
   align?: 'left' | 'right' | 'between';
   buttonHideLabelOn?: 'never' | 'md';
   dividers?: boolean;
@@ -229,6 +231,8 @@ const getToolbarSectionAlign = (child: React.ReactNode): CardToolbarSectionAlign
 
 function CardToolbarBase({
   inset = true,
+  dividerTop = false,
+  dividerBottom = false,
   align = 'left',
   buttonHideLabelOn = 'md',
   dividers = true,
@@ -245,7 +249,15 @@ function CardToolbarBase({
   const [rows, setRows] = React.useState<ToolbarRowMeta[]>([]);
   const toolbarChildren = React.Children.toArray(children);
   const hasSections = toolbarChildren.some((child) => getToolbarSectionAlign(child) !== undefined);
-  const classes = [styles.toolbar, inset ? styles.toolbarInset : null, alignClass, hasSections ? styles.toolbarSections : null, className]
+  const classes = [
+    styles.toolbar,
+    inset ? styles.toolbarInset : null,
+    dividerTop ? styles.toolbarDividerTop : null,
+    dividerBottom ? styles.toolbarDividerBottom : null,
+    alignClass,
+    hasSections ? styles.toolbarSections : null,
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
 

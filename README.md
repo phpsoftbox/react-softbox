@@ -183,7 +183,7 @@ Custom variants задаются через `--variant-{name}-*` токены:
 
 ### Card.Toolbar
 
-`Card.Toolbar inset={false}` отключает внешние отступы Toolbar от Card. По умолчанию `inset=true`; настройка действует при размещении непосредственно в Card и не меняет внутренние padding Toolbar.
+`Card.Toolbar` занимает всю внутреннюю ширину Card. По умолчанию `inset=true` задаёт его контенту внутренние отступы Card при размещении непосредственно в Card; `inset={false}` оставляет компактный padding Toolbar без боковых границ и скруглений. `dividerTop` и `dividerBottom` независимо включают линии сверху и снизу (по умолчанию выключены). `dividers` управляет разделителями между группами.
 
 `Card.Toolbar align="left|right|between"` задает общее выравнивание прямых групп. Если нужно разнести группы по зонам, используйте `Card.Toolbar.Section`:
 
