@@ -185,7 +185,7 @@ Custom variants задаются через `--variant-{name}-*` токены:
 
 `Card.Toolbar` по умолчанию (`inset=true`) — панель в скруглённой рамке: при размещении непосредственно в Card её внешний отступ равен отступу секций, а края рамки выровнены с контентом Header/Body. `inset={false}` — полоса на всю ширину без боковых границ и скруглений; её контент получает боковой padding Card и выровнен с Header/Body. `dividerTop` и `dividerBottom` независимо управляют верхней и нижней границами (по умолчанию равны `inset`). `Card.Toolbar.Group divider="none|left|right|both"` задаёт боковые разделители (по умолчанию `none`). Group должен находиться внутри Toolbar, в том числе через Grid/Row.
 
-Для колонок используйте Grid, для ряда с переносами — Row. Toolbar не добавляет обёрток и не управляет шириной колонок.
+Для колонок используйте Grid, для ряда с переносами — `Card.Toolbar.Row` (wrap включён, gap согласован с Group.divider). Обычный Row остаётся универсальным. Toolbar не добавляет обёрток и не управляет шириной колонок.
 
 ```tsx
 <Card.Toolbar inset={false} dividerBottom>
@@ -205,13 +205,13 @@ Custom variants задаются через `--variant-{name}-*` токены:
 
 ```tsx
 <Card.Toolbar inset={false}>
-  <Row justify="space-between" wrap="wrap" gap="16px">
+  <Card.Toolbar.Row justify="space-between">
     <Text>Всего записей: 5</Text>
     <Card.Toolbar.Group>
       <Card.Toolbar.Button label="Экспорт" />
       <Card.Toolbar.Button label="Добавить" />
     </Card.Toolbar.Group>
-  </Row>
+  </Card.Toolbar.Row>
 </Card.Toolbar>
 ```
 
