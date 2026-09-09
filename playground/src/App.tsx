@@ -572,9 +572,23 @@ export default function App() {
 
         <Grid columns={12} columnsMd={6} columnsSm={12} gap="24px">
           <Card className="gridCard">
-            <Card.Header right={<Button variant="primary">Создать</Button>}>
-              <Card.Header.Title>Buttons</Card.Header.Title>
-              <Card.Header.Subtitle>Пример использования Header subcomponents.</Card.Header.Subtitle>
+            <Card.Header
+              icon={(
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <path d="M3 9h18M8 14h8" />
+                </svg>
+              )}
+              divider
+            >
+              <Card.Header.Icon />
+              <Card.Header.Content>
+                <Card.Header.Title>Buttons</Card.Header.Title>
+                <Card.Header.Subtitle>Пример использования Header subcomponents и divider.</Card.Header.Subtitle>
+              </Card.Header.Content>
+              <Card.Header.Aside>
+                <Button variant="primary">Создать</Button>
+              </Card.Header.Aside>
             </Card.Header>
             <Card.Body>
               <Stack gap="14px">
@@ -1692,7 +1706,7 @@ export default function App() {
           </Card>
 
           <Card className="gridCard gridCardWide">
-            <Card.Toolbar align="between">
+            <Card.Toolbar align="between" inset={false}>
               <Card.Toolbar.Group>
                 <Text size="sm" muted>Всего записей: {sortedRows.length}</Text>
               </Card.Toolbar.Group>
@@ -1840,8 +1854,11 @@ export default function App() {
           </Card>
 
           <Card className="gridCard">
-            <Card.Header title="Modal / Drawer" />
+            <Card.Header title="Modal / Drawer" divider />
             <Card.Body>
+              <Text>Примеры модального окна и боковой панели.</Text>
+            </Card.Body>
+            <Card.Footer divider>
               <Row gap="12px" wrap="wrap">
                 <Button variant="primary" onClick={() => setModalOpen(true)}>
                   Открыть модалку
@@ -1850,7 +1867,7 @@ export default function App() {
                   Открыть drawer
                 </Button>
               </Row>
-            </Card.Body>
+            </Card.Footer>
           </Card>
 
           <Card className="gridCard">

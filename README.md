@@ -183,6 +183,8 @@ Custom variants задаются через `--variant-{name}-*` токены:
 
 ### Card.Toolbar
 
+`Card.Toolbar inset={false}` отключает внешние отступы Toolbar от Card. По умолчанию `inset=true`; настройка действует при размещении непосредственно в Card и не меняет внутренние padding Toolbar.
+
 `Card.Toolbar align="left|right|between"` задает общее выравнивание прямых групп. Если нужно разнести группы по зонам, используйте `Card.Toolbar.Section`:
 
 ```tsx
@@ -408,13 +410,20 @@ const collapsible = [
 
 ### Card
 
+`Card.Header icon={<TruckIcon />} title="Параметры сдачи" subtitle="Укажите, куда и как будет передана поставка"` размещает общую иконку слева от обеих строк. Для явной композиции используйте `Card.Header.Icon`, `Card.Header.Content` и `Card.Header.Aside`: Icon читает пропс `icon` или свои `children`, Content — пропсы title/subtitle или свои `children`. Aside заменяет `right` и центрирует действия по вертикали. В Header можно вложить собственный Grid.
+
+Отступы принадлежат `Card.Header`, `Card.Body` и `Card.Footer`; общий `Card` не имеет padding и gap. Для разделителя на всю ширину используйте `divider` у Header (снизу) или Footer (сверху). По умолчанию разделители выключены; у Body этого пропса нет. Произвольный контент с отступами размещайте в `Card.Body`. Подробнее о переходе на новый контракт — [Card](docs/card.md).
+
 ```tsx
 <Card>
-  <Card.Header title="Заголовок" right={<Button appearance="ghost">...</Button>} />
+  <Card.Header divider title="Заголовок">
+    <Card.Header.Content />
+    <Card.Header.Aside><Button appearance="ghost">...</Button></Card.Header.Aside>
+  </Card.Header>
   <Card.Body>
     Контент карточки
   </Card.Body>
-  <Card.Footer>
+  <Card.Footer divider>
     <Button appearance="ghost">Отмена</Button>
     <Button>Сохранить</Button>
   </Card.Footer>
@@ -422,8 +431,10 @@ const collapsible = [
 
 <Card>
   <Card.Header>
-    <Card.Header.Title>Заголовок</Card.Header.Title>
-    <Card.Header.Subtitle>Подзаголовок</Card.Header.Subtitle>
+    <Card.Header.Content>
+      <Card.Header.Title>Заголовок</Card.Header.Title>
+      <Card.Header.Subtitle>Подзаголовок</Card.Header.Subtitle>
+    </Card.Header.Content>
   </Card.Header>
 </Card>
 

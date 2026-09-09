@@ -3,6 +3,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import { screen } from '@testing-library/dom';
 import Card from '../components/Card/Card';
+import styles from '../components/Card/Card.module.css';
 import Button from '../components/Button/Button';
 
 type ToolbarLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
@@ -23,10 +24,123 @@ const ToolbarLink = ({
 );
 
 describe('Card', () => {
+  it.each(['props', 'children'])('renders one decorative icon beside title and subtitle supplied through %s', (source) => {
+    const icon = <svg data-testid="header-icon" viewBox="0 0 24 24" />;
+    render(
+      <Card>
+        {source === 'props' ? (
+          <Card.Header icon={icon} title="Параметры сдачи" subtitle="Куда передать поставку">
+            <Card.Header.Icon />
+            <Card.Header.Content />
+            <Card.Header.Aside><Button>Изменить</Button></Card.Header.Aside>
+          </Card.Header>
+        ) : (
+          <Card.Header icon={icon}>
+            <Card.Header.Icon />
+            <Card.Header.Content>
+              <Card.Header.Title>Параметры сдачи</Card.Header.Title>
+              <Card.Header.Subtitle>Куда передать поставку</Card.Header.Subtitle>
+            </Card.Header.Content>
+            <Card.Header.Aside><Button>Изменить</Button></Card.Header.Aside>
+          </Card.Header>
+        )}
+      </Card>,
+    );
+
+    const iconSlot = screen.getByTestId('header-icon').parentElement!;
+    const lead = iconSlot.parentElement!;
+    expect(iconSlot).toHaveAttribute('aria-hidden', 'true');
+    expect(lead).toContainElement(screen.getByRole('heading', { name: 'Параметры сдачи' }));
+    expect(lead).toContainElement(screen.getByText('Куда передать поставку'));
+    expect(screen.getByRole('heading').parentElement).not.toContainElement(screen.getByRole('button', { name: 'Изменить' }));
+    expect(screen.getAllByTestId('header-icon')).toHaveLength(1);
+  });
+
+  it('renders the default icon and text layout without explicit children', () => {
+    render(<Card.Header icon={<span data-testid="icon">★</span>} title="Заголовок" subtitle="Подзаголовок" />);
+    expect(screen.getAllByTestId('icon')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Заголовок' })).toBeInTheDocument();
+    expect(screen.getByText('Подзаголовок')).toBeInTheDocument();
+  });
+
+  it('allows explicit Icon children to override or suppress the contextual icon', () => {
+    const renderIcon = (children: React.ReactNode) => (
+      <Card.Header icon={<span>Default icon</span>}>
+        <Card.Header.Icon>{children}</Card.Header.Icon>
+      </Card.Header>
+    );
+    const { rerender } = render(renderIcon(<span>Custom icon</span>));
+    expect(screen.getByText('Custom icon')).toBeInTheDocument();
+    expect(screen.queryByText('Default icon')).not.toBeInTheDocument();
+    rerender(renderIcon(null));
+    expect(screen.queryByText('Custom icon')).not.toBeInTheDocument();
+    expect(screen.queryByText('Default icon')).not.toBeInTheDocument();
+  });
+
+  it('resolves icon context inside a custom layout and updates it without duplication', () => {
+    const header = (icon: React.ReactNode) => (
+      <Card.Header icon={icon}>
+        <div style={{ display: 'grid' }}>
+          <Card.Header.Icon data-testid="icon-slot" className="custom-icon" />
+          <Card.Header.Content><Card.Header.Title>Title</Card.Header.Title></Card.Header.Content>
+          <Card.Header.Aside><Button>Action</Button></Card.Header.Aside>
+        </div>
+      </Card.Header>
+    );
+    const { rerender } = render(header(<span>First icon</span>));
+    expect(screen.getAllByText('First icon')).toHaveLength(1);
+    expect(screen.getByTestId('icon-slot')).toHaveClass('custom-icon');
+    rerender(header(<span>Next icon</span>));
+    expect(screen.queryByText('First icon')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Next icon')).toHaveLength(1);
+    rerender(header(undefined));
+    expect(screen.queryByTestId('icon-slot')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Action' })).toBeInTheDocument();
+  });
+
+  it('keeps header and footer dividers disabled by default', () => {
+    render(
+      <Card>
+        <Card.Header data-testid="header" title="Заголовок" />
+        <Card.Body data-testid="body">Контент</Card.Body>
+        <Card.Footer data-testid="footer">Действия</Card.Footer>
+      </Card>,
+    );
+
+    expect(screen.getByTestId('header')).not.toHaveClass(styles.headerDivider);
+    expect(screen.getByTestId('footer')).not.toHaveClass(styles.footerDivider);
+    expect(screen.getByTestId('body')).not.toHaveClass(styles.headerDivider, styles.footerDivider);
+  });
+
+  it('toggles header and footer dividers independently while preserving HTML props', () => {
+    const card = (headerDivider: boolean, footerDivider: boolean) => (
+      <Card>
+        <Card.Header divider={headerDivider} data-testid="header" title="Заголовок" className="custom-header" />
+        <Card.Body>Контент</Card.Body>
+        <Card.Footer divider={footerDivider} data-testid="footer" className="custom-footer" aria-label="Действия">
+          Сохранить
+        </Card.Footer>
+      </Card>
+    );
+    const { rerender } = render(card(true, false));
+    expect(screen.getByTestId('header')).toHaveClass(styles.headerDivider, 'custom-header');
+    expect(screen.getByTestId('footer')).not.toHaveClass(styles.footerDivider);
+
+    rerender(card(false, true));
+    expect(screen.getByTestId('header')).not.toHaveClass(styles.headerDivider);
+    expect(screen.getByTestId('footer')).toHaveClass(styles.footerDivider, 'custom-footer');
+    expect(screen.getByTestId('footer')).toHaveAttribute('aria-label', 'Действия');
+    expect(screen.getByTestId('header')).not.toHaveAttribute('divider');
+    expect(screen.getByTestId('footer')).not.toHaveAttribute('divider');
+  });
+
   it('renders header, body, and footer', () => {
     render(
       <Card>
-        <Card.Header title="Заголовок" right={<Button appearance="ghost">...</Button>} />
+        <Card.Header title="Заголовок">
+          <Card.Header.Content />
+          <Card.Header.Aside><Button appearance="ghost">...</Button></Card.Header.Aside>
+        </Card.Header>
         <Card.Body>Контент</Card.Body>
         <Card.Footer>
           <Button>Сохранить</Button>
@@ -276,7 +390,7 @@ describe('Card', () => {
   it('renders custom header children node', () => {
     render(
       <Card>
-        <Card.Header right={<Button appearance="ghost">...</Button>}>
+        <Card.Header>
           <div>
             <strong>Кастомный заголовок</strong>
           </div>
