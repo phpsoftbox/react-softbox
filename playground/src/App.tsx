@@ -1706,7 +1706,7 @@ export default function App() {
           </Card>
 
           <Card className="gridCard gridCardWide">
-            <Card.Toolbar align="between" inset={false}>
+            <Card.Toolbar align="between" inset={false} dividerBottom>
               <Card.Toolbar.Group>
                 <Text size="sm" muted>Всего записей: {sortedRows.length}</Text>
               </Card.Toolbar.Group>

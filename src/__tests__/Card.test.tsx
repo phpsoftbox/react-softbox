@@ -24,6 +24,31 @@ const ToolbarLink = ({
 );
 
 describe('Card', () => {
+  it('controls top, bottom, and group toolbar dividers independently', () => {
+    const toolbar = (dividerTop?: boolean, dividerBottom?: boolean, dividers = true) => (
+      <Card.Toolbar data-testid="toolbar" dividerTop={dividerTop} dividerBottom={dividerBottom} dividers={dividers}>
+        <Card.Toolbar.Button label="Первый" />
+        <Card.Toolbar.Button label="Второй" />
+      </Card.Toolbar>
+    );
+    const { rerender } = render(toolbar(true, false, false));
+    const root = screen.getByTestId('toolbar');
+    expect(root).toHaveClass(styles.toolbarDividerTop);
+    expect(root).not.toHaveClass(styles.toolbarDividerBottom);
+    expect(root.querySelector('[data-toolbar-divider="true"]')).toBeNull();
+
+    rerender(toolbar(false, true));
+    expect(root).not.toHaveClass(styles.toolbarDividerTop);
+    expect(root).toHaveClass(styles.toolbarDividerBottom);
+    expect(root.querySelector('[data-toolbar-divider="true"]')).toBeInTheDocument();
+    expect(root).not.toHaveAttribute('dividerTop');
+    expect(root).not.toHaveAttribute('dividerBottom');
+
+    rerender(toolbar());
+    expect(root).not.toHaveClass(styles.toolbarDividerTop);
+    expect(root).not.toHaveClass(styles.toolbarDividerBottom);
+  });
+
   it.each(['props', 'children'])('renders one decorative icon beside title and subtitle supplied through %s', (source) => {
     const icon = <svg data-testid="header-icon" viewBox="0 0 24 24" />;
     render(
