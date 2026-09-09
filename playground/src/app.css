@@ -32,6 +32,24 @@ body {
   grid-column: span 12;
 }
 
+.toolbarColumns.toolbarColumns {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.toolbarColumn {
+  display: flex;
+  min-width: 0;
+}
+
+.toolbarColumn-center {
+  justify-content: center;
+}
+
+.toolbarColumn-right {
+  justify-content: flex-end;
+}
+
 .dropdownWide {
   min-width: 320px;
 }
@@ -122,6 +140,14 @@ body {
 }
 
 @media (max-width: 720px) {
+  .toolbarColumns.toolbarColumns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .toolbarColumn {
+    justify-content: flex-start;
+  }
+
   .wizardSplit {
     flex-direction: column;
   }

@@ -183,37 +183,39 @@ Custom variants задаются через `--variant-{name}-*` токены:
 
 ### Card.Toolbar
 
-`Card.Toolbar` занимает всю внутреннюю ширину Card. По умолчанию `inset=true` задаёт его контенту внутренние отступы Card при размещении непосредственно в Card; `inset={false}` оставляет компактный padding Toolbar без боковых границ и скруглений. `dividerTop` и `dividerBottom` независимо включают линии сверху и снизу (по умолчанию выключены). `dividers` управляет разделителями между группами.
+`Card.Toolbar` по умолчанию (`inset=true`) — панель в скруглённой рамке: при размещении непосредственно в Card её внешний отступ равен отступу секций, а края рамки выровнены с контентом Header/Body. `inset={false}` — полоса на всю ширину без боковых границ и скруглений; её контент получает боковой padding Card и выровнен с Header/Body. `dividerTop` и `dividerBottom` независимо управляют верхней и нижней границами (по умолчанию равны `inset`). `Card.Toolbar.Group divider="none|left|right|both"` задаёт боковые разделители (по умолчанию `none`). Group должен находиться внутри Toolbar, в том числе через Grid/Row.
 
-`Card.Toolbar align="left|right|between"` задает общее выравнивание прямых групп. Если нужно разнести группы по зонам, используйте `Card.Toolbar.Section`:
+Для колонок используйте Grid, для ряда с переносами — Row. Toolbar не добавляет обёрток и не управляет шириной колонок.
 
 ```tsx
-<Card.Toolbar>
-  <Card.Toolbar.Section align="left">
-    <Card.Toolbar.Group attached>
-      <Card.Toolbar.Button label="Все" />
-      <Card.Toolbar.Button label="Активные" />
-    </Card.Toolbar.Group>
-  </Card.Toolbar.Section>
-
-  <Card.Toolbar.Section align="center">
-    <Card.Toolbar.Group attached>
-      <Card.Toolbar.Button label="День" />
-      <Card.Toolbar.Button label="Неделя" />
-    </Card.Toolbar.Group>
-  </Card.Toolbar.Section>
-
-  <Card.Toolbar.Section align="right">
+<Card.Toolbar inset={false} dividerBottom>
+  <Grid columns={2} columnsSm={1} gap="16px">
     <Card.Toolbar.Group>
-      <Button.Split
-        variant="primary"
-        main={{ label: 'Импорт', onClick: handleImport }}
-        menu={{ ariaLabel: 'Действия импорта', items }}
-      />
+      <Text>Всего записей: 5</Text>
     </Card.Toolbar.Group>
-  </Card.Toolbar.Section>
+    <Card.Toolbar.Group divider="left" style={{ justifyContent: 'flex-end' }}>
+      <Card.Toolbar.Button label="Экспорт" />
+      <Card.Toolbar.Button label="Добавить" />
+    </Card.Toolbar.Group>
+  </Grid>
 </Card.Toolbar>
 ```
+
+Для разнесения по краям без разделителя:
+
+```tsx
+<Card.Toolbar inset={false}>
+  <Row justify="space-between" wrap="wrap" gap="16px">
+    <Text>Всего записей: 5</Text>
+    <Card.Toolbar.Group>
+      <Card.Toolbar.Button label="Экспорт" />
+      <Card.Toolbar.Button label="Добавить" />
+    </Card.Toolbar.Group>
+  </Row>
+</Card.Toolbar>
+```
+
+Удалены `Toolbar.align`, `Toolbar.dividers` и `Toolbar.Section`: раскладку задают Grid/Row, а боковые линии — Group. Подробнее о переходе: [Card](docs/card.md).
 
 ### Input / FloatLabel
 

@@ -31,21 +31,19 @@ type CardSectionProps = React.HTMLAttributes<HTMLDivElement>;
 type CardFooterProps = CardSectionProps & {
   divider?: boolean;
 };
-export type CardToolbarSectionAlign = 'left' | 'center' | 'right';
 export type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
-  /** Apply Card section padding when placed directly inside Card. Defaults to true. */
+  /** Inset rounded panel; false renders a full-width strip with section-aligned content. Defaults to true. */
   inset?: boolean;
+  /** Show the top border. Defaults to inset. */
   dividerTop?: boolean;
+  /** Show the bottom border. Defaults to inset. */
   dividerBottom?: boolean;
-  align?: 'left' | 'right' | 'between';
   buttonHideLabelOn?: 'never' | 'md';
-  dividers?: boolean;
-};
-export type CardToolbarSectionProps = React.HTMLAttributes<HTMLDivElement> & {
-  align?: CardToolbarSectionAlign;
 };
 export type CardToolbarGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   attached?: boolean;
+  /** Explicit side dividers, independent of layout. Defaults to none. */
+  divider?: 'none' | 'left' | 'right' | 'both';
 };
 type CardToolbarButtonBaseProps<TElement extends React.ElementType = 'button'> = Omit<ButtonProps<TElement>, 'children'> & {
   icon?: React.ReactNode;
@@ -60,13 +58,7 @@ type CardToolbarButtonComponent = <TElement extends React.ElementType = 'button'
   props: CardToolbarButtonProps<TElement>
 ) => React.ReactElement | null;
 
-type ToolbarRowMeta = {
-  row: number;
-  rowStart: boolean;
-};
-
 type CardToolbarComponent = React.FC<CardToolbarProps> & {
-  Section: React.FC<CardToolbarSectionProps>;
   Group: React.FC<CardToolbarGroupProps>;
   Button: CardToolbarButtonComponent;
 };
@@ -177,43 +169,7 @@ function CardFooter({ divider = false, className, ...props }: CardFooterProps) {
   return <div className={classes} {...props} />;
 }
 
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
-const CardToolbarContext = React.createContext<{ hideLabelOn: 'never' | 'md' }>({ hideLabelOn: 'md' });
-
-const resolveToolbarRows = (elements: HTMLElement[]): ToolbarRowMeta[] => {
-  let currentTop: number | null = null;
-  let currentRow = 0;
-
-  return elements.map((element) => {
-    const top = Math.round(element.offsetTop);
-    if (currentTop === null) {
-      currentTop = top;
-      return { row: currentRow, rowStart: true };
-    }
-
-    if (Math.abs(top - currentTop) > 1) {
-      currentTop = top;
-      currentRow += 1;
-      return { row: currentRow, rowStart: true };
-    }
-
-    return { row: currentRow, rowStart: false };
-  });
-};
-
-const isSameRows = (left: ToolbarRowMeta[], right: ToolbarRowMeta[]) => {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  for (let index = 0; index < left.length; index += 1) {
-    if (left[index].row !== right[index].row || left[index].rowStart !== right[index].rowStart) {
-      return false;
-    }
-  }
-
-  return true;
-};
+const CardToolbarContext = React.createContext<{ hideLabelOn: 'never' | 'md' } | null>(null);
 
 const toolbarButtonSizeClass: Record<ButtonSize, string> = {
   sm: styles.toolbarButtonSizeSm,
@@ -221,134 +177,26 @@ const toolbarButtonSizeClass: Record<ButtonSize, string> = {
   lg: styles.toolbarButtonSizeLg,
 };
 
-const getToolbarSectionAlign = (child: React.ReactNode): CardToolbarSectionAlign | undefined => {
-  if (!React.isValidElement<CardToolbarSectionProps>(child) || child.type !== CardToolbarSection) {
-    return undefined;
-  }
-
-  return child.props.align ?? 'left';
-};
-
 function CardToolbarBase({
   inset = true,
-  dividerTop = false,
-  dividerBottom = false,
-  align = 'left',
+  dividerTop = inset,
+  dividerBottom = inset,
   buttonHideLabelOn = 'md',
-  dividers = true,
   className,
   children,
   ...props
 }: CardToolbarProps) {
-  const alignClass = align === 'right'
-    ? styles.toolbarAlignRight
-    : align === 'between'
-      ? styles.toolbarAlignBetween
-      : styles.toolbarAlignLeft;
-  const rootRef = React.useRef<HTMLDivElement>(null);
-  const [rows, setRows] = React.useState<ToolbarRowMeta[]>([]);
-  const toolbarChildren = React.Children.toArray(children);
-  const hasSections = toolbarChildren.some((child) => getToolbarSectionAlign(child) !== undefined);
   const classes = [
     styles.toolbar,
     inset ? styles.toolbarInset : null,
     dividerTop ? styles.toolbarDividerTop : null,
     dividerBottom ? styles.toolbarDividerBottom : null,
-    alignClass,
-    hasSections ? styles.toolbarSections : null,
     className,
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  useIsomorphicLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) {
-      return;
-    }
-
-    let frameId: number | null = null;
-
-    const collect = () => {
-      root.setAttribute('data-toolbar-measuring', 'true');
-      try {
-        const items = Array.from(root.querySelectorAll<HTMLElement>('[data-card-toolbar-item="true"]'));
-        const nextRows = resolveToolbarRows(items);
-        setRows((previousRows) => (isSameRows(previousRows, nextRows) ? previousRows : nextRows));
-      } finally {
-        root.removeAttribute('data-toolbar-measuring');
-      }
-    };
-
-    const scheduleCollect = () => {
-      if (typeof window === 'undefined') {
-        collect();
-        return;
-      }
-      if (frameId !== null) {
-        window.cancelAnimationFrame(frameId);
-      }
-      frameId = window.requestAnimationFrame(() => {
-        frameId = null;
-        collect();
-      });
-    };
-
-    scheduleCollect();
-    const handleResize = () => scheduleCollect();
-    window.addEventListener('resize', handleResize);
-
-    if (typeof ResizeObserver !== 'undefined') {
-      const observer = new ResizeObserver(() => scheduleCollect());
-      observer.observe(root);
-      Array.from(root.children).forEach((child) => {
-        if (child instanceof HTMLElement) {
-          observer.observe(child);
-        }
-      });
-      return () => {
-        observer.disconnect();
-        window.removeEventListener('resize', handleResize);
-        if (frameId !== null) {
-          window.cancelAnimationFrame(frameId);
-        }
-      };
-    }
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (frameId !== null) {
-        window.cancelAnimationFrame(frameId);
-      }
-    };
-  }, [toolbarChildren.length]);
+  ].filter(Boolean).join(' ');
 
   return (
     <CardToolbarContext.Provider value={{ hideLabelOn: buttonHideLabelOn }}>
-      <div ref={rootRef} className={classes} {...props}>
-        {toolbarChildren.map((child, index) => {
-          const rowMeta = rows[index];
-          const key = React.isValidElement(child) && child.key !== null ? child.key : `toolbar-item-${index}`;
-          const row = rowMeta?.row ?? 0;
-          const rowStart = rowMeta?.rowStart ?? index === 0;
-          const sectionAlign = getToolbarSectionAlign(child);
-
-          return (
-            <div
-              key={key}
-              className={styles.toolbarItem}
-              data-card-toolbar-item="true"
-              data-toolbar-row={row}
-              data-toolbar-row-start={rowStart ? 'true' : 'false'}
-              data-toolbar-row-wrapped={row > 0 ? 'true' : 'false'}
-              data-toolbar-divider={dividers && !hasSections && !rowStart ? 'true' : 'false'}
-              data-toolbar-section-align={sectionAlign}
-            >
-              {child}
-            </div>
-          );
-        })}
-      </div>
+      <div className={classes} {...props}>{children}</div>
     </CardToolbarContext.Provider>
   );
 }
@@ -363,7 +211,7 @@ function CardToolbarButton<TElement extends React.ElementType = 'button'>({
   ...props
 }: CardToolbarButtonProps<TElement>) {
   const toolbarConfig = React.useContext(CardToolbarContext);
-  const resolvedHideLabelOn = hideLabelOn ?? toolbarConfig.hideLabelOn;
+  const resolvedHideLabelOn = hideLabelOn ?? toolbarConfig?.hideLabelOn ?? 'md';
   const resolvedSize = (size ?? 'md') as ButtonSize;
   const resolvedAppearance = (appearance ?? 'outline') as ButtonAppearance;
   const hasIcon = icon !== undefined && icon !== null;
@@ -410,15 +258,15 @@ function CardToolbarButton<TElement extends React.ElementType = 'button'>({
   );
 }
 
-function CardToolbarSection({ align = 'left', className, ...props }: CardToolbarSectionProps) {
-  const classes = [styles.toolbarSection, className].filter(Boolean).join(' ');
-
-  return <div className={classes} data-card-toolbar-section={align} {...props} />;
-}
-
-function CardToolbarGroup({ attached = false, className, role, ...props }: CardToolbarGroupProps) {
+function CardToolbarGroup({ attached = false, divider = 'none', className, role, ...props }: CardToolbarGroupProps) {
+  const toolbar = React.useContext(CardToolbarContext);
+  if (!toolbar) {
+    throw new Error('Card.Toolbar.Group must be rendered inside Card.Toolbar (layout wrappers are allowed).');
+  }
   const classes = [
     styles.toolbarGroup,
+    divider === 'left' || divider === 'both' ? styles.toolbarGroupDividerLeft : null,
+    divider === 'right' || divider === 'both' ? styles.toolbarGroupDividerRight : null,
     attached ? styles.toolbarGroupAttached : null,
     attached ? 'btn-group btn-group-horizontal' : null,
     className,
@@ -429,7 +277,6 @@ function CardToolbarGroup({ attached = false, className, role, ...props }: CardT
 }
 
 const CardToolbar = Object.assign(CardToolbarBase, {
-  Section: CardToolbarSection,
   Group: CardToolbarGroup,
   Button: CardToolbarButton,
 }) as CardToolbarComponent;

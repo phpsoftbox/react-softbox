@@ -6,6 +6,25 @@ import userEvent from '@testing-library/user-event';
 import Alert from '../components/Alert/Alert';
 
 describe('Alert', () => {
+  it.each(['default', 'primary', 'secondary', 'info', 'dark', 'light', 'neutral'] as const)(
+    'keeps the information dot separate from the rounded stem for %s at the smallest icon size',
+    (variant) => {
+      const { container } = render(<Alert variant={variant} iconBgFilled>Сообщение</Alert>);
+      const svg = container.querySelector('svg')!;
+      const dot = svg.querySelector('circle[fill="currentColor"]')!;
+      const stem = svg.querySelector('path')!;
+      expect(svg).toHaveAttribute('aria-hidden', 'true');
+      expect(dot).toHaveAttribute('stroke', 'none');
+      expect(stem).toHaveAttribute('stroke-linecap', 'round');
+
+      const [, , startY] = stem.getAttribute('d')!.match(/^M([\d.]+) ([\d.]+)v[\d.]+$/)!;
+      const dotBottom = Number(dot.getAttribute('cy')) + Number(dot.getAttribute('r'));
+      const stemTop = Number(startY) - Number(svg.getAttribute('stroke-width')) / 2;
+      // Filled icon panels render the 20-unit viewBox at 16px.
+      expect((stemTop - dotBottom) * 16 / 20).toBeGreaterThanOrEqual(1.25);
+    },
+  );
+
   it('renders title and message', () => {
     render(<Alert title="Info">Сообщение</Alert>);
 
