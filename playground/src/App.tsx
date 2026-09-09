@@ -571,6 +571,51 @@ export default function App() {
         </Row>
 
         <Grid columns={12} columnsMd={6} columnsSm={12} gap="24px">
+          <Card className="gridCard" data-testid="toolbar-inset-example">
+            <Card.Header title="Toolbar · inset=true" subtitle="Рамка выровнена с контентом Header и Body." />
+            <Card.Toolbar inset={true} aria-label="Панель с рамкой">
+              <Card.Toolbar.Group>
+                <Card.Toolbar.Button label="Обновить" onClick={() => pushToast('info')} />
+                <Card.Toolbar.Button label="Создать" onClick={() => pushToast('success')} />
+              </Card.Toolbar.Group>
+            </Card.Toolbar>
+            <Card.Body>
+              <Text>Панель имеет внешние отступы Card, полную рамку и скругления. Внутри — компактные отступы для кнопок.</Text>
+            </Card.Body>
+          </Card>
+
+          <Card className="gridCard" data-testid="toolbar-full-width-example">
+            <Card.Header title="Toolbar · inset=false" subtitle="Кнопки выровнены с контентом Header и Body." />
+            <Card.Toolbar inset={false} dividerTop dividerBottom aria-label="Полоса с двумя разделителями">
+              <Card.Toolbar.Group>
+                <Card.Toolbar.Button label="Обновить" onClick={() => pushToast('info')} />
+                <Card.Toolbar.Button label="Создать" onClick={() => pushToast('success')} />
+              </Card.Toolbar.Group>
+            </Card.Toolbar>
+            <Card.Body>
+              <Text>Фон и линии занимают всю ширину. Боковых границ и скруглений нет, но боковой отступ контента совпадает с этой секцией.</Text>
+            </Card.Body>
+            <Card.Toolbar inset={false} dividerTop dividerBottom={false} aria-label="Полоса только с верхним разделителем">
+              <Card.Toolbar.Button label="Только dividerTop" onClick={() => pushToast('info')} />
+            </Card.Toolbar>
+          </Card>
+
+          <Card className="gridCard gridCardWide" data-testid="toolbar-divider-examples">
+            <Card.Header title="Toolbar · Grid и разделители Group" subtitle="Четыре равные колонки; на узком экране — одна. Разделители задаются явно." />
+            <Card.Toolbar inset={false} dividerTop dividerBottom>
+              <Grid columns={4} columnsMd={2} columnsSm={1} gap="16px" data-testid="toolbar-divider-grid">
+                {(['none', 'left', 'right', 'both'] as const).map((divider) => (
+                  <Card.Toolbar.Group key={divider} divider={divider} data-testid={`toolbar-group-${divider}`}>
+                    <Card.Toolbar.Button label={`divider="${divider}"`} onClick={() => pushToast('info')} />
+                  </Card.Toolbar.Group>
+                ))}
+              </Grid>
+            </Card.Toolbar>
+            <Card.Body>
+              <Text>Group может находиться внутри Grid или Row. Линии принадлежат группе и сохраняются при переносе; без divider их нет.</Text>
+            </Card.Body>
+          </Card>
+
           <Card className="gridCard">
             <Card.Header
               icon={(
@@ -1348,124 +1393,130 @@ export default function App() {
           </Card>
 
           <Card className="gridCard gridCardWide">
-            <Card.Header title="Toolbar Groups" subtitle="Группы с разделителями как в desktop UI." />
+            <Card.Header title="Toolbar Groups" subtitle="Grid/Row задают раскладку, Group — явные боковые разделители." />
             <Card.Body>
               <Stack gap="12px">
-                <Card.Toolbar align="left">
-                  <Card.Toolbar.Group attached aria-label="Toolbar view mode">
-                    <Card.Toolbar.Button label="Обзор" />
-                    <Card.Toolbar.Button label="Метрики" />
-                    <Card.Toolbar.Button label="Логи" />
-                  </Card.Toolbar.Group>
-                  <Card.Toolbar.Group attached>
-                    <Tooltip content="Назад" placement="top">
+                <Card.Toolbar>
+                  <Row gap="var(--card-toolbar-group-divider-gap, var(--spacing-2))" wrap="wrap" data-testid="toolbar-balanced-dividers">
+                    <Card.Toolbar.Group attached aria-label="Toolbar view mode">
+                      <Card.Toolbar.Button label="Обзор" />
+                      <Card.Toolbar.Button label="Метрики" />
+                      <Card.Toolbar.Button label="Логи" />
+                    </Card.Toolbar.Group>
+                    <Card.Toolbar.Group attached divider="left">
+                      <Tooltip content="Назад" placement="top">
+                        <Card.Toolbar.Button
+                          aria-label="Назад"
+                          icon={<span aria-hidden="true">←</span>}
+                        />
+                      </Tooltip>
+                      <Tooltip content="Вперед" placement="top">
+                        <Card.Toolbar.Button
+                          aria-label="Вперед"
+                          icon={<span aria-hidden="true">→</span>}
+                        />
+                      </Tooltip>
+                    </Card.Toolbar.Group>
+                    <Card.Toolbar.Group attached divider="left">
                       <Card.Toolbar.Button
-                        aria-label="Назад"
-                        icon={<span aria-hidden="true">←</span>}
+                        icon={<span aria-hidden="true">✂</span>}
+                        label="Вырезать"
                       />
-                    </Tooltip>
-                    <Tooltip content="Вперед" placement="top">
                       <Card.Toolbar.Button
-                        aria-label="Вперед"
-                        icon={<span aria-hidden="true">→</span>}
+                        icon={<span aria-hidden="true">⎘</span>}
+                        label="Копировать"
                       />
-                    </Tooltip>
-                  </Card.Toolbar.Group>
-                  <Card.Toolbar.Group attached>
-                    <Card.Toolbar.Button
-                      icon={<span aria-hidden="true">✂</span>}
-                      label="Вырезать"
-                    />
-                    <Card.Toolbar.Button
-                      icon={<span aria-hidden="true">⎘</span>}
-                      label="Копировать"
-                    />
-                    <Card.Toolbar.Button
-                      icon={<span aria-hidden="true">⎘</span>}
-                      label="Вставить"
-                    />
-                  </Card.Toolbar.Group>
-                  <Card.Toolbar.Group>
-                    <Tooltip content="Настройки" placement="top">
                       <Card.Toolbar.Button
-                        aria-label="Настройки"
-                        icon={<span aria-hidden="true">⚙</span>}
+                        icon={<span aria-hidden="true">⎘</span>}
+                        label="Вставить"
                       />
-                    </Tooltip>
-                    <Card.Toolbar.Button
-                      icon={<span aria-hidden="true">✓</span>}
-                      label="Сохранить"
-                      variant="primary"
-                    />
-                    <Card.Toolbar.Button
-                      as={DemoInertiaButtonLink}
-                      href="#toolbar-link"
-                      method="post"
-                      preserveScroll
-                      icon={<span aria-hidden="true">↗</span>}
-                      label="Link"
-                      variant="info"
-                    />
-                  </Card.Toolbar.Group>
-                </Card.Toolbar>
-                <Card.Toolbar align="left" dividers={false}>
-                  <Card.Toolbar.Group attached aria-label="Toolbar without dividers">
-                    <Card.Toolbar.Button label="Все" />
-                    <Card.Toolbar.Button label="Активные" />
-                    <Card.Toolbar.Button label="Архив" />
-                  </Card.Toolbar.Group>
-                  <Card.Toolbar.Group>
-                    <Card.Toolbar.Button
-                      aria-label="Фильтры"
-                      icon={<span aria-hidden="true">⚙</span>}
-                    />
-                    <Card.Toolbar.Button
-                      as={DemoInertiaButtonLink}
-                      href="#toolbar-link"
-                      method="post"
-                      preserveScroll
-                      icon={<span aria-hidden="true">↗</span>}
-                      label="Link"
-                    />
-                  </Card.Toolbar.Group>
+                    </Card.Toolbar.Group>
+                    <Card.Toolbar.Group divider="left">
+                      <Tooltip content="Настройки" placement="top">
+                        <Card.Toolbar.Button
+                          aria-label="Настройки"
+                          icon={<span aria-hidden="true">⚙</span>}
+                        />
+                      </Tooltip>
+                      <Card.Toolbar.Button
+                        icon={<span aria-hidden="true">✓</span>}
+                        label="Сохранить"
+                        variant="primary"
+                      />
+                      <Card.Toolbar.Button
+                        as={DemoInertiaButtonLink}
+                        href="#toolbar-link"
+                        method="post"
+                        preserveScroll
+                        icon={<span aria-hidden="true">↗</span>}
+                        label="Link"
+                        variant="info"
+                      />
+                    </Card.Toolbar.Group>
+                  </Row>
                 </Card.Toolbar>
                 <Card.Toolbar>
-                  <Card.Toolbar.Section align="left">
-                    <Card.Toolbar.Group attached aria-label="Toolbar status">
+                  <Row gap="16px" wrap="wrap">
+                    <Card.Toolbar.Group attached aria-label="Toolbar without dividers">
                       <Card.Toolbar.Button label="Все" />
-                      <Card.Toolbar.Button label="Открытые" />
-                      <Card.Toolbar.Button label="Закрытые" />
+                      <Card.Toolbar.Button label="Активные" />
+                      <Card.Toolbar.Button label="Архив" />
                     </Card.Toolbar.Group>
-                  </Card.Toolbar.Section>
-                  <Card.Toolbar.Section align="center">
-                    <Card.Toolbar.Group attached aria-label="Toolbar density">
-                      <Card.Toolbar.Button label="Compact" />
-                      <Card.Toolbar.Button label="Comfort" />
-                    </Card.Toolbar.Group>
-                  </Card.Toolbar.Section>
-                  <Card.Toolbar.Section align="right">
-                    <Card.Toolbar.Group attached aria-label="Toolbar import actions">
+                    <Card.Toolbar.Group>
                       <Card.Toolbar.Button
-                        aria-label="Обновить"
-                        icon={<span aria-hidden="true">↻</span>}
+                        aria-label="Фильтры"
+                        icon={<span aria-hidden="true">⚙</span>}
                       />
-                      <Button.Split
-                        variant="primary"
-                        main={{
-                          label: 'Импорт',
-                          icon: <span aria-hidden="true">↑</span>,
-                          onClick: () => pushToast('info'),
-                        }}
-                        menu={{
-                          ariaLabel: 'Действия импорта',
-                          items: [
-                            { key: 'ozon', label: 'Импорт Ozon', onSelect: () => pushToast('success') },
-                            { key: 'reset', label: 'Сбросить кеш', danger: true, onSelect: () => pushToast('danger') },
-                          ],
-                        }}
+                      <Card.Toolbar.Button
+                        as={DemoInertiaButtonLink}
+                        href="#toolbar-link"
+                        method="post"
+                        preserveScroll
+                        icon={<span aria-hidden="true">↗</span>}
+                        label="Link"
                       />
                     </Card.Toolbar.Group>
-                  </Card.Toolbar.Section>
+                  </Row>
+                </Card.Toolbar>
+                <Card.Toolbar aria-label="Три колонки через Grid">
+                  <Grid className="toolbarColumns" gap="16px">
+                    <div className="toolbarColumn toolbarColumn-left">
+                      <Card.Toolbar.Group attached aria-label="Toolbar status">
+                        <Card.Toolbar.Button label="Все" />
+                        <Card.Toolbar.Button label="Открытые" />
+                        <Card.Toolbar.Button label="Закрытые" />
+                      </Card.Toolbar.Group>
+                    </div>
+                    <div className="toolbarColumn toolbarColumn-center">
+                      <Card.Toolbar.Group attached aria-label="Toolbar density">
+                        <Card.Toolbar.Button label="Compact" />
+                        <Card.Toolbar.Button label="Comfort" />
+                      </Card.Toolbar.Group>
+                    </div>
+                    <div className="toolbarColumn toolbarColumn-right">
+                      <Card.Toolbar.Group attached aria-label="Toolbar import actions">
+                        <Card.Toolbar.Button
+                          aria-label="Обновить"
+                          icon={<span aria-hidden="true">↻</span>}
+                        />
+                        <Button.Split
+                          variant="primary"
+                          main={{
+                            label: 'Импорт',
+                            icon: <span aria-hidden="true">↑</span>,
+                            onClick: () => pushToast('info'),
+                          }}
+                          menu={{
+                            ariaLabel: 'Действия импорта',
+                            items: [
+                              { key: 'ozon', label: 'Импорт Ozon', onSelect: () => pushToast('success') },
+                              { key: 'reset', label: 'Сбросить кеш', danger: true, onSelect: () => pushToast('danger') },
+                            ],
+                          }}
+                        />
+                      </Card.Toolbar.Group>
+                    </div>
+                  </Grid>
                 </Card.Toolbar>
               </Stack>
             </Card.Body>
@@ -1706,16 +1757,18 @@ export default function App() {
           </Card>
 
           <Card className="gridCard gridCardWide">
-            <Card.Toolbar align="between" inset={false} dividerBottom>
-              <Card.Toolbar.Group>
-                <Text size="sm" muted>Всего записей: {sortedRows.length}</Text>
-              </Card.Toolbar.Group>
-              <Card.Toolbar.Group>
-                <Row gap="8px" wrap="wrap">
-                  <Button size="sm" appearance="outline">Экспорт</Button>
-                  <Button size="sm" variant="primary">Добавить</Button>
-                </Row>
-              </Card.Toolbar.Group>
+            <Card.Toolbar inset={false} dividerBottom aria-label="Действия таблицы">
+              <Row justify="space-between" gap="16px" wrap="wrap">
+                <Card.Toolbar.Group>
+                  <Text size="sm" muted>Всего записей: {sortedRows.length}</Text>
+                </Card.Toolbar.Group>
+                <Card.Toolbar.Group>
+                  <Row gap="8px" wrap="wrap">
+                    <Button size="sm" appearance="outline">Экспорт</Button>
+                    <Button size="sm" variant="primary">Добавить</Button>
+                  </Row>
+                </Card.Toolbar.Group>
+              </Row>
             </Card.Toolbar>
             <Card.Header title="Tables" />
             <Card.Body>

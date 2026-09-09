@@ -76,7 +76,7 @@
 - Удалите отрицательные margin и расширение ширины Header/Footer, компенсировавшие старый padding Card. Используйте `divider` вместо самодельной линии.
 - Замените удалённый `right={actions}` на `<Card.Header.Aside>{actions}</Card.Header.Aside>`. В явной композиции добавьте `<Card.Header.Content />` для вывода пропсов title/subtitle и `<Card.Header.Icon />` для иконки из пропса. Дочерние Title и Subtitle объединяйте в Content, чтобы они занимали одну колонку.
 - Для таблиц и другого контента на всю ширину используйте `<Card.Body style={{ padding: 0 }}>…</Card.Body>`.
-- `Card.Toolbar`, расположенный непосредственно в Card, занимает всю внутреннюю ширину. `inset` задаёт padding контента вместо прежних внешних margin. `inset={false}` оставляет компактный padding Toolbar. Полная рамка заменена независимыми `dividerTop`/`dividerBottom`; по умолчанию оба выключены. Toolbar внутри Body и самостоятельный Toolbar сохраняют компактные отступы. Общий gap корневого Card больше не разделяет произвольные дочерние элементы.
+- Выбирайте `Card.Toolbar inset` для отдельной панели в рамке с внешними отступами Card, а `inset={false}` — для полноширинной полосы с контентом на одной линии с Header/Body. `dividerTop`/`dividerBottom` по умолчанию равны `inset`, явные значения переопределяют каждую границу независимо. Общий gap корневого Card больше не разделяет произвольные дочерние элементы.
 
 Корень Card не обрезает overflow: выпадающие меню и другие выступающие элементы остаются видимыми. Крайние Header/Body/Footer наследуют соответствующие скругления карточки.
 
@@ -112,75 +112,101 @@ Header использует CSS Grid для прямых слотов. Прои�
 
 ## Toolbar
 
-Toolbar занимает всю внутреннюю ширину Card независимо от `inset`: фон и линии не имеют внешнего отступа. `inset` (по умолчанию `true`) задаёт **внутренние отступы контента** через `--card-padding-x` и `--card-padding-y` при размещении Toolbar непосредственно в Card. `inset={false}` оставляет компактный padding Toolbar (`--spacing-2` по вертикали и `--spacing-3` по горизонтали; на экранах до 720px — `--spacing-2` по обеим осям).
+При размещении Toolbar непосредственно в Card:
 
-`dividerTop` и `dividerBottom` независимо включают разделители сверху и снизу на всю ширину Toolbar. Оба по умолчанию `false`; боковых границ нет. `dividers` по-прежнему управляет только внутренними разделителями групп.
+- `inset={true}` (по умолчанию) — отдельная панель со скруглённой рамкой. Внешние отступы берутся из `--card-padding-x`/`--card-padding-y`: боковые края рамки начинаются там же, где контент Header/Body. Внутри рамки остаётся компактный padding Toolbar (`--spacing-2` по вертикали, `--spacing-3` по горизонтали; до 720px — `--spacing-2` по обеим осям).
+- `inset={false}` — полоса на всю внутреннюю ширину Card, без внешних отступов, боковых границ и скруглений. Боковой padding контента равен `--card-padding-x`, как у Header/Body, в том числе на мобильных экранах. По вертикали остаётся компактный `--spacing-2`. Группы без divider не добавляют боковой padding, поэтому кнопки внутри Group/Grid/Row также сохраняют выравнивание.
+
+`dividerTop` и `dividerBottom` независимо управляют верхней и нижней границами Toolbar. По умолчанию оба равны `inset`: панель имеет замкнутую рамку, полоса — без линий. Явный `false` убирает соответствующую границу панели, явный `true` добавляет линию полосе. Боковые разделители задаются отдельно на Group.
 
 ```tsx
 <Card>
   <Card.Header title="Отчёты" />
-  <Card.Toolbar dividerTop dividerBottom>
+  <Card.Toolbar inset={false} dividerTop dividerBottom>
     <Card.Toolbar.Button label="Обновить" />
   </Card.Toolbar>
   <Card.Body>Контент</Card.Body>
 </Card>
 ```
 
-Внутри `Card.Body` отступы задаёт сам Body; `inset` их не отменяет и не добавляет вторые. Верхний и нижний разделители доступны при любом размещении. При `inset={false}` боковых границ и скруглений нет, даже если Toolbar — первый или последний элемент Card. При `inset=true` крайние Toolbar наследуют соответствующие скругления Card; для остальных можно задать `--card-toolbar-border-radius`. Если соседний Header/Footer уже рисует линию на общем стыке, включайте разделитель только с одной стороны, чтобы не удваивать его толщину.
+Чтобы получить полноширинную полосу, размещайте Toolbar непосредственно в Card. Внутри `Card.Body` отступы задаёт сам Body: Toolbar не выходит за них и сохраняет компактный внутренний padding, без добавления внешних отступов Card. Самостоятельный Toolbar также сохраняет компактный padding. Рамка и разделители доступны при любом размещении. Радиус панели задаётся `--card-toolbar-border-radius` и не наследует углы Card, даже если Toolbar — первая или последняя секция. При `inset={false}` углы всегда прямые. Если соседний Header/Footer уже рисует линию на общем стыке, включайте разделитель только с одной стороны, чтобы не удваивать его толщину.
 
 ```tsx
 <Card.Toolbar>
-  <Card.Toolbar.Group attached>
-    <Card.Toolbar.Button label="Обзор" />
-    <Card.Toolbar.Button label="Метрики" />
-    <Card.Toolbar.Button label="Логи" />
-  </Card.Toolbar.Group>
+  <Row gap="var(--card-toolbar-group-divider-gap, var(--spacing-2))" wrap="wrap">
+    <Card.Toolbar.Group attached>
+      <Card.Toolbar.Button label="Обзор" />
+      <Card.Toolbar.Button label="Метрики" />
+      <Card.Toolbar.Button label="Логи" />
+    </Card.Toolbar.Group>
 
-  <Card.Toolbar.Group attached>
-    <Card.Toolbar.Button icon={<SaveIcon />} label="Сохранить" />
-    <Card.Toolbar.Button icon={<RefreshIcon />} label="Обновить" />
-  </Card.Toolbar.Group>
+    <Card.Toolbar.Group attached divider="left">
+      <Card.Toolbar.Button icon={<SaveIcon />} label="Сохранить" />
+      <Card.Toolbar.Button icon={<RefreshIcon />} label="Обновить" />
+    </Card.Toolbar.Group>
 
-  <Card.Toolbar.Group>
-    <Card.Toolbar.Button aria-label="Настройки" icon={<SettingsIcon />} />
-  </Card.Toolbar.Group>
+    <Card.Toolbar.Group divider="left">
+      <Card.Toolbar.Button aria-label="Настройки" icon={<SettingsIcon />} />
+    </Card.Toolbar.Group>
+  </Row>
 </Card.Toolbar>
 ```
 
 `Card.Toolbar.Button` принимает `icon` и/или `label` (минимум одно из них обязательно).
 Если переданы оба, контент рендерится через отдельные icon/label слоты. На средних экранах текстовая часть скрывается.
-`Card.Toolbar.Group attached` склеивает соседние кнопки в одну группу; без `attached` группы остаются разделёнными gap и toolbar-разделителями.
-`Card.Toolbar` по умолчанию рисует вертикальные разделители между группами; если они не нужны, передайте `dividers={false}`.
 
-`Card.Toolbar align="left" | "right" | "between"` задает общее выравнивание прямых групп. Если нужно разнести несколько зон независимо, используйте `Card.Toolbar.Section`:
+### Группы и боковые разделители
+
+`Card.Toolbar.Group attached` склеивает соседние кнопки; без `attached` между кнопками остаётся gap. Содержимым Group могут быть не только кнопки, но и текст, поля или другие элементы.
+
+`divider="none" | "left" | "right" | "both"` задаёт боковые линии конкретной группы, по умолчанию `none`. Линии занимают высоту группы, а отступ от линии до контента задаётся `--card-toolbar-group-divider-gap` (по умолчанию `--spacing-2`). Проп совместим с `attached` и не зависит от выравнивания, вложенности или положения группы в строке. Left/right обозначают физические стороны.
+
+Для одинаковых расстояний по обе стороны линии между соседними группами задавайте Row `gap="var(--card-toolbar-group-divider-gap, var(--spacing-2))"`. Иначе расстояние снаружи группы определяется gap раскладки, а внутри — padding группы: например, gap 16px и padding 8px дадут асимметрию. В Grid с растянутыми колонками свободное место в колонке также влияет на расстояние до контента; для плотного ряда групп используйте Row.
+
+Group требует предка Card.Toolbar, но между ними могут находиться Grid, Row и пользовательские компоненты. Без Toolbar компонент выдаёт понятную ошибку. Текст и отдельные кнопки не обязательно оборачивать в Group.
+
+При переносе явно заданные боковые линии сохраняются. Автоматических разделителей между группами и строками нет. Для адаптивного изменения линий используйте класс/style группы; не задавайте одновременно right и left у соседних групп, если нужна одна общая линия.
+
+Для колонок используйте Grid, для ряда с переносами — Row. Toolbar не добавляет обёрток и не управляет шириной колонок.
 
 ```tsx
-<Card.Toolbar>
-  <Card.Toolbar.Section align="left">
-    <Card.Toolbar.Group attached>
-      <Card.Toolbar.Button label="Все" />
-      <Card.Toolbar.Button label="Активные" />
-    </Card.Toolbar.Group>
-  </Card.Toolbar.Section>
-
-  <Card.Toolbar.Section align="center">
-    <Card.Toolbar.Group attached>
-      <Card.Toolbar.Button label="День" />
-      <Card.Toolbar.Button label="Неделя" />
-    </Card.Toolbar.Group>
-  </Card.Toolbar.Section>
-
-  <Card.Toolbar.Section align="right">
+<Card.Toolbar inset={false} dividerBottom>
+  <Grid columns={2} columnsSm={1} gap="16px">
     <Card.Toolbar.Group>
-      <Button.Split
-        variant="primary"
-        main={{ label: 'Импорт', onClick: handleImport }}
-        menu={{ ariaLabel: 'Действия импорта', items }}
-      />
+      <Text>Всего записей: 5</Text>
     </Card.Toolbar.Group>
-  </Card.Toolbar.Section>
+    <Card.Toolbar.Group divider="left" style={{ justifyContent: 'flex-end' }}>
+      <Card.Toolbar.Button label="Экспорт" />
+      <Card.Toolbar.Button label="Добавить" />
+    </Card.Toolbar.Group>
+  </Grid>
 </Card.Toolbar>
 ```
+
+Для разнесения по краям без разделителя:
+
+```tsx
+<Card.Toolbar inset={false}>
+  <Row justify="space-between" wrap="wrap" gap="16px">
+    <Text>Всего записей: 5</Text>
+    <Card.Toolbar.Group>
+      <Card.Toolbar.Button label="Экспорт" />
+      <Card.Toolbar.Button label="Добавить" />
+    </Card.Toolbar.Group>
+  </Row>
+</Card.Toolbar>
+```
+
+Для трёх зон с геометрически центрированной средней колонкой задайте Grid `grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)`. На узком экране переключайте колонки через CSS media query. Готовые примеры есть в playground.
+
+### Переход со старого Toolbar
+
+- Удалены `align`, `dividers`, `Card.Toolbar.Section` и типы `CardToolbarSectionAlign`/`CardToolbarSectionProps`.
+- Вместо `align="between"` используйте `Row justify="space-between"`; вместо left/right — `justify="flex-start"`/`"flex-end"`.
+- Вместо Section используйте колонки Grid. Grid/Row — непосредственные дети Toolbar, без служебных обёрток.
+- Несколько соседних групп оберните в Row с явными `gap` и `wrap`. Toolbar теперь отвечает только за оформление контейнера.
+- Вместо общего `dividers` назначайте нужным группам `divider`. По умолчанию линий нет, включая раскладку space-between.
+- Удалите стили для старых `data-toolbar-row-*`/`data-card-toolbar-item`: измерения строк, автоматические псевдоэлементы и ResizeObserver больше не используются.
 
 `Button.Split` можно размещать внутри `Card.Toolbar.Group`; toolbar выставит ему ту же высоту, размер и attached-геометрию, что и обычным toolbar-кнопкам.
 
@@ -249,3 +275,13 @@ const InertiaToolbarButtonLink = (props) => (
 Скрытие текста включено по умолчанию (`md`) и настраивается:
 - на уровне `Card.Toolbar`: `buttonHideLabelOn="md" | "never"`
 - на уровне конкретной кнопки: `hideLabelOn="md" | "never"` (переопределяет тулбар)
+
+## Проверка раскладки в браузере
+
+При установленном Playwright с Chromium запустите playground (`yarn --cwd playground dev`), затем из корня репозитория:
+
+```sh
+node playground/tests/card-toolbar.browser.mjs http://127.0.0.1:5174
+```
+
+Скрипт проверяет ширину Grid, все варианты Group.divider, выравнивание inset-режимов и отсутствие автоматической линии в space-between на экранах 1440, 900 и 375px. Для существующей установки можно передать путь к модулю Playwright через `PLAYWRIGHT_MODULE`, а к браузеру — через `BROWSER_PATH`.

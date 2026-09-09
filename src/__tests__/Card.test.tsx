@@ -5,6 +5,8 @@ import { screen } from '@testing-library/dom';
 import Card from '../components/Card/Card';
 import styles from '../components/Card/Card.module.css';
 import Button from '../components/Button/Button';
+import Grid from '../components/Grid/Grid';
+import Row from '../components/Flex/Row';
 
 type ToolbarLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   method?: 'get' | 'post';
@@ -24,23 +26,45 @@ const ToolbarLink = ({
 );
 
 describe('Card', () => {
+  it('renders a framed inset toolbar by default', () => {
+    render(<Card.Toolbar data-testid="toolbar">Actions</Card.Toolbar>);
+    expect(screen.getByTestId('toolbar')).toHaveClass(styles.toolbarInset, styles.toolbarDividerTop, styles.toolbarDividerBottom);
+  });
+
+  it('updates the default borders when inset changes without forwarding layout props', () => {
+    const { rerender } = render(<Card.Toolbar data-testid="toolbar">Actions</Card.Toolbar>);
+    rerender(<Card.Toolbar data-testid="toolbar" inset={false}>Actions</Card.Toolbar>);
+    const toolbar = screen.getByTestId('toolbar');
+    expect(toolbar).not.toHaveClass(styles.toolbarInset);
+    expect(toolbar).not.toHaveClass(styles.toolbarDividerTop);
+    expect(toolbar).not.toHaveClass(styles.toolbarDividerBottom);
+    expect(toolbar).not.toHaveAttribute('inset');
+  });
+
+  it.each([true, false])('allows each border to be explicitly disabled on an inset panel (top=%s)', (top) => {
+    render(<Card.Toolbar data-testid="toolbar" dividerTop={top} dividerBottom={!top}>Actions</Card.Toolbar>);
+    const toolbar = screen.getByTestId('toolbar');
+    expect(toolbar).toHaveClass(styles.toolbarInset, top ? styles.toolbarDividerTop : styles.toolbarDividerBottom);
+    expect(toolbar).not.toHaveClass(top ? styles.toolbarDividerBottom : styles.toolbarDividerTop);
+  });
+
   it('controls top, bottom, and group toolbar dividers independently', () => {
-    const toolbar = (dividerTop?: boolean, dividerBottom?: boolean, dividers = true) => (
-      <Card.Toolbar data-testid="toolbar" dividerTop={dividerTop} dividerBottom={dividerBottom} dividers={dividers}>
+    const toolbar = (dividerTop?: boolean, dividerBottom?: boolean, divider: 'none' | 'left' = 'left') => (
+      <Card.Toolbar data-testid="toolbar" inset={false} dividerTop={dividerTop} dividerBottom={dividerBottom}>
         <Card.Toolbar.Button label="Первый" />
-        <Card.Toolbar.Button label="Второй" />
+        <Card.Toolbar.Group data-testid="group" divider={divider}><Card.Toolbar.Button label="Второй" /></Card.Toolbar.Group>
       </Card.Toolbar>
     );
-    const { rerender } = render(toolbar(true, false, false));
+    const { rerender } = render(toolbar(true, false, 'none'));
     const root = screen.getByTestId('toolbar');
     expect(root).toHaveClass(styles.toolbarDividerTop);
     expect(root).not.toHaveClass(styles.toolbarDividerBottom);
-    expect(root.querySelector('[data-toolbar-divider="true"]')).toBeNull();
+    expect(screen.getByTestId('group')).not.toHaveClass(styles.toolbarGroupDividerLeft);
 
     rerender(toolbar(false, true));
     expect(root).not.toHaveClass(styles.toolbarDividerTop);
     expect(root).toHaveClass(styles.toolbarDividerBottom);
-    expect(root.querySelector('[data-toolbar-divider="true"]')).toBeInTheDocument();
+    expect(screen.getByTestId('group')).toHaveClass(styles.toolbarGroupDividerLeft);
     expect(root).not.toHaveAttribute('dividerTop');
     expect(root).not.toHaveAttribute('dividerBottom');
 
@@ -218,73 +242,79 @@ describe('Card', () => {
     expect(container.querySelector('[data-card-toolbar-button-slot="separator"]')).not.toBeInTheDocument();
   });
 
-  it('supports explicit toolbar sections for left, center, and right groups', () => {
-    const { container } = render(
-      <Card>
-        <Card.Toolbar>
-          <Card.Toolbar.Section align="left">
-            <Card.Toolbar.Group>
-              <Card.Toolbar.Button label="Left" />
+  it('preserves custom Grid and Row structure and passes button context through them', () => {
+    render(
+      <Card.Toolbar data-testid="toolbar" buttonHideLabelOn="never">
+        <Grid data-testid="grid" columns={2}>
+          <Card.Toolbar.Group data-testid="left"><span>Records</span></Card.Toolbar.Group>
+          <Row data-testid="row" justify="flex-end">
+            <Card.Toolbar.Group data-testid="right">
+              <Card.Toolbar.Button icon={<span>+</span>} label="Create" />
             </Card.Toolbar.Group>
-          </Card.Toolbar.Section>
-          <Card.Toolbar.Section align="center">
-            <Card.Toolbar.Group>
-              <Card.Toolbar.Button label="Center" />
-            </Card.Toolbar.Group>
-          </Card.Toolbar.Section>
-          <Card.Toolbar.Section align="right">
-            <Card.Toolbar.Group>
-              <Card.Toolbar.Button label="Right" />
-            </Card.Toolbar.Group>
-          </Card.Toolbar.Section>
-        </Card.Toolbar>
-      </Card>,
+          </Row>
+        </Grid>
+      </Card.Toolbar>,
     );
-
-    const items = container.querySelectorAll('[data-card-toolbar-item="true"]');
-    expect(items[0]).toHaveAttribute('data-toolbar-section-align', 'left');
-    expect(items[1]).toHaveAttribute('data-toolbar-section-align', 'center');
-    expect(items[2]).toHaveAttribute('data-toolbar-section-align', 'right');
-    expect(items[1]).toHaveAttribute('data-toolbar-divider', 'false');
-    expect(container.querySelector('[data-card-toolbar-section="center"]')).toBeInTheDocument();
+    expect(screen.getByTestId('grid').parentElement).toBe(screen.getByTestId('toolbar'));
+    expect(screen.getByTestId('left').parentElement).toBe(screen.getByTestId('grid'));
+    expect(screen.getByTestId('right').parentElement).toBe(screen.getByTestId('row'));
+    expect(screen.getByRole('button')).not.toHaveClass(styles.toolbarButtonHideLabelMd);
+    expect(screen.getByTestId('toolbar').querySelector('[data-card-toolbar-item]')).toBeNull();
   });
 
-  it('renders toolbar group dividers by default', () => {
-    const { container } = render(
-      <Card>
-        <Card.Toolbar>
-          <Card.Toolbar.Group>
-            <Card.Toolbar.Button label="One" />
-          </Card.Toolbar.Group>
-          <Card.Toolbar.Group>
-            <Card.Toolbar.Button label="Two" />
-          </Card.Toolbar.Group>
-        </Card.Toolbar>
-      </Card>,
+  it('does not add dividers to groups distributed with space-between', () => {
+    render(
+      <Card.Toolbar>
+        <Row justify="space-between">
+          <Card.Toolbar.Group data-testid="left">Records</Card.Toolbar.Group>
+          <Card.Toolbar.Group data-testid="right"><Card.Toolbar.Button label="Export" /></Card.Toolbar.Group>
+        </Row>
+      </Card.Toolbar>,
     );
-
-    const items = container.querySelectorAll('[data-card-toolbar-item="true"]');
-    expect(items[0]).toHaveAttribute('data-toolbar-divider', 'false');
-    expect(items[1]).toHaveAttribute('data-toolbar-divider', 'true');
+    for (const name of ['left', 'right']) {
+      expect(screen.getByTestId(name)).not.toHaveClass(styles.toolbarGroupDividerLeft);
+      expect(screen.getByTestId(name)).not.toHaveClass(styles.toolbarGroupDividerRight);
+    }
   });
 
-  it('can disable toolbar group dividers', () => {
-    const { container } = render(
-      <Card>
-        <Card.Toolbar dividers={false}>
-          <Card.Toolbar.Group>
-            <Card.Toolbar.Button label="One" />
-          </Card.Toolbar.Group>
-          <Card.Toolbar.Group>
-            <Card.Toolbar.Button label="Two" />
-          </Card.Toolbar.Group>
-        </Card.Toolbar>
-      </Card>,
+  it.each(['none', 'left', 'right', 'both'] as const)('renders explicit %s group dividers with attached buttons', (divider) => {
+    render(
+      <Card.Toolbar>
+        <Card.Toolbar.Group attached divider={divider} data-testid="group" className="custom" aria-label="Actions">
+          <Card.Toolbar.Button label="One" />
+          <Card.Toolbar.Button label="Two" />
+        </Card.Toolbar.Group>
+      </Card.Toolbar>,
     );
+    const group = screen.getByRole('group', { name: 'Actions' });
+    expect(group).toHaveClass('custom', 'btn-group-horizontal');
+    expect(group.classList.contains(styles.toolbarGroupDividerLeft)).toBe(divider === 'left' || divider === 'both');
+    expect(group.classList.contains(styles.toolbarGroupDividerRight)).toBe(divider === 'right' || divider === 'both');
+    expect(group).not.toHaveAttribute('divider');
+  });
 
-    const items = container.querySelectorAll('[data-card-toolbar-item="true"]');
-    expect(items[0]).toHaveAttribute('data-toolbar-divider', 'false');
-    expect(items[1]).toHaveAttribute('data-toolbar-divider', 'false');
+  it('updates group dividers without remounting its content', () => {
+    const group = (divider: 'both' | 'none') => (
+      <Card.Toolbar><Grid columns={1}>
+        <Card.Toolbar.Group divider={divider} data-testid="group"><input aria-label="Search" defaultValue="query" /></Card.Toolbar.Group>
+      </Grid></Card.Toolbar>
+    );
+    const { rerender } = render(group('both'));
+    const input = screen.getByRole('textbox');
+    rerender(group('none'));
+    expect(screen.getByRole('textbox')).toBe(input);
+    expect(screen.getByTestId('group')).not.toHaveClass(styles.toolbarGroupDividerLeft);
+    expect(screen.getByTestId('group')).not.toHaveClass(styles.toolbarGroupDividerRight);
+  });
+
+  it('requires Group to have a Toolbar ancestor', () => {
+    expect(() => render(<Card.Toolbar.Group>Orphan</Card.Toolbar.Group>)).toThrow('Card.Toolbar.Group must be rendered inside Card.Toolbar');
+  });
+
+  it('allows text and buttons without a Group wrapper', () => {
+    render(<Card.Toolbar data-testid="toolbar">Actions<Card.Toolbar.Button label="Create" /></Card.Toolbar>);
+    expect(screen.getByRole('button').parentElement).toBe(screen.getByTestId('toolbar'));
+    expect(screen.getByTestId('toolbar')).toHaveTextContent('Actions');
   });
 
   it('renders native toolbar links', () => {

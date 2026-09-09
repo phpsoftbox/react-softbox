@@ -40,35 +40,20 @@ const iconPlacementClassMap: Record<AlertIconPlacement, string> = {
   bottom: styles.iconBottom,
 };
 
+// Keep the dot visibly separate from the rounded stem even at 16px.
+const infoIcon = (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <circle cx="10" cy="10" r="7.2" />
+    <path d="M10 9.5v4" strokeLinecap="round" />
+    <circle cx="10" cy="6" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 const defaultIcons: Record<BuiltinUiVariant, React.ReactNode> = {
-  default: (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.2" />
-      <path d="M10 8v4" strokeLinecap="round" />
-      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  primary: (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.2" />
-      <path d="M10 8v4" strokeLinecap="round" />
-      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  secondary: (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.2" />
-      <path d="M10 8v4" strokeLinecap="round" />
-      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  info: (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.2" />
-      <path d="M10 8v4" strokeLinecap="round" />
-      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  ),
+  default: infoIcon,
+  primary: infoIcon,
+  secondary: infoIcon,
+  info: infoIcon,
   success: (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
       <circle cx="10" cy="10" r="7.2" />
@@ -88,27 +73,9 @@ const defaultIcons: Record<BuiltinUiVariant, React.ReactNode> = {
       <path d="m7.5 7.5 5 5m0-5-5 5" strokeLinecap="round" />
     </svg>
   ),
-  dark: (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.2" />
-      <path d="M10 8v4" strokeLinecap="round" />
-      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  light: (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.2" />
-      <path d="M10 8v4" strokeLinecap="round" />
-      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  neutral: (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.2" />
-      <path d="M10 8v4" strokeLinecap="round" />
-      <circle cx="10" cy="6" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  ),
+  dark: infoIcon,
+  light: infoIcon,
+  neutral: infoIcon,
 };
 
 export default function Alert({
