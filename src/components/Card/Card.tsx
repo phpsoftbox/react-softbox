@@ -6,9 +6,10 @@ import type { ButtonAppearance, ButtonProps, ButtonSize } from '../Button/Button
 type CardProps = React.HTMLAttributes<HTMLDivElement>;
 
 type CardHeaderProps = React.HTMLAttributes<HTMLDivElement> & {
+  divider?: boolean;
+  icon?: React.ReactNode;
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
-  right?: React.ReactNode;
   titleAs?: React.ElementType;
   subtitleAs?: React.ElementType;
 };
@@ -27,8 +28,13 @@ type CardHeaderSubtitleComponent = <TElement extends React.ElementType = 'p'>(
 ) => React.ReactElement | null;
 
 type CardSectionProps = React.HTMLAttributes<HTMLDivElement>;
+type CardFooterProps = CardSectionProps & {
+  divider?: boolean;
+};
 export type CardToolbarSectionAlign = 'left' | 'center' | 'right';
 export type CardToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
+  /** Apply Card section margins when placed directly inside Card. Defaults to true. */
+  inset?: boolean;
   align?: 'left' | 'right' | 'between';
   buttonHideLabelOn?: 'never' | 'md';
   dividers?: boolean;
@@ -63,6 +69,9 @@ type CardToolbarComponent = React.FC<CardToolbarProps> & {
   Button: CardToolbarButtonComponent;
 };
 type CardHeaderComponent = React.FC<CardHeaderProps> & {
+  Icon: React.FC<React.HTMLAttributes<HTMLSpanElement>>;
+  Content: React.FC<React.HTMLAttributes<HTMLDivElement>>;
+  Aside: React.FC<React.HTMLAttributes<HTMLDivElement>>;
   Title: CardHeaderTitleComponent;
   Subtitle: CardHeaderSubtitleComponent;
 };
@@ -71,7 +80,7 @@ type CardComponent = React.FC<CardProps> & {
   Header: CardHeaderComponent;
   Toolbar: CardToolbarComponent;
   Body: React.FC<CardSectionProps>;
-  Footer: React.FC<CardSectionProps>;
+  Footer: React.FC<CardFooterProps>;
 };
 
 function CardBase({ className, ...props }: CardProps) {
@@ -79,18 +88,45 @@ function CardBase({ className, ...props }: CardProps) {
   return <section className={classes} {...props} />;
 }
 
+const CardHeaderContext = React.createContext<{ icon?: React.ReactNode; content?: React.ReactNode }>({});
+
+function CardHeaderIcon({ children, className, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
+  const { icon } = React.useContext(CardHeaderContext);
+  const content = children === undefined ? icon : children;
+  if (content == null || typeof content === 'boolean') return null;
+  return (
+    <span aria-hidden="true" className={[styles.headerIcon, className].filter(Boolean).join(' ')} {...props}>
+      {content}
+    </span>
+  );
+}
+
+function CardHeaderContent({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  const { content } = React.useContext(CardHeaderContext);
+  return (
+    <div className={[styles.headerMain, className].filter(Boolean).join(' ')} {...props}>
+      {children === undefined ? content : children}
+    </div>
+  );
+}
+
+function CardHeaderAside({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={[styles.headerAside, className].filter(Boolean).join(' ')} {...props} />;
+}
+
 function CardHeader({
+  divider = false,
+  icon,
   title,
   subtitle,
-  right,
   titleAs: TitleComponent = 'h1',
   subtitleAs: SubtitleComponent = 'p',
   className,
   children,
   ...props
 }: CardHeaderProps) {
-  const classes = [styles.header, className].filter(Boolean).join(' ');
-  const left = children ?? (
+  const classes = [styles.header, divider ? styles.headerDivider : null, className].filter(Boolean).join(' ');
+  const content = (
     <>
       {title ? <TitleComponent className={styles.title}>{title}</TitleComponent> : null}
       {subtitle ? <SubtitleComponent className={styles.subtitle}>{subtitle}</SubtitleComponent> : null}
@@ -99,8 +135,14 @@ function CardHeader({
 
   return (
     <div className={classes} {...props}>
-      <div className={styles.headerMain}>{left}</div>
-      {right ? <div className={styles.headerAside}>{right}</div> : null}
+      <CardHeaderContext.Provider value={{ icon, content }}>
+        {children ?? (
+          <>
+            <CardHeaderIcon />
+            <CardHeaderContent />
+          </>
+        )}
+      </CardHeaderContext.Provider>
     </div>
   );
 }
@@ -128,8 +170,8 @@ function CardBody({ className, ...props }: CardSectionProps) {
   return <div className={classes} {...props} />;
 }
 
-function CardFooter({ className, ...props }: CardSectionProps) {
-  const classes = [styles.footer, className].filter(Boolean).join(' ');
+function CardFooter({ divider = false, className, ...props }: CardFooterProps) {
+  const classes = [styles.footer, divider ? styles.footerDivider : null, className].filter(Boolean).join(' ');
   return <div className={classes} {...props} />;
 }
 
@@ -186,6 +228,7 @@ const getToolbarSectionAlign = (child: React.ReactNode): CardToolbarSectionAlign
 };
 
 function CardToolbarBase({
+  inset = true,
   align = 'left',
   buttonHideLabelOn = 'md',
   dividers = true,
@@ -202,7 +245,7 @@ function CardToolbarBase({
   const [rows, setRows] = React.useState<ToolbarRowMeta[]>([]);
   const toolbarChildren = React.Children.toArray(children);
   const hasSections = toolbarChildren.some((child) => getToolbarSectionAlign(child) !== undefined);
-  const classes = [styles.toolbar, alignClass, hasSections ? styles.toolbarSections : null, className]
+  const classes = [styles.toolbar, inset ? styles.toolbarInset : null, alignClass, hasSections ? styles.toolbarSections : null, className]
     .filter(Boolean)
     .join(' ');
 
@@ -380,6 +423,9 @@ const CardToolbar = Object.assign(CardToolbarBase, {
 }) as CardToolbarComponent;
 
 const CardHeaderComponent = Object.assign(CardHeader, {
+  Icon: CardHeaderIcon,
+  Content: CardHeaderContent,
+  Aside: CardHeaderAside,
   Title: CardHeaderTitle,
   Subtitle: CardHeaderSubtitle,
 }) as CardHeaderComponent;

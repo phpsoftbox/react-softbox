@@ -4,9 +4,12 @@
 
 ```tsx
 <Card>
-  <Card.Header title="Заголовок" right={<Button appearance="ghost">...</Button>} />
+  <Card.Header divider title="Заголовок">
+    <Card.Header.Content />
+    <Card.Header.Aside><Button appearance="ghost">...</Button></Card.Header.Aside>
+  </Card.Header>
   <Card.Body>Контент</Card.Body>
-  <Card.Footer>
+  <Card.Footer divider>
     <Button appearance="ghost">Отмена</Button>
     <Button>Сохранить</Button>
   </Card.Footer>
@@ -14,23 +17,114 @@
 ```
 
 `Card.Header` умеет принимать:
+
+- `divider` — разделитель снизу на всю внутреннюю ширину карточки (по умолчанию `false`)
 - `title` и `subtitle`
+- `icon` — общая иконка слева от блока заголовка и подзаголовка
 - `titleAs` и `subtitleAs` для управления тегами заголовка/подзаголовка
-- `right` для иконок/кнопок
-- `children` для полного кастомного содержимого
+- `children` для явной композиции слотов или собственной сетки
+
+`Card.Footer` принимает `divider` для разделителя сверху (по умолчанию `false`). Разделители независимы; у `Card.Body` их нет. Линию рисует секция, поэтому padding заголовка или содержимого не укорачивает её.
+
+### Иконка заголовка
+
+```tsx
+<Card.Header
+  icon={<TruckIcon />}
+  title="Параметры сдачи"
+  subtitle="Укажите, куда и как будет передана поставка"
+/>
+
+<Card.Header icon={<TruckIcon />}>
+  <Card.Header.Icon />
+  <Card.Header.Content>
+    <Card.Header.Title>Параметры сдачи</Card.Header.Title>
+    <Card.Header.Subtitle>Укажите, куда и как будет передана поставка</Card.Header.Subtitle>
+  </Card.Header.Content>
+  <Card.Header.Aside><Button>Создать</Button></Card.Header.Aside>
+</Card.Header>
+```
+
+Иконка выравнивается по вертикальному центру всего текстового блока, включая многострочный subtitle, и не сжимается. Без subtitle она центрируется относительно title. `Card.Header.Aside` центрируется по вертикали в той же строке; на экранах до 720px переходит в отдельную строку справа.
+
+`Card.Header.Icon` без `children` читает `icon` ближайшего Header. Переданные `children` заменяют иконку; явный `null` или `false` скрывает слот. Компонент работает и внутри вложенного Grid. Без `children` Header автоматически рендерит Icon и Content. При переданных `children` Header рендерит именно вашу композицию: автоматическая иконка не добавляется, поэтому явный Icon не дублируется.
+
+`Card.Header.Content` без `children` выводит `title`/`subtitle` из Header с учётом `titleAs`/`subtitleAs`. Переданные `children` заменяют этот текст. Icon, Content и Aside принимают `className`, `style` и HTML/ARIA-атрибуты.
+
+`icon` принимает ReactNode; SVG и изображения подстраиваются под размер слота. Настройки через CSS-переменные на Header или Card: `--card-header-icon-size` (по умолчанию `32px`), `--card-header-icon-gap` (по умолчанию `var(--spacing-4)`), `--card-header-icon-color` (по умолчанию `currentColor`). Например, `style={{ '--card-header-icon-color': '#ff6b00' } as React.CSSProperties}` задаёт оранжевый цвет для SVG с `stroke="currentColor"` или `fill="currentColor"`.
+
+Иконка декоративная (`aria-hidden`), поэтому смысл заголовка или статус должны быть переданы текстом. Без `icon` слот и дополнительный отступ не создаются.
+
+## Отступы секций и переход с прежней разметки
+
+Это новый общий контракт Card без отдельного режима совместимости. Корневой `Card` отвечает за фон, рамку и скругление; его `padding` и `gap` равны нулю. `Card.Header`, `Card.Body` и `Card.Footer` имеют собственные отступы `var(--spacing-7)` по обеим осям. Внутренние gap секций сохраняются. Вертикальные padding соседних секций складываются, поэтому плотность карточек изменится.
+
+Общие отступы секций можно настроить на Card через CSS-переменные (также работают на отдельных секциях):
+
+```tsx
+<Card style={{ '--card-padding-x': '24px', '--card-padding-y': '16px' } as React.CSSProperties}>
+  <Card.Header title="Настройки" divider />
+  <Card.Body>Содержимое</Card.Body>
+  <Card.Footer divider>Действия</Card.Footer>
+</Card>
+```
+
+При обновлении проектов:
+
+- Оберните контент, который раньше получал отступы непосредственно от Card, в `Card.Body`. Содержимое без обёртки теперь занимает всю внутреннюю ширину.
+- Перенесите `padding`/`p-*` с Card на нужную секцию или используйте `--card-padding-x`/`--card-padding-y`, чтобы избежать двойных отступов.
+- Удалите отрицательные margin и расширение ширины Header/Footer, компенсировавшие старый padding Card. Используйте `divider` вместо самодельной линии.
+- Замените удалённый `right={actions}` на `<Card.Header.Aside>{actions}</Card.Header.Aside>`. В явной композиции добавьте `<Card.Header.Content />` для вывода пропсов title/subtitle и `<Card.Header.Icon />` для иконки из пропса. Дочерние Title и Subtitle объединяйте в Content, чтобы они занимали одну колонку.
+- Для таблиц и другого контента на всю ширину используйте `<Card.Body style={{ padding: 0 }}>…</Card.Body>`.
+- `Card.Toolbar`, расположенный непосредственно в Card, сохраняет рамку и по умолчанию получает внешние отступы по тем же переменным. `inset={false}` отключает эти отступы. Toolbar внутри Body и самостоятельный Toolbar сохраняют собственные компактные отступы. Общий gap корневого Card больше не разделяет произвольные дочерние элементы.
+
+Корень Card не обрезает overflow: выпадающие меню и другие выступающие элементы остаются видимыми. Крайние Header/Body/Footer наследуют соответствующие скругления карточки.
 
 Также доступны подкомпоненты:
 
 ```tsx
-<Card.Header right={<Button appearance="ghost">...</Button>}>
-  <Card.Header.Title>Заголовок</Card.Header.Title>
-  <Card.Header.Subtitle>Подзаголовок</Card.Header.Subtitle>
+<Card.Header>
+  <Card.Header.Content>
+    <Card.Header.Title>Заголовок</Card.Header.Title>
+    <Card.Header.Subtitle>Подзаголовок</Card.Header.Subtitle>
+  </Card.Header.Content>
+  <Card.Header.Aside><Button appearance="ghost">...</Button></Card.Header.Aside>
 </Card.Header>
 ```
 
 `Card.Header.Title` и `Card.Header.Subtitle` поддерживают `as` с любым `React.ElementType` (включая кастомный компонент).
 
+### Собственная сетка Header
+
+Header использует CSS Grid для прямых слотов. Произвольная обёртка внутри Header занимает всю его ширину, поэтому можно вложить существующий `Grid` и полностью управлять колонками:
+
+```tsx
+<Card.Header icon={<TruckIcon />} title="Параметры сдачи" subtitle="Укажите место передачи">
+  <Grid gap="16px" style={{ gridTemplateColumns: 'auto minmax(0, 1fr) auto', alignItems: 'center' }}>
+    <Card.Header.Icon />
+    <Card.Header.Content />
+    <Card.Header.Aside><Button>Создать</Button></Card.Header.Aside>
+  </Grid>
+</Card.Header>
+```
+
+В собственной сетке размеры колонок, расстояния и адаптивность задаёт Grid/ваш CSS. Для обычной сетки с долями доступны `Grid columns={12}` и классы `col-span-*`; отдельный Col для Header не требуется.
+
 ## Toolbar
+
+`inset` (по умолчанию `true`) включает внешние отступы от Card, заданные `--card-padding-x` и `--card-padding-y`. Для Toolbar на всю внутреннюю ширину карточки передайте `inset={false}`:
+
+```tsx
+<Card>
+  <Card.Header title="Отчёты" />
+  <Card.Toolbar inset={false}>
+    <Card.Toolbar.Button label="Обновить" />
+  </Card.Toolbar>
+  <Card.Body>Контент</Card.Body>
+</Card>
+```
+
+Пропс влияет только на Toolbar, расположенный непосредственно в Card. Внутренние padding, рамка и скругление Toolbar сохраняются. Внутри `Card.Body` отступы задаёт сам Body; `inset` их не отменяет и не добавляет вторые.
 
 ```tsx
 <Card.Toolbar>
