@@ -17,11 +17,24 @@ type Result = {
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
 const fixedPositionSettleMs = 500;
 
+const isSameStyle = (a: React.CSSProperties, b: React.CSSProperties): boolean => {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]) as Set<keyof React.CSSProperties>;
+  for (const key of keys) {
+    if (a[key] !== b[key]) {
+      return false;
+    }
+  }
+  return true;
+};
+
 export default function useDropdownPosition(open: boolean, options: Options = {}): Result {
   const { gap = 8, align = 'right', placement: requestedPlacement = 'auto', anchorRef, strategy = 'absolute' } = options;
   const ref = React.useRef<HTMLDivElement>(null);
   const lockedPlacementRef = React.useRef<'up' | 'down' | null>(null);
-  const [style, setStyle] = React.useState<React.CSSProperties>({});
+  const [style, setStyleState] = React.useState<React.CSSProperties>({});
+  const setStyle = React.useCallback((next: React.CSSProperties) => {
+    setStyleState((prev) => (isSameStyle(prev, next) ? prev : next));
+  }, []);
   const [currentPlacement, setCurrentPlacement] = React.useState<'up' | 'down'>('down');
 
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
@@ -31,7 +44,10 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
       return;
     }
 
-    const rect = ref.current.getBoundingClientRect();
+    const element = ref.current;
+    const rect = element.getBoundingClientRect();
+    // Натуральная высота контента, не зависящая от уже применённого max-height.
+    const contentHeight = element.scrollHeight + (element.offsetHeight - element.clientHeight);
     const anchorRect = anchorRef?.current?.getBoundingClientRect() ?? rect;
     const padding = 12;
     const availableWidth = window.innerWidth - padding * 2;
@@ -57,7 +73,7 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
     }
 
     if (requestedPlacement === 'auto' && !lockedPlacementRef.current) {
-      if (rect.height > availableBelow && availableAbove > availableBelow) {
+      if (contentHeight > availableBelow && availableAbove > availableBelow) {
         nextPlacement = 'up';
       }
     }
@@ -69,9 +85,10 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
     }
 
     const availableSpace = nextPlacement === 'up' ? availableAbove : availableBelow;
-    if (availableSpace > 0 && rect.height > availableSpace) {
+    if (availableSpace > 0 && contentHeight > availableSpace) {
       maxHeight = Math.max(140, availableSpace);
     }
+    const height = maxHeight ? Math.min(contentHeight, maxHeight) : contentHeight;
 
     setCurrentPlacement(nextPlacement);
 
@@ -81,8 +98,8 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
       const maxLeft = window.innerWidth - padding - rect.width;
       left = clamp(left, padding, Math.max(padding, maxLeft));
 
-      let top = nextPlacement === 'down' ? anchor.bottom + gap : anchor.top - rect.height - gap;
-      const maxTop = window.innerHeight - padding - rect.height;
+      let top = nextPlacement === 'down' ? anchor.bottom + gap : anchor.top - height - gap;
+      const maxTop = window.innerHeight - padding - height;
       top = clamp(top, padding, Math.max(padding, maxTop));
 
       setStyle({
@@ -106,7 +123,7 @@ export default function useDropdownPosition(open: boolean, options: Options = {}
       bottom: nextPlacement === 'up' ? `calc(100% + ${gap}px)` : 'auto',
       transformOrigin: `${nextPlacement === 'up' ? 'bottom' : 'top'} ${align}`,
     });
-  }, [gap, align, requestedPlacement, anchorRef, strategy]);
+  }, [gap, align, requestedPlacement, anchorRef, strategy, setStyle]);
 
   useIsomorphicLayoutEffect(() => {
     if (!open) {
