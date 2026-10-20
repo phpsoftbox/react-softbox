@@ -12,6 +12,7 @@
 .stepsHorizontal {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-auto-rows: 1fr;
   align-items: stretch;
   width: 100%;
 }
@@ -28,6 +29,10 @@
 
 .stepSlot > * {
   width: 100%;
+}
+
+.stepsHorizontal .stepSlot {
+  display: flex;
 }
 
 .step {
@@ -94,7 +99,7 @@
 }
 
 .stepTitle {
-  white-space: nowrap;
+  white-space: normal;
   font-weight: 600;
 }
 

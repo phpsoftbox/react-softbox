@@ -1219,7 +1219,9 @@ export default function App() {
                 <Input>
                   <Input.Label>Поиск по заказу</Input.Label>
                   <Input.Group stretch>
-                    <Button appearance="outline">Найти</Button>
+                    <Tooltip content="Найти заказ">
+                      <Button appearance="outline">Найти</Button>
+                    </Tooltip>
                     <Input.Field name="group-order" placeholder="Номер заказа" />
                     <Button variant="primary">Открыть</Button>
                   </Input.Group>

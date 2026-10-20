@@ -30,7 +30,7 @@ type ButtonOwnProps<TElement extends React.ElementType> = {
 
 export type ButtonProps<TElement extends React.ElementType = 'button'> =
   ButtonOwnProps<TElement>
-  & Omit<React.ComponentPropsWithoutRef<TElement>, keyof ButtonOwnProps<TElement>>;
+  & Omit<React.ComponentPropsWithRef<TElement>, keyof ButtonOwnProps<TElement>>;
 
 export type ButtonGroupProps = React.HTMLAttributes<HTMLDivElement> & {
   orientation?: ButtonGroupOrientation;
@@ -139,7 +139,7 @@ const normalizeVariant = (
   };
 };
 
-function ButtonBase<TElement extends React.ElementType = 'button'>({
+const ButtonBase = React.forwardRef<HTMLElement, ButtonProps<React.ElementType>>(function ButtonBase({
   as,
   variant,
   appearance,
@@ -150,7 +150,7 @@ function ButtonBase<TElement extends React.ElementType = 'button'>({
   tabIndex,
   style,
   ...props
-}: ButtonProps<TElement>) {
+}: ButtonProps<React.ElementType>, ref) {
   const resolved = normalizeVariant(variant, appearance);
   const variantStyle = isBuiltinUiVariant(resolved.variant) ? undefined : buildButtonVariantStyle(resolved.variant);
   const Component = (as ?? 'button') as React.ElementType;
@@ -178,6 +178,7 @@ function ButtonBase<TElement extends React.ElementType = 'button'>({
     ...props,
     className: classes,
     style: mergeStyles(variantStyle, style),
+    ref,
   };
 
   if (onClick || (disabled && !isNativeButton)) {
@@ -194,7 +195,7 @@ function ButtonBase<TElement extends React.ElementType = 'button'>({
   }
 
   return <Component {...componentProps} />;
-}
+});
 
 function ButtonGroup({
   orientation = 'horizontal',
