@@ -1,4 +1,5 @@
 import React from 'react';
+import Tooltip from '../Tooltip/Tooltip';
 import './InputGroup.css';
 
 const GROUP_CLASS = 'rsb-input-group';
@@ -19,6 +20,21 @@ type AddonProps = React.HTMLAttributes<HTMLElement> & {
 
 const mergeClassNames = (...classes: Array<string | undefined | null | false>) => classes.filter(Boolean).join(' ');
 
+function markGroupItem(
+  element: React.ReactElement<{ className?: string; children?: React.ReactNode }>,
+): React.ReactElement {
+  // Tooltip's className styles the popup; group styles belong on its trigger.
+  if (element.type === Tooltip && React.isValidElement(element.props.children)) {
+    return React.cloneElement(element, {
+      children: markGroupItem(element.props.children as React.ReactElement<{ className?: string; children?: React.ReactNode }>),
+    });
+  }
+
+  return React.cloneElement(element, {
+    className: mergeClassNames(element.props.className, ITEM_CLASS),
+  });
+}
+
 function InputGroupRoot({ stretch = false, className, children, ...props }: GroupProps) {
   const classes = [GROUP_CLASS, stretch ? GROUP_STRETCH_CLASS : null, className].filter(Boolean).join(' ');
 
@@ -26,9 +42,7 @@ function InputGroupRoot({ stretch = false, className, children, ...props }: Grou
     if (!React.isValidElement(child)) {
       return child;
     }
-    const element = child as React.ReactElement<{ className?: string }>;
-    const childClassName = mergeClassNames(element.props.className, ITEM_CLASS);
-    return React.cloneElement(element, { className: childClassName });
+    return markGroupItem(child as React.ReactElement<{ className?: string; children?: React.ReactNode }>);
   });
 
   return (

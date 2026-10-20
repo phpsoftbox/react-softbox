@@ -22,6 +22,13 @@ const TestLink = ({
 );
 
 describe('Button', () => {
+  it('forwards its ref to the rendered button', () => {
+    const ref = React.createRef<HTMLButtonElement>();
+    render(<Button ref={ref}>Найти</Button>);
+
+    expect(ref.current).toBe(screen.getByRole('button', { name: 'Найти' }));
+  });
+
   it('renders label and variants', () => {
     render(
       <>

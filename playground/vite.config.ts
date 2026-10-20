@@ -11,8 +11,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@phpsoftbox/react-softbox': path.resolve(__dirname, '../src'),
-      '@': path.resolve(__dirname, 'src'),
+      '@phpsoftbox/react-softbox': path.resolve(import.meta.dirname, '../src'),
+      '@': path.resolve(import.meta.dirname, 'src'),
     },
   },
 });
